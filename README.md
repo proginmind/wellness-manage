@@ -9,6 +9,7 @@ A modern wellness management application built with Next.js, TypeScript, and Tai
 - **Styling:** Tailwind CSS 4
 - **Components:** shadcn/ui
 - **Icons:** Lucide React
+- **Authentication:** Supabase Auth
 - **Linting:** ESLint 9
 - **Package Manager:** pnpm
 - **Node.js:** v22 (LTS)
@@ -53,19 +54,30 @@ wellness-manage/
 nvm use
 ```
 
-3. Install dependencies:
+3. Set up environment variables:
+
+Create a `.env.local` file in the root directory:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for detailed instructions.
+
+4. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-4. Run the development server:
+5. Run the development server:
 
 ```bash
 pnpm dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Available Scripts
 
@@ -83,6 +95,9 @@ pnpm dev
 - ✅ Tailwind CSS for styling
 - ✅ shadcn/ui components (Button, Card, Badge, Input, Label)
 - ✅ Lucide React icons
+- ✅ Supabase authentication (email/password)
+- ✅ Protected routes with middleware
+- ✅ Login page and dashboard
 - ✅ ESLint for code quality
 - ✅ Custom hooks (useLocalStorage)
 - ✅ Utility functions
@@ -141,6 +156,26 @@ Available components:
 - Label
 
 Browse all components: [shadcn/ui](https://ui.shadcn.com/docs/components)
+
+### Authentication with Supabase
+
+The project uses Supabase for authentication. See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for complete setup instructions.
+
+**Quick Start:**
+
+1. Create a Supabase project
+2. Add credentials to `.env.local`
+3. Create a test user in Supabase dashboard
+4. Visit `/login` to sign in
+5. Access `/dashboard` after authentication
+
+**Protected Routes:**
+- `/dashboard` - Requires authentication
+- Middleware automatically redirects unauthenticated users to `/login`
+
+**Sign Out:**
+- Click "Sign Out" button on dashboard
+- Or POST to `/auth/signout`
 
 ## Learn More
 

@@ -1,0 +1,180 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return (
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Welcome back, {user.email}
+            </p>
+          </div>
+          <form action="/auth/signout" method="post">
+            <Button variant="outline" type="submit">
+              Sign Out
+            </Button>
+          </form>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Activities
+              </CardTitle>
+              <span className="text-2xl">📊</span>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                No activities yet
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Health Score
+              </CardTitle>
+              <span className="text-2xl">❤️</span>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">--</div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Start tracking to see your score
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Weekly Goal
+              </CardTitle>
+              <span className="text-2xl">🎯</span>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0%</div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Set your goals to begin
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Streak</CardTitle>
+              <span className="text-2xl">🔥</span>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0 days</div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Keep going!
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Your latest wellness activities
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+                <p>No activities recorded yet.</p>
+                <p className="text-sm mt-2">
+                  Start tracking your wellness journey!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>
+                Get started with wellness tracking
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" variant="outline">
+                📝 Log Activity
+              </Button>
+              <Button className="w-full justify-start" variant="outline">
+                🎯 Set Goals
+              </Button>
+              <Button className="w-full justify-start" variant="outline">
+                📊 View Reports
+              </Button>
+              <Button className="w-full justify-start" variant="outline">
+                ⚙️ Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* User Info Card */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Account Information</CardTitle>
+            <CardDescription>Your account details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Email:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {user.email}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">User ID:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 font-mono">
+                  {user.id.slice(0, 8)}...
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Account Created:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
