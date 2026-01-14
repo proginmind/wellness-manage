@@ -10,7 +10,7 @@ A modern wellness management application built with Next.js, TypeScript, and Tai
 - **Components:** shadcn/ui
 - **Icons:** Lucide React
 - **Linting:** ESLint 9
-- **Package Manager:** npm
+- **Package Manager:** pnpm
 - **Node.js:** v22 (LTS)
 
 ## Project Structure
@@ -41,7 +41,7 @@ wellness-manage/
 ### Prerequisites
 
 - Node.js 22.x (LTS) - specified in `.nvmrc`
-- npm 10.x or higher
+- pnpm 10.x or higher
 - nvm (recommended for Node.js version management)
 
 ### Installation
@@ -56,23 +56,25 @@ nvm use
 3. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 4. Run the development server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint
+- `pnpm lint:fix` - Auto-fix lint issues
+- `pnpm type-check` - Check TypeScript types
 
 ## Features
 

@@ -251,5 +251,5 @@ Make sure path aliases are configured in `tsconfig.json`:
 Install required type definitions:
 
 ```bash
-npm install -D @types/node @types/react @types/react-dom
+pnpm add -D @types/node @types/react @types/react-dom
 ```

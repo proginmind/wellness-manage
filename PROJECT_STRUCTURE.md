@@ -116,12 +116,12 @@ import { formatDate } from '../../../lib/utils';
 ## Available Scripts
 
 ```bash
-npm run dev          # Start development server (localhost:3000)
-npm run build        # Build for production
-npm start            # Start production server
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint errors automatically
-npm run type-check   # Check TypeScript types without emitting
+pnpm dev          # Start development server (localhost:3000)
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+pnpm lint:fix     # Fix ESLint errors automatically
+pnpm type-check   # Check TypeScript types without emitting
 ```
 
 ## API Routes

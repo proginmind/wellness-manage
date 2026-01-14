@@ -5,7 +5,7 @@
 ### 1. Start Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to see your app!
@@ -92,12 +92,12 @@ export default function Layout({ children }) {
 ## 📝 Useful Commands
 
 ```bash
-npm run dev         # Start dev server
-npm run build       # Build for production
-npm run start       # Run production build
-npm run lint        # Check code quality
-npm run lint:fix    # Auto-fix lint issues
-npm run type-check  # Check TypeScript types
+pnpm dev         # Start dev server
+pnpm build       # Build for production
+pnpm start       # Run production build
+pnpm lint        # Check code quality
+pnpm lint:fix    # Auto-fix lint issues
+pnpm type-check  # Check TypeScript types
 ```
 
 ## 💡 Tips
