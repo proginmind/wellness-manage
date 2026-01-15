@@ -37,18 +37,18 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Activities
+                Total Members
               </CardTitle>
-              <span className="text-2xl">📊</span>
+              <span className="text-2xl">👥</span>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                No activities yet
+                No members yet
               </p>
             </CardContent>
           </Card>
@@ -56,14 +56,14 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Health Score
+                Active Members
               </CardTitle>
-              <span className="text-2xl">❤️</span>
+              <span className="text-2xl">✅</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Start tracking to see your score
+                Currently active
               </p>
             </CardContent>
           </Card>
@@ -71,27 +71,29 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Weekly Goal
+                New This Month
               </CardTitle>
-              <span className="text-2xl">🎯</span>
+              <span className="text-2xl">📈</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0%</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Set your goals to begin
+                Joined this month
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Streak</CardTitle>
-              <span className="text-2xl">🔥</span>
+              <CardTitle className="text-sm font-medium">
+                Archived
+              </CardTitle>
+              <span className="text-2xl">📦</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0 days</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Keep going!
+                Archived members
               </p>
             </CardContent>
           </Card>
@@ -139,36 +141,6 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* User Info Card */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Your account details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Email:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {user.email}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">User ID:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400 font-mono">
-                  {user.id.slice(0, 8)}...
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Account Created:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </AppLayout>
   );

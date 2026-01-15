@@ -90,18 +90,21 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
 
       {/* Bottom menu */}
       <div className="p-2">
-        {/* Profile button - placeholder for now */}
-        <Button
-          variant="ghost"
-          disabled
+        {/* Profile */}
+        <Link
+          href="/profile"
           className={cn(
-            "w-full justify-start gap-3 px-3 py-2",
-            collapsed && "justify-center px-2"
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            pathname === "/profile"
+              ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
+            collapsed && "justify-center"
           )}
+          title={collapsed ? "Profile" : undefined}
         >
           <UserCircle className="h-5 w-5" />
-          {!collapsed && <span className="text-sm">Profile</span>}
-        </Button>
+          {!collapsed && <span>Profile</span>}
+        </Link>
 
         {/* Sign out */}
         <form action="/auth/signout" method="post">
