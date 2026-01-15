@@ -1,40 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Member } from "@/types/member";
 import { User, Calendar, Clock, Mail } from "lucide-react";
+import { differenceInYears, format } from "date-fns";
 
 interface MemberCardProps {
   member: Member;
 }
 
-function calculateAge(dateOfBirth: Date): number {
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
-
 export function MemberCard({ member }: MemberCardProps) {
   const fullName = `${member.firstName} ${member.lastName}`;
   const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
-  const age = calculateAge(member.dateOfBirth);
-  const memberSince = new Date(member.dateJoined).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const age = differenceInYears(new Date(), member.dateOfBirth);
+  const memberSince = format(member.dateJoined, "MMM d, yyyy");
 
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Avatar */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {member.image ? (
               <img
                 src={member.image}
@@ -66,7 +50,7 @@ export function MemberCard({ member }: MemberCardProps) {
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>Born {new Date(member.dateOfBirth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span>Born {format(member.dateOfBirth, "MMM d, yyyy")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />

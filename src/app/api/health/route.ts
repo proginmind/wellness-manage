@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { formatISO } from "date-fns";
 
 export async function GET() {
   return NextResponse.json({
     status: "ok",
-    timestamp: new Date().toISOString(),
+    timestamp: formatISO(new Date()),
   });
 }

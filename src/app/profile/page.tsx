@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { format } from "date-fns";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -56,7 +57,7 @@ export default async function ProfilePage() {
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Account Created:</span>
                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {new Date(user.created_at).toLocaleDateString()}
+                  {format(new Date(user.created_at), "PPP")}
                 </span>
               </div>
             </div>
