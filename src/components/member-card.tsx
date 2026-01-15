@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Member } from "@/types/member";
 import { User, Calendar, Clock, Mail } from "lucide-react";
 import { differenceInYears, format } from "date-fns";
+import Link from "next/link";
 
 interface MemberCardProps {
   member: Member;
@@ -14,8 +15,9 @@ export function MemberCard({ member }: MemberCardProps) {
   const memberSince = format(member.dateJoined, "MMM d, yyyy");
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
+    <Link href={`/members/${member.id}`}>
+      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+        <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="shrink-0">
@@ -61,5 +63,6 @@ export function MemberCard({ member }: MemberCardProps) {
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }

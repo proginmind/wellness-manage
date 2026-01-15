@@ -11,7 +11,7 @@ export function MembersList({ members, searchQuery }: MembersListProps) {
   // Display members list or empty state
   if (members.length > 0) {
     return (
-      <div className="space-y-3">
+      <div className="flex flex-col gap-4">
         {members.map((member) => (
           <MemberCard key={member.id} member={member} />
         ))}
