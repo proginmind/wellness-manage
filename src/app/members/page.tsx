@@ -1,14 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { MemberCard } from "@/components/member-card";
+import { mockMembers } from "@/lib/mock-data";
 
 export default async function MembersPage() {
   const supabase = await createClient();
@@ -31,7 +26,7 @@ export default async function MembersPage() {
               Members
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage your wellness center members
+              {mockMembers.length} {mockMembers.length === 1 ? 'member' : 'members'} registered
             </p>
           </div>
           <Button>
@@ -41,27 +36,11 @@ export default async function MembersPage() {
         </div>
 
         {/* Members List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Members List</CardTitle>
-            <CardDescription>
-              View and manage all wellness center members
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-              <div className="text-6xl mb-4">👥</div>
-              <p className="text-lg font-medium mb-2">No members yet</p>
-              <p className="text-sm mb-4">
-                Get started by adding your first member
-              </p>
-              <Button>
-                <span className="mr-2">+</span>
-                Add Your First Member
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          {mockMembers.map((member) => (
+            <MemberCard key={member.id} member={member} />
+          ))}
+        </div>
       </div>
     </AppLayout>
   );
