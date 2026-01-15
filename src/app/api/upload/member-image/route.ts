@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -46,20 +44,32 @@ export async function POST(request: Request) {
     const extension = file.name.split(".").pop() || "webp";
     const filename = `${uuid}.${extension}`;
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = join(process.cwd(), "public", "uploads", "members");
-    await mkdir(uploadDir, { recursive: true });
+    // Convert file to ArrayBuffer for Supabase Storage
+    const arrayBuffer = await file.arrayBuffer();
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from("member-images")
+      .upload(filename, arrayBuffer, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false,
+      });
 
-    // Return public URL
-    const url = `/uploads/members/${filename}`;
+    if (error) {
+      console.error("Error uploading to Supabase Storage:", error);
+      return NextResponse.json(
+        { error: "Failed to upload image" },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json({ url }, { status: 200 });
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("member-images").getPublicUrl(data.path);
+
+    return NextResponse.json({ url: publicUrl }, { status: 200 });
   } catch (error) {
     console.error("Error uploading image:", error);
     return NextResponse.json(

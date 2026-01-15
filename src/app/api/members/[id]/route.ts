@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { mockMembers } from "@/lib/mock-data";
+import { getMemberById } from "@/lib/supabase/queries";
 import { memberFormSchema } from "@/lib/validations/member";
 
 export async function GET(
@@ -21,15 +21,11 @@ export async function GET(
     // Get member ID from params
     const { id } = await params;
 
-    // Find member by ID in mock data
-    // In the future, this will be: await supabase.from('members').select('*').eq('id', id).single()
-    const member = mockMembers.find((m) => m.id === id);
+    // Fetch member from database
+    const member = await getMemberById(id);
 
     if (!member) {
-      return NextResponse.json(
-        { error: "Member not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
 
     return NextResponse.json({ member });
@@ -63,32 +59,28 @@ export async function PATCH(
     // Parse request body
     const body = await request.json();
 
-    // Find member by ID in mock data
-    const memberIndex = mockMembers.findIndex((m) => m.id === id);
-
-    if (memberIndex === -1) {
-      return NextResponse.json(
-        { error: "Member not found" },
-        { status: 404 }
-      );
-    }
+    // Import queries dynamically
+    const { archiveMember, unarchiveMember, updateMember } = await import(
+      "@/lib/supabase/queries"
+    );
 
     // Check if this is a status update (archive/unarchive) or full member update
     if ("status" in body && Object.keys(body).length === 1) {
       // Status update only (archive/unarchive)
-      // In the future, this will be: await supabase.from('members').update({ status, archivedAt }).eq('id', id)
-      if (body.status === "archived") {
-        mockMembers[memberIndex].status = "archived";
-        mockMembers[memberIndex].archivedAt = new Date();
-      } else if (body.status === "active") {
-        mockMembers[memberIndex].status = "active";
-        mockMembers[memberIndex].archivedAt = undefined;
-      }
+      const updatedMember =
+        body.status === "archived"
+          ? await archiveMember(id)
+          : await unarchiveMember(id);
+
+      return NextResponse.json({
+        member: updatedMember,
+        message: "Member updated successfully",
+      });
     } else {
       // Full member update
       // Validate with zod schema
       const validationResult = memberFormSchema.safeParse(body);
-      
+
       if (!validationResult.success) {
         return NextResponse.json(
           { error: "Validation failed", details: validationResult.error.issues },
@@ -98,25 +90,28 @@ export async function PATCH(
 
       const validated = validationResult.data;
 
-      // Update member fields
-      // In the future, this will be: await supabase.from('members').update(validated).eq('id', id)
-      mockMembers[memberIndex].firstName = validated.firstName;
-      mockMembers[memberIndex].lastName = validated.lastName;
-      mockMembers[memberIndex].email = validated.email;
-      mockMembers[memberIndex].dateOfBirth = new Date(validated.dateOfBirth);
-      mockMembers[memberIndex].dateJoined = new Date(validated.dateJoined);
-      mockMembers[memberIndex].image = validated.image || undefined;
-    }
+      // Convert form data to Member partial
+      const updates = {
+        firstName: validated.firstName,
+        lastName: validated.lastName,
+        email: validated.email,
+        dateOfBirth: new Date(validated.dateOfBirth),
+        dateJoined: new Date(validated.dateJoined),
+        image: validated.image || undefined,
+      };
 
-    return NextResponse.json({
-      member: mockMembers[memberIndex],
-      message: "Member updated successfully",
-    });
+      // Update member in database
+      const updatedMember = await updateMember(id, updates);
+
+      return NextResponse.json({
+        member: updatedMember,
+        message: "Member updated successfully",
+      });
+    }
   } catch (error) {
     console.error("Error updating member:", error);
-    return NextResponse.json(
-      { error: "Failed to update member" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Failed to update member";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

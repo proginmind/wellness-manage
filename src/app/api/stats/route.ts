@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { mockMembers } from "@/lib/mock-data";
-import { startOfMonth } from "date-fns";
+import { getMemberStats } from "@/lib/supabase/queries";
 
 export async function GET() {
   try {
@@ -15,27 +14,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Calculate stats from mock data
-    // In the future, this will use Supabase queries
-    const activeMembers = mockMembers.filter((member) => member.status === "active");
-    const archivedMembers = mockMembers.filter((member) => member.status === "archived");
-    
-    const total = mockMembers.length;
-    const active = activeMembers.length;
-    const archived = archivedMembers.length;
-    
-    // Count active members who joined this month
-    const monthStart = startOfMonth(new Date());
-    const newThisMonth = activeMembers.filter(
-      (member) => member.dateJoined >= monthStart
-    ).length;
+    // Fetch stats from database
+    const stats = await getMemberStats();
 
-    return NextResponse.json({
-      total,
-      active,
-      newThisMonth,
-      archived,
-    });
+    return NextResponse.json(stats);
   } catch (error) {
     console.error("Error fetching stats:", error);
     return NextResponse.json(
