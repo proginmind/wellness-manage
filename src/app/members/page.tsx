@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { MembersListContainer } from "@/components/members-list-container";
+import Link from "next/link";
 
 export default async function MembersPage() {
   const supabase = await createClient();
@@ -28,9 +29,11 @@ export default async function MembersPage() {
               Manage your wellness center members
             </p>
           </div>
-          <Button>
-            <span className="mr-2">+</span>
-            Add Member
+          <Button asChild>
+            <Link href="/members/new">
+              <span className="mr-2">+</span>
+              Add Member
+            </Link>
           </Button>
         </div>
 
