@@ -177,11 +177,47 @@ The project uses Supabase for authentication. See [SUPABASE_SETUP.md](./SUPABASE
 - Click "Sign Out" button on dashboard
 - Or POST to `/auth/signout`
 
+## Deployment
+
+### Deploy to Vercel
+
+The easiest way to deploy this Next.js app is using Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/proginmind/wellness-manage)
+
+**Quick Steps:**
+
+1. Click the deploy button above or go to [vercel.com/new](https://vercel.com/new)
+2. Import your GitHub repository
+3. Add environment variables (see `.env.example`)
+4. Click "Deploy"
+5. Update Supabase redirect URLs with your Vercel domain
+
+**Detailed Instructions:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide.
+
+### Environment Variables for Production
+
+Ensure these are set in Vercel:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_production_anon_key
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+```
+
+### Post-Deployment
+
+After deploying, update your Supabase project settings:
+- Add Vercel URL to **Site URL**
+- Add `https://your-app.vercel.app/**` to **Redirect URLs**
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Vercel Deployment Docs](https://vercel.com/docs)
+- [Supabase Documentation](https://supabase.com/docs)
 
 ## License
 
