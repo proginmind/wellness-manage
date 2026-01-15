@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
-import { MemberCard } from "@/components/member-card";
+import { MembersList } from "@/components/members-list";
 import { mockMembers } from "@/lib/mock-data";
 
 export default async function MembersPage() {
@@ -35,12 +35,8 @@ export default async function MembersPage() {
           </Button>
         </div>
 
-        {/* Members List */}
-        <div className="space-y-3">
-          {mockMembers.map((member) => (
-            <MemberCard key={member.id} member={member} />
-          ))}
-        </div>
+        {/* Members List with Search */}
+        <MembersList members={mockMembers} />
       </div>
     </AppLayout>
   );
