@@ -214,6 +214,18 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 ---
 
+## Step 4: Seed Database (Optional)
+
+If you want to populate your database with 10 fake members for testing:
+
+1. **Go to "SQL Editor"** in Supabase Dashboard.
+2. **Click "New Query"**.
+3. **Copy and paste the contents of `supabase/seed.sql`** into the editor.
+4. **Click "Run"**.
+5. **Verification:** You should see the count and list of inserted members.
+
+The seed script automatically associates all members with your first authenticated user.
+
 ## Troubleshooting
 
 ### Issue: "relation 'members' already exists"
