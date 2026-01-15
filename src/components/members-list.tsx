@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/member-card";
 import { Member } from "@/types/member";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 
 interface MembersListProps {
   members: Member[];
@@ -57,11 +57,25 @@ export function MembersList({ members }: MembersListProps) {
         </div>
       ) : (
         <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-          <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">No members found</p>
-          <p className="text-sm">
-            Try adjusting your search to find what you're looking for
-          </p>
+          {searchQuery ? (
+            // No results for search query
+            <>
+              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No members found</p>
+              <p className="text-sm">
+                Try adjusting your search to find what you're looking for
+              </p>
+            </>
+          ) : (
+            // No members at all
+            <>
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No members yet</p>
+              <p className="text-sm">
+                Get started by adding your first member to the wellness center
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>
