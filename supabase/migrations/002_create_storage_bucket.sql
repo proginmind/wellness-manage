@@ -16,8 +16,7 @@ ON storage.objects
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  bucket_id = 'member-images' 
-  AND (STORAGE.extension(name) = ANY (ARRAY['jpg', 'jpeg', 'png', 'webp']))
+  bucket_id = 'member-images'
 );
 
 -- Policy: Public read access to images
@@ -41,9 +40,3 @@ ON storage.objects
 FOR DELETE
 TO authenticated
 USING (bucket_id = 'member-images');
-
--- =====================================================
--- Comments
--- =====================================================
-
-COMMENT ON TABLE storage.buckets IS 'Storage buckets for member profile images with 5MB limit';
