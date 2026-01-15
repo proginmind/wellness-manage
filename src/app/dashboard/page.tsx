@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { AppLayout } from "@/components/app-layout";
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black">
+    <AppLayout>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -34,11 +34,6 @@ export default async function DashboardPage() {
               Welcome back, {user.email}
             </p>
           </div>
-          <form action="/auth/signout" method="post">
-            <Button variant="outline" type="submit">
-              Sign Out
-            </Button>
-          </form>
         </div>
 
         {/* Stats Grid */}
@@ -175,6 +170,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 }
