@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
   const {
@@ -14,7 +14,10 @@ export async function POST() {
   }
 
   revalidatePath("/", "layout");
-  return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"), {
+
+  // Get the origin from the request to handle both localhost and production
+  const origin = request.nextUrl.origin;
+  return NextResponse.redirect(new URL("/login", origin), {
     status: 302,
   });
 }
