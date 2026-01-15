@@ -25,11 +25,12 @@ export async function GET(request: Request) {
     // Combine mock members with additional members
     const allMembers = [...mockMembers, ...additionalMembers];
 
-    // Filter members based on search query
-    let filteredMembers = allMembers;
+    // Filter out archived members by default (only show active members)
+    let filteredMembers = allMembers.filter((member) => member.status === "active");
     
+    // Apply search filter if provided
     if (search) {
-      filteredMembers = allMembers.filter((member) => {
+      filteredMembers = filteredMembers.filter((member) => {
         const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
         const email = member.email.toLowerCase();
         
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       image: body.image || undefined,
       dateJoined: new Date(body.dateJoined),
       dateOfBirth: new Date(body.dateOfBirth),
+      status: "active",
     };
 
     // Add to in-memory storage

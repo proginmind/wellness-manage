@@ -1,3 +1,5 @@
+export type MemberStatus = "active" | "archived";
+
 export interface Member {
   id: string;
   firstName: string;
@@ -6,4 +8,6 @@ export interface Member {
   image?: string;
   dateJoined: Date;
   dateOfBirth: Date;
+  status: MemberStatus;
+  archivedAt?: Date;
 }

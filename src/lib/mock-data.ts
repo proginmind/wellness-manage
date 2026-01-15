@@ -8,6 +8,7 @@ export const mockMembers: Member[] = [
     email: "emma.johnson@example.com",
     dateJoined: new Date("2024-01-15"),
     dateOfBirth: new Date("1992-05-20"),
+    status: "active",
   },
   {
     id: "2",
@@ -16,6 +17,7 @@ export const mockMembers: Member[] = [
     email: "michael.chen@example.com",
     dateJoined: new Date("2024-02-03"),
     dateOfBirth: new Date("1988-11-08"),
+    status: "active",
   },
   {
     id: "3",
@@ -24,6 +26,7 @@ export const mockMembers: Member[] = [
     email: "sarah.williams@example.com",
     dateJoined: new Date("2024-03-12"),
     dateOfBirth: new Date("1995-07-14"),
+    status: "active",
   },
   {
     id: "4",
@@ -32,6 +35,7 @@ export const mockMembers: Member[] = [
     email: "david.martinez@example.com",
     dateJoined: new Date("2024-04-22"),
     dateOfBirth: new Date("1990-03-30"),
+    status: "active",
   },
   {
     id: "5",
@@ -40,6 +44,7 @@ export const mockMembers: Member[] = [
     email: "lisa.anderson@example.com",
     dateJoined: new Date("2024-05-18"),
     dateOfBirth: new Date("1985-09-25"),
+    status: "active",
   },
   {
     id: "6",
@@ -48,6 +53,7 @@ export const mockMembers: Member[] = [
     email: "james.taylor@example.com",
     dateJoined: new Date("2024-06-07"),
     dateOfBirth: new Date("1993-12-02"),
+    status: "active",
   },
   {
     id: "7",
@@ -56,6 +62,7 @@ export const mockMembers: Member[] = [
     email: "maria.garcia@example.com",
     dateJoined: new Date("2024-07-21"),
     dateOfBirth: new Date("1991-04-18"),
+    status: "active",
   },
   {
     id: "8",
@@ -64,6 +71,7 @@ export const mockMembers: Member[] = [
     email: "robert.brown@example.com",
     dateJoined: new Date("2024-08-14"),
     dateOfBirth: new Date("1987-08-09"),
+    status: "active",
   },
   {
     id: "9",
@@ -72,6 +80,7 @@ export const mockMembers: Member[] = [
     email: "jennifer.davis@example.com",
     dateJoined: new Date("2024-09-05"),
     dateOfBirth: new Date("1994-06-22"),
+    status: "active",
   },
   {
     id: "10",
@@ -80,5 +89,6 @@ export const mockMembers: Member[] = [
     email: "chris.wilson@example.com",
     dateJoined: new Date("2024-10-11"),
     dateOfBirth: new Date("1989-01-17"),
+    status: "active",
   },
 ];

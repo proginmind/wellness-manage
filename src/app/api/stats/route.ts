@@ -17,16 +17,18 @@ export async function GET() {
 
     // Calculate stats from mock data
     // In the future, this will use Supabase queries
-    const total = mockMembers.length;
-    const active = mockMembers.length; // All mock members are active
+    const activeMembers = mockMembers.filter((member) => member.status === "active");
+    const archivedMembers = mockMembers.filter((member) => member.status === "archived");
     
-    // Count members who joined this month
+    const total = mockMembers.length;
+    const active = activeMembers.length;
+    const archived = archivedMembers.length;
+    
+    // Count active members who joined this month
     const monthStart = startOfMonth(new Date());
-    const newThisMonth = mockMembers.filter(
+    const newThisMonth = activeMembers.filter(
       (member) => member.dateJoined >= monthStart
     ).length;
-    
-    const archived = 0; // No archived members in mock data
 
     return NextResponse.json({
       total,

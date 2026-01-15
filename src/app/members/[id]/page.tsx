@@ -1,27 +1,88 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+import { toast } from "sonner";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { MemberStatusBadge } from "@/components/member-status-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { fetcher } from "@/lib/fetcher";
 import { Member } from "@/types/member";
 import { ArrowLeft, Edit, Archive, Mail, Calendar, Clock, User } from "lucide-react";
 import Link from "next/link";
 import { format, differenceInYears } from "date-fns";
 
+async function archiveMember(url: string) {
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "archived" }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to archive member");
+  }
+
+  return response.json();
+}
+
 export default function MemberDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const memberId = params.id as string;
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const { data, error, isLoading } = useSWR<{ member: Member }>(
     `/api/members/${memberId}`,
     fetcher
   );
+
+  const { trigger: triggerArchive, isMutating: isArchiving } = useSWRMutation(
+    `/api/members/${memberId}`,
+    archiveMember,
+    {
+      onSuccess: () => {
+        toast.success("Member archived successfully", {
+          description: `${data?.member.firstName} ${data?.member.lastName} has been archived.`,
+        });
+      },
+      onError: (error) => {
+        console.error("Error archiving member:", error);
+        toast.error("Failed to archive member", {
+          description: error instanceof Error ? error.message : "Please try again later",
+        });
+      },
+      // Automatically revalidate related endpoints
+      populateCache: false,
+      revalidate: true,
+    }
+  );
+
+  const handleArchive = async () => {
+    try {
+      await triggerArchive();
+    } catch {
+      // Error already handled by onError callback
+    } finally {
+      setIsArchiveDialogOpen(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -89,10 +150,15 @@ export default function MemberDetailPage() {
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
-                <Button variant="destructive">
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive
-                </Button>
+                {member.status === "active" && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => setIsArchiveDialogOpen(true)}
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -110,7 +176,7 @@ export default function MemberDetailPage() {
                     {member.firstName} {member.lastName}
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">Active</Badge>
+                    <MemberStatusBadge status={member.status} />
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       Member ID: {member.id}
                     </span>
@@ -203,6 +269,29 @@ export default function MemberDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive {data?.member.firstName} {data?.member.lastName}?
+              This will remove them from the active members list. You can restore them later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isArchiving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchive}
+              disabled={isArchiving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isArchiving ? "Archiving..." : "Archive"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
