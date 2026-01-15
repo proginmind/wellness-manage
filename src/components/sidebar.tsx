@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import {
   LayoutDashboard,
   Users,
@@ -126,7 +126,7 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
 }
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
   return (
     <aside
