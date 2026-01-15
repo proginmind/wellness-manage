@@ -52,6 +52,7 @@ src/
 ### ✅ Implemented
 
 - **Email/Password Authentication** - Sign in with email and password
+- **Password Recovery** - Forgot password and reset functionality
 - **Protected Routes** - Dashboard requires authentication
 - **Auto-redirect** - Logged-in users redirected from /login to /dashboard
 - **Session Management** - Automatic session refresh via middleware
@@ -116,6 +117,15 @@ The middleware (`src/middleware.ts`) protects routes:
 3. Session is cleared
 4. User is redirected to `/login`
 
+### Password Recovery Flow
+
+1. User clicks "Forgot password?" on login page
+2. User enters email on `/forgot-password`
+3. Supabase sends recovery email with magic link
+4. User clicks link in email → redirected to `/reset-password`
+5. User enters new password
+6. Password updated, redirected to `/login`
+
 ## Setting Up Authentication in Supabase
 
 ### 1. Enable Email Auth
@@ -134,7 +144,20 @@ The middleware (`src/middleware.ts`) protects routes:
 
 Add allowed redirect URLs:
 - `http://localhost:3000/**` (development)
+- `http://localhost:3000/reset-password` (password recovery - development)
 - `https://yourdomain.com/**` (production)
+- `https://yourdomain.com/reset-password` (password recovery - production)
+
+### 4. Configure Email Templates (Optional)
+
+Customize password recovery emails:
+
+1. Go to **Authentication** → **Email Templates**
+2. Select **Reset Password** template
+3. Customize the email content
+4. Use `{{ .ConfirmationURL }}` for the reset link
+
+**Note:** The recovery URL automatically uses the current domain, so it works in both development and production without changes.
 
 ## User Management
 
@@ -209,6 +232,17 @@ const { data: { user } } = await supabase.auth.getUser();
 
 // Get session
 const { data: { session } } = await supabase.auth.getSession();
+
+// Reset password for email
+const origin = window.location.origin;
+await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: `${origin}/reset-password`,
+});
+
+// Update password (after reset)
+await supabase.auth.updateUser({
+  password: newPassword,
+});
 ```
 
 ## Next Steps
@@ -216,7 +250,7 @@ const { data: { session } } = await supabase.auth.getSession();
 ### Recommended Enhancements
 
 1. **Sign Up Page** - Allow new user registration
-2. **Password Reset** - Forgot password functionality
+2. ~~**Password Reset** - Forgot password functionality~~ ✅ **Implemented**
 3. **Email Verification** - Verify email addresses
 4. **Profile Management** - Edit user profile
 5. **Social Auth** - Google, GitHub, etc.
