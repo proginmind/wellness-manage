@@ -2,8 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
-import { MembersList } from "@/components/members-list";
-import { mockMembers } from "@/lib/mock-data";
+import { MembersListContainer } from "@/components/members-list-container";
 
 export default async function MembersPage() {
   const supabase = await createClient();
@@ -26,7 +25,7 @@ export default async function MembersPage() {
               Members
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {mockMembers.length} {mockMembers.length === 1 ? 'member' : 'members'} registered
+              Manage your wellness center members
             </p>
           </div>
           <Button>
@@ -36,7 +35,7 @@ export default async function MembersPage() {
         </div>
 
         {/* Members List with Search */}
-        <MembersList members={mockMembers} />
+        <MembersListContainer />
       </div>
     </AppLayout>
   );

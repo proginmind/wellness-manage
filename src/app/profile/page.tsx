@@ -1,14 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { format } from "date-fns";
+import { ProfileContent } from "@/components/profile-content";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -35,34 +28,7 @@ export default async function ProfilePage() {
         </div>
 
         {/* Account Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Your account details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Email:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {user.email}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">User ID:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400 font-mono">
-                  {user.id.slice(0, 8)}...
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Account Created:</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {format(new Date(user.created_at), "PPP")}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileContent />
       </div>
     </AppLayout>
   );

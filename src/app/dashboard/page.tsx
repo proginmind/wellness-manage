@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DashboardStats } from "@/components/dashboard-stats";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -37,67 +38,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Members
-              </CardTitle>
-              <span className="text-2xl">👥</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                No members yet
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Members
-              </CardTitle>
-              <span className="text-2xl">✅</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Currently active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                New This Month
-              </CardTitle>
-              <span className="text-2xl">📈</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Joined this month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Archived
-              </CardTitle>
-              <span className="text-2xl">📦</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Archived members
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <DashboardStats />
 
         {/* Main Content */}
         <div className="grid gap-6 md:grid-cols-2">
