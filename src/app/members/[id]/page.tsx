@@ -146,9 +146,11 @@ export default function MemberDetailPage() {
                 Member Details
               </h1>
               <div className="flex gap-3">
-                <Button variant="outline">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                <Button variant="outline" asChild>
+                  <Link href={`/members/${memberId}/edit`}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
                 </Button>
                 {member.status === "active" && (
                   <Button

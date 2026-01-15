@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { mockMembers } from "@/lib/mock-data";
+import { memberFormSchema } from "@/lib/validations/member";
 
 export async function GET(
   request: Request,
@@ -72,14 +73,39 @@ export async function PATCH(
       );
     }
 
-    // Update member status
-    // In the future, this will be: await supabase.from('members').update({ status, archivedAt }).eq('id', id)
-    if (body.status === "archived") {
-      mockMembers[memberIndex].status = "archived";
-      mockMembers[memberIndex].archivedAt = new Date();
-    } else if (body.status === "active") {
-      mockMembers[memberIndex].status = "active";
-      mockMembers[memberIndex].archivedAt = undefined;
+    // Check if this is a status update (archive/unarchive) or full member update
+    if ("status" in body && Object.keys(body).length === 1) {
+      // Status update only (archive/unarchive)
+      // In the future, this will be: await supabase.from('members').update({ status, archivedAt }).eq('id', id)
+      if (body.status === "archived") {
+        mockMembers[memberIndex].status = "archived";
+        mockMembers[memberIndex].archivedAt = new Date();
+      } else if (body.status === "active") {
+        mockMembers[memberIndex].status = "active";
+        mockMembers[memberIndex].archivedAt = undefined;
+      }
+    } else {
+      // Full member update
+      // Validate with zod schema
+      const validationResult = memberFormSchema.safeParse(body);
+      
+      if (!validationResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: validationResult.error.issues },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Update member fields
+      // In the future, this will be: await supabase.from('members').update(validated).eq('id', id)
+      mockMembers[memberIndex].firstName = validated.firstName;
+      mockMembers[memberIndex].lastName = validated.lastName;
+      mockMembers[memberIndex].email = validated.email;
+      mockMembers[memberIndex].dateOfBirth = new Date(validated.dateOfBirth);
+      mockMembers[memberIndex].dateJoined = new Date(validated.dateJoined);
+      mockMembers[memberIndex].image = validated.image || undefined;
     }
 
     return NextResponse.json({
