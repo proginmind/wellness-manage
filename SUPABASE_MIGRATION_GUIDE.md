@@ -30,8 +30,30 @@ This guide walks you through setting up Supabase database for the Wellness Cente
    - Click "Run" (or press Cmd/Ctrl + Enter)
    - ✅ You should see: "Success. No rows returned"
 
-3. **Run Storage Bucket Migration**
-   - Click "New Query" again
+3. **Create Storage Bucket (Dashboard UI)**
+   - Click "Storage" in the left sidebar
+   - Click "New bucket" button
+   - Enter bucket name: **member-images**
+   - Set as **Public bucket** (toggle ON)
+   - Click "Create bucket"
+   - ✅ You should see the new bucket in the list
+
+4. **Configure Bucket Settings**
+   - Click on the `member-images` bucket
+   - Click the settings gear icon
+   - Set **File size limit**: 5 MB (5242880 bytes)
+   - Set **Allowed MIME types**: 
+     ```
+     image/jpeg
+     image/jpg
+     image/png
+     image/webp
+     ```
+   - Click "Save"
+
+5. **Run Storage Policies Migration**
+   - Go back to "SQL Editor"
+   - Click "New Query"
    - Copy contents from `supabase/migrations/002_create_storage_bucket.sql`
    - Paste into SQL Editor
    - Click "Run"

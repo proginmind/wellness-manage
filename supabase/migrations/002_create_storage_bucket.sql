@@ -1,21 +1,13 @@
 -- =====================================================
--- Supabase Storage: Member Images Bucket
--- Migration: Create storage bucket with policies
+-- Supabase Storage: Member Images Bucket Policies
+-- Migration: Create storage policies for member-images bucket
+-- 
+-- NOTE: The bucket itself must be created via Supabase Dashboard
+-- Go to Storage → New Bucket → Create 'member-images' bucket
 -- =====================================================
 
--- Create storage bucket for member images
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'member-images',
-  'member-images',
-  true,
-  5242880, -- 5MB in bytes
-  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-)
-ON CONFLICT (id) DO NOTHING;
-
 -- =====================================================
--- Storage Policies
+-- Storage Policies (Run AFTER creating bucket in Dashboard)
 -- =====================================================
 
 -- Policy: Authenticated users can upload images
