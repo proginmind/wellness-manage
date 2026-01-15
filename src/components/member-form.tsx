@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/image-upload";
 import { memberFormSchema, type MemberFormValues } from "@/lib/validations/member";
 
 interface MemberFormProps {
@@ -143,23 +144,20 @@ export function MemberForm({
               )}
             />
 
-            {/* Image URL (Optional) */}
+            {/* Profile Image (Optional) */}
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profile Image URL (Optional)</FormLabel>
+                  <FormLabel>Profile Image (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
-                      {...field}
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
-                  <FormDescription>
-                    URL to the member's profile image
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -39,9 +39,16 @@ export const memberFormSchema = z.object({
   
   image: z
     .string()
-    .url("Please enter a valid URL")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine(
+      (val) => {
+        if (!val) return true; // Empty is valid
+        // Allow relative paths (our uploads) or full URLs
+        return val.startsWith("/") || val.startsWith("http://") || val.startsWith("https://");
+      },
+      "Invalid image path or URL"
+    ),
 });
 
 export type MemberFormValues = z.infer<typeof memberFormSchema>;
