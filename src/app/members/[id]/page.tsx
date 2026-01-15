@@ -201,9 +201,12 @@ export default function MemberDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <a
+                      href={`mailto:${member.email}`}
+                      className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                    >
                       {member.email}
-                    </p>
+                    </a>
                   </div>
                 </div>
               </div>

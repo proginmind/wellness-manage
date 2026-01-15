@@ -60,9 +60,12 @@ export function ProfileContent() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-sm font-medium">Email:</span>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            <a
+              href={`mailto:${user.email}`}
+              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+            >
               {user.email}
-            </span>
+            </a>
           </div>
           <div className="flex justify-between">
             <span className="text-sm font-medium">User ID:</span>
