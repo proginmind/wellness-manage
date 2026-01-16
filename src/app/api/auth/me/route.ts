@@ -30,6 +30,7 @@ export async function GET() {
       user: {
         id: user.id,
         email: user.email,
+        created_at: user.created_at,
         profile: profile || undefined,
         organization: organization || undefined,
       },

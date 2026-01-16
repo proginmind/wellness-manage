@@ -1,27 +1,21 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { getMemberById } from "@/lib/supabase/queries";
 import { memberFormSchema } from "@/lib/validations/member";
+import { requirePermission } from "@/lib/api-permissions";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Check permission: members.view
+    const permissionResult = await requirePermission("members", "view");
+    if (permissionResult instanceof NextResponse) return permissionResult;
 
     // Get member ID from params
     const { id } = await params;
 
-    // Fetch member from database
+    // Fetch member from database (org-scoped via RLS)
     const member = await getMemberById(id);
 
     if (!member) {
@@ -43,15 +37,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Check permission: members.update (covers both status and full update)
+    const permissionResult = await requirePermission("members", "update");
+    if (permissionResult instanceof NextResponse) return permissionResult;
 
     // Get member ID from params
     const { id } = await params;
