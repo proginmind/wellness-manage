@@ -1,13 +1,50 @@
 import { createClient } from "@/lib/supabase/server";
 import { Member, MemberStatus } from "@/types/member";
 import { MemberFormValues } from "@/lib/validations/member";
+import {
+  Organization,
+  Profile,
+  UserRole,
+  Invitation,
+  InvitationStatus,
+} from "@/types";
 
-/**
- * Database row type (snake_case from PostgreSQL)
- */
+// ============================================================================
+// DATABASE ROW TYPES (snake_case from PostgreSQL)
+// ============================================================================
+
+interface OrganizationRow {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ProfileRow {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
+interface InvitationRow {
+  id: string;
+  organization_id: string;
+  email: string;
+  invited_by: string;
+  status: InvitationStatus;
+  token: string;
+  expires_at: string;
+  created_at: string;
+}
+
 interface MemberRow {
   id: string;
   user_id: string;
+  organization_id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -20,9 +57,44 @@ interface MemberRow {
   updated_at: string;
 }
 
-/**
- * Convert database row (snake_case) to Member type (camelCase)
- */
+// ============================================================================
+// CONVERTERS: Database Row ↔ TypeScript Type
+// ============================================================================
+
+export function dbToOrganization(row: OrganizationRow): Organization {
+  return {
+    id: row.id,
+    name: row.name,
+    ownerId: row.owner_id,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+export function dbToProfile(row: ProfileRow): Profile {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    organizationId: row.organization_id,
+    role: row.role,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+export function dbToInvitation(row: InvitationRow): Invitation {
+  return {
+    id: row.id,
+    organizationId: row.organization_id,
+    email: row.email,
+    invitedBy: row.invited_by,
+    status: row.status,
+    token: row.token,
+    expiresAt: new Date(row.expires_at),
+    createdAt: new Date(row.created_at),
+  };
+}
+
 export function dbToMember(row: MemberRow): Member {
   return {
     id: row.id,
@@ -37,14 +109,13 @@ export function dbToMember(row: MemberRow): Member {
   };
 }
 
-/**
- * Convert Member type (camelCase) to database format (snake_case)
- */
 export function memberToDb(
   member: Partial<Member>
-): Partial<Omit<MemberRow, "id" | "user_id" | "created_at" | "updated_at">> {
+): Partial<
+  Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">
+> {
   const db: Partial<
-    Omit<MemberRow, "id" | "user_id" | "created_at" | "updated_at">
+    Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">
   > = {};
 
   if (member.firstName !== undefined) db.first_name = member.firstName;
@@ -62,15 +133,84 @@ export function memberToDb(
   return db;
 }
 
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 /**
- * Get all members with optional search filter
+ * Get current user's profile (includes organization_id and role)
+ */
+export async function getCurrentUserProfile(): Promise<Profile | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !data) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+
+  return dbToProfile(data);
+}
+
+/**
+ * Get organization by ID
+ */
+export async function getOrganizationById(
+  id: string
+): Promise<Organization | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    console.error("Error fetching organization:", error);
+    return null;
+  }
+
+  return dbToOrganization(data);
+}
+
+/**
+ * Check if current user is an owner
+ */
+export async function isCurrentUserOwner(): Promise<boolean> {
+  const profile = await getCurrentUserProfile();
+  return profile?.role === "owner";
+}
+
+// ============================================================================
+// MEMBER QUERIES (Organization-scoped)
+// ============================================================================
+
+/**
+ * Get all members with optional search filter (organization-scoped)
  */
 export async function getMembers(search?: string): Promise<Member[]> {
   const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
 
   let query = supabase
     .from("members")
     .select("*")
+    .eq("organization_id", profile.organizationId)
     .eq("status", "active")
     .order("date_joined", { ascending: false });
 
@@ -93,15 +233,21 @@ export async function getMembers(search?: string): Promise<Member[]> {
 }
 
 /**
- * Get a single member by ID
+ * Get a single member by ID (organization-scoped via RLS)
  */
 export async function getMemberById(id: string): Promise<Member | null> {
   const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
 
   const { data, error } = await supabase
     .from("members")
     .select("*")
     .eq("id", id)
+    .eq("organization_id", profile.organizationId)
     .single();
 
   if (error) {
@@ -117,16 +263,22 @@ export async function getMemberById(id: string): Promise<Member | null> {
 }
 
 /**
- * Create a new member
+ * Create a new member (organization-scoped)
  */
 export async function createMember(
   formData: MemberFormValues,
   userId: string
 ): Promise<Member> {
   const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
 
   const dbData = {
     user_id: userId,
+    organization_id: profile.organizationId,
     first_name: formData.firstName,
     last_name: formData.lastName,
     email: formData.email,
@@ -229,15 +381,21 @@ export async function unarchiveMember(id: string): Promise<Member> {
 }
 
 /**
- * Get member statistics for dashboard
+ * Get member statistics for dashboard (organization-scoped)
  */
 export async function getMemberStats() {
   const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
 
   // Get all members count
   const { count: total, error: totalError } = await supabase
     .from("members")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", profile.organizationId);
 
   if (totalError) {
     console.error("Error fetching total count:", totalError);
@@ -248,6 +406,7 @@ export async function getMemberStats() {
   const { count: active, error: activeError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
+    .eq("organization_id", profile.organizationId)
     .eq("status", "active");
 
   if (activeError) {
@@ -259,6 +418,7 @@ export async function getMemberStats() {
   const { count: archived, error: archivedError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
+    .eq("organization_id", profile.organizationId)
     .eq("status", "archived");
 
   if (archivedError) {
@@ -274,6 +434,7 @@ export async function getMemberStats() {
   const { count: newThisMonth, error: newError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
+    .eq("organization_id", profile.organizationId)
     .eq("status", "active")
     .gte("date_joined", startOfMonth.toISOString().split("T")[0]);
 
@@ -288,4 +449,130 @@ export async function getMemberStats() {
     archived: archived || 0,
     newThisMonth: newThisMonth || 0,
   };
+}
+
+// ============================================================================
+// INVITATION QUERIES
+// ============================================================================
+
+/**
+ * Get all invitations for current user's organization
+ */
+export async function getInvitations(): Promise<Invitation[]> {
+  const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
+
+  const { data, error } = await supabase
+    .from("invitations")
+    .select("*")
+    .eq("organization_id", profile.organizationId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching invitations:", error);
+    throw new Error("Failed to fetch invitations");
+  }
+
+  return (data || []).map(dbToInvitation);
+}
+
+/**
+ * Create a new invitation (owner only, enforced by RLS)
+ */
+export async function createInvitation(email: string): Promise<Invitation> {
+  const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
+
+  if (profile.role !== "owner") {
+    throw new Error("Only owners can send invitations");
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const dbData = {
+    organization_id: profile.organizationId,
+    email: email.toLowerCase().trim(),
+    invited_by: user.id,
+  };
+
+  const { data, error } = await supabase
+    .from("invitations")
+    .insert(dbData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating invitation:", error);
+    throw new Error(
+      error.code === "23505"
+        ? "Invitation already exists for this email"
+        : "Failed to create invitation"
+    );
+  }
+
+  return dbToInvitation(data);
+}
+
+/**
+ * Get invitation by token (public access)
+ */
+export async function getInvitationByToken(
+  token: string
+): Promise<Invitation | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("invitations")
+    .select("*")
+    .eq("token", token)
+    .eq("status", "pending")
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return null;
+    }
+    console.error("Error fetching invitation:", error);
+    throw new Error("Failed to fetch invitation");
+  }
+
+  // Check if expired
+  const invitation = dbToInvitation(data);
+  if (invitation.expiresAt < new Date()) {
+    return null;
+  }
+
+  return invitation;
+}
+
+/**
+ * Accept invitation (marks as accepted, trigger creates profile)
+ */
+export async function acceptInvitation(token: string): Promise<void> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("invitations")
+    .update({ status: "accepted" as InvitationStatus })
+    .eq("token", token)
+    .eq("status", "pending");
+
+  if (error) {
+    console.error("Error accepting invitation:", error);
+    throw new Error("Failed to accept invitation");
+  }
 }

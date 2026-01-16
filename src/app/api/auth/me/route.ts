@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getCurrentUserProfile,
+  getOrganizationById,
+} from "@/lib/supabase/queries";
 
 export async function GET() {
   try {
@@ -13,11 +17,21 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's profile (includes organization_id and role)
+    const profile = await getCurrentUserProfile();
+
+    // Get organization details if profile exists
+    let organization = null;
+    if (profile) {
+      organization = await getOrganizationById(profile.organizationId);
+    }
+
     return NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
-        created_at: user.created_at,
+        profile: profile || undefined,
+        organization: organization || undefined,
       },
     });
   } catch (error) {

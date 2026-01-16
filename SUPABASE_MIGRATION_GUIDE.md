@@ -214,7 +214,72 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 ---
 
-## Step 4: Seed Database (Optional)
+## Step 4: Organization Setup
+
+### Important: Multi-Tenant Architecture
+
+The application now uses an **organization-based multi-tenant architecture**. Each user belongs to an organization, and all data (members, invitations) is scoped to that organization.
+
+### Create Your Organization
+
+**Option A: Manual Creation (Recommended)**
+
+1. **Go to "SQL Editor"** in Supabase Dashboard.
+2. **Click "New Query"**.
+3. **Run the following SQL** (replace `YOUR_EMAIL` with your actual email):
+
+```sql
+-- Create organization and profile for your user
+DO $$
+DECLARE
+  v_user_id uuid;
+  v_org_id uuid;
+BEGIN
+  -- Get your user ID
+  SELECT id INTO v_user_id FROM auth.users WHERE email = 'YOUR_EMAIL';
+  
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'User not found. Please sign up first.';
+  END IF;
+
+  -- Create organization
+  INSERT INTO public.organizations (name, owner_id)
+  VALUES ('My Wellness Center', v_user_id)
+  RETURNING id INTO v_org_id;
+
+  -- Create profile (owner role)
+  INSERT INTO public.profiles (user_id, organization_id, role)
+  VALUES (v_user_id, v_org_id, 'owner');
+
+  RAISE NOTICE 'Organization created successfully!';
+END $$;
+```
+
+4. **Update `organization_id` for existing members** (if any):
+
+```sql
+-- Update existing members to belong to your organization
+UPDATE public.members 
+SET organization_id = (SELECT id FROM public.organizations WHERE owner_id = (SELECT id FROM auth.users WHERE email = 'YOUR_EMAIL'))
+WHERE organization_id IS NULL;
+
+-- Make organization_id required
+ALTER TABLE public.members ALTER COLUMN organization_id SET NOT NULL;
+```
+
+**Option B: Use Seed Script (Creates organization + fake members)**
+
+1. **Go to "SQL Editor"**.
+2. **Copy and paste the contents of `supabase/seed-with-org.sql`**.
+3. **Click "Run"**.
+
+This will create:
+- ✅ An organization named "Wellness Center"
+- ✅ A profile for your user (owner role)
+- ✅ 10 fake members
+- ✅ A sample invitation
+
+## Step 5: Seed Database (Optional - Old Script)
 
 If you want to populate your database with 10 fake members for testing:
 
