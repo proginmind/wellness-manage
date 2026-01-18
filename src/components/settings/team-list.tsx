@@ -2,14 +2,17 @@
 
 import useSWR from "swr";
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Mail, Calendar } from "lucide-react";
+import { Search, User, Mail, Calendar, Plus } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
 import { format } from "date-fns";
+import { PermissionGate } from "../PermissionGate";
 
 interface StaffMember {
   id: string;
@@ -32,15 +35,25 @@ export function TeamList() {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-        <Input
-          placeholder="Search by email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
+      {/* Search & Invite Button */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Input
+            placeholder="Search by email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <PermissionGate resource="invitations" action="create">
+          <Button asChild>
+            <Link href="/settings/invitations/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Invite Staff
+            </Link>
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Loading State */}

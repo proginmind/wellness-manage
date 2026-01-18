@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserCircle, Building2, Users } from "lucide-react";
+import { UserCircle, Building2, Users, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsOwner } from "@/hooks/usePermissions";
 
@@ -28,6 +28,12 @@ const navigationItems: NavItem[] = [
     href: "/settings/team",
     label: "Team",
     icon: Users,
+    ownerOnly: true,
+  },
+  {
+    href: "/settings/invitations",
+    label: "Invitations",
+    icon: Mail,
     ownerOnly: true,
   },
 ];
