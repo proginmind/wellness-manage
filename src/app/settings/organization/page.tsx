@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
 import { useOrganizationPermissions } from "@/hooks/usePermissions";
 import { format } from "date-fns";
-import { Building2, Users, Calendar } from "lucide-react";
 import { useState } from "react";
 
 export default function OrganizationSettingsPage() {
@@ -89,84 +88,65 @@ export default function OrganizationSettingsPage() {
       {/* Organization Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Organization Details</CardTitle>
-          <CardDescription>Basic information about your organization</CardDescription>
+          <CardTitle>Organization Information</CardTitle>
+          <CardDescription>Your organization details</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Organization Name */}
-          <div className="space-y-2">
-            <Label htmlFor="org-name">Organization Name</Label>
-            {isEditing ? (
+        <CardContent>
+          {isEditing ? (
+            <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="org-name">Organization Name</Label>
                 <Input
                   id="org-name"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
                   placeholder="Enter organization name"
                 />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSave}>
-                    Save
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </div>
               </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-zinc-500" />
-                  <span className="text-lg font-medium">{organization.name}</span>
-                </div>
-                {canUpdate && (
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleSave}>
+                  Save
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Organization Name:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {organization.name}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Your Role:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 capitalize">
+                  {profile?.role || "N/A"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Organization ID:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 font-mono">
+                  {organization.id.slice(0, 8)}...
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Created:</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {format(new Date(organization.createdAt), "PPP")}
+                </span>
+              </div>
+              {canUpdate && (
+                <div className="pt-2">
                   <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-                    Edit
+                    Edit Organization
                   </Button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Created Date */}
-          <div className="flex items-center justify-between py-3 border-t">
-            <div className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              <Calendar className="h-4 w-4 text-zinc-500" />
-              <span>Created</span>
+                </div>
+              )}
             </div>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {format(new Date(organization.createdAt), "PPP")}
-            </span>
-          </div>
-
-          {/* Organization ID */}
-          <div className="flex items-center justify-between py-3 border-t">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Organization ID
-            </span>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400 font-mono">
-              {organization.id.slice(0, 8)}...
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Organization Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Statistics</CardTitle>
-          <CardDescription>Overview of your organization</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-zinc-500" />
-            <div>
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Role
-              </p>
-              <p className="text-2xl font-bold capitalize">{profile?.role || "N/A"}</p>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
