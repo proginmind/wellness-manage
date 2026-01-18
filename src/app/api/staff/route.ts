@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOwner } from "@/lib/api-permissions";
 
 export async function GET(request: Request) {
@@ -15,13 +16,52 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")?.toLowerCase().trim() || "";
 
     const supabase = await createClient();
+    const supabaseAdmin = createAdminClient();
 
-    // Fetch all profiles in the organization
-    const { data: profiles, error } = await supabase
+    // Step 1: Get all auth users to access emails (requires admin client)
+    const { data: authUsersData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (authError || !authUsersData) {
+      console.error("Error fetching auth users:", authError);
+      return NextResponse.json(
+        { error: "Failed to fetch users" },
+        { status: 500 }
+      );
+    }
+    
+    const authUsers = authUsersData.users;
+
+    // Step 2: If search provided, filter users by email and get matching user_ids
+    let userIdsToFetch: string[] | undefined;
+    
+    if (search) {
+      const matchingUsers = authUsers.filter((user) =>
+        user.email?.toLowerCase().includes(search)
+      );
+      userIdsToFetch = matchingUsers.map((u) => u.id);
+      
+      // If no matching emails, return empty result early
+      if (userIdsToFetch.length === 0) {
+        return NextResponse.json({
+          staff: [],
+          total: 0,
+        });
+      }
+    }
+
+    // Step 3: Query profiles from Supabase with optional user_id filter
+    let profileQuery = supabase
       .from("profiles")
       .select("id, user_id, role, created_at")
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false });
+
+    // Apply user_id filter if search was provided
+    if (userIdsToFetch) {
+      profileQuery = profileQuery.in("user_id", userIdsToFetch);
+    }
+
+    const { data: profiles, error } = await profileQuery;
 
     if (error) {
       console.error("Error fetching staff:", error);
@@ -31,32 +71,18 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch user emails separately from auth.users
-    const userIds = (profiles || []).map((p) => p.user_id);
-    
-    const { data: authUsers } = await supabase.auth.admin.listUsers();
-    
-    // Create a map of user_id to email
+    // Step 4: Create email map and transform results
     const emailMap = new Map(
-      authUsers?.users.map((u) => [u.id, u.email]) || []
+      authUsers.map((u) => [u.id, u.email || ""])
     );
 
-    // Transform data and apply search filter
-    let staff = (profiles || []).map((profile: any) => ({
+    const staff = (profiles || []).map((profile: any) => ({
       id: profile.id,
       userId: profile.user_id,
       email: emailMap.get(profile.user_id) || "",
       role: profile.role,
       createdAt: profile.created_at,
     }));
-
-    // Apply search filter
-    if (search) {
-      staff = staff.filter((member) => {
-        const email = member.email.toLowerCase();
-        return email.includes(search);
-      });
-    }
 
     return NextResponse.json({
       staff,

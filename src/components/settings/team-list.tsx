@@ -94,26 +94,29 @@ export function TeamList() {
                   <div className="flex items-center gap-4">
                     {/* Avatar */}
                     <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-zinc-200 dark:bg-zinc-700">
-                        <User className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+                      <AvatarFallback className="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-semibold">
+                        {initials}
                       </AvatarFallback>
                     </Avatar>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      {/* Email */}
-                      <div className="flex items-center gap-2 mb-1">
-                        <Mail className="h-4 w-4 text-zinc-500 shrink-0" />
-                        <span className="font-medium text-zinc-900 dark:text-white truncate">
-                          {member.email}
-                        </span>
+                      {/* Name */}
+                      <div className="font-medium text-zinc-900 dark:text-white truncate mb-1">
+                        {displayName}
                       </div>
 
-                      {/* Role & Date */}
-                      <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      {/* Email & Role */}
+                      <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{member.email}</span>
+                      </div>
+
+                      {/* Role Badge & Date */}
+                      <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
                         <Badge
                           variant={member.role === "owner" ? "default" : "secondary"}
-                          className="capitalize"
+                          className="capitalize text-xs"
                         >
                           {member.role}
                         </Badge>
