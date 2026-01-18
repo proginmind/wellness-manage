@@ -10,7 +10,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  UserCircle,
+  Settings,
   LogOut,
 } from "lucide-react";
 
@@ -90,20 +90,20 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
 
       {/* Bottom menu */}
       <div className="p-2">
-        {/* Profile */}
+        {/* Settings */}
         <Link
-          href="/profile"
+          href="/settings/profile"
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-            pathname === "/profile"
+            pathname?.startsWith("/settings")
               ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
               : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
             collapsed && "justify-center"
           )}
-          title={collapsed ? "Profile" : undefined}
+          title={collapsed ? "Settings" : undefined}
         >
-          <UserCircle className="h-5 w-5" />
-          {!collapsed && <span>Profile</span>}
+          <Settings className="h-5 w-5" />
+          {!collapsed && <span>Settings</span>}
         </Link>
 
         {/* Sign out */}
