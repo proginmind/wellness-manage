@@ -1,74 +1,124 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { requireOwner } from "@/lib/api-permissions";
-import { getInvitations, createInvitation } from "@/lib/supabase/queries";
 import { z } from "zod";
 
-// GET /api/invitations - List all invitations for the organization
-export async function GET(request: Request) {
+const inviteSchema = z.object({
+  email: z.string().email(),
+});
+
+export async function POST(request: Request) {
   try {
-    // Check permission: owner only
     const permissionResult = await requireOwner();
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    // Fetch invitations (sorted by created_at desc in query)
-    const invitations = await getInvitations();
+    const { organizationId } = permissionResult;
 
-    return NextResponse.json({
-      invitations,
-      total: invitations.length,
-    });
+    const body = await request.json();
+    const validation = inviteSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid email address" },
+        { status: 400 }
+      );
+    }
+
+    const { email } = validation.data;
+    const supabase = await createClient();
+
+    // Check if user is already a member of this organization
+    const { data: existingProfiles } = await supabase
+      .from("profiles")
+      .select("id, users:auth.users!inner(email)")
+      .eq("organization_id", organizationId);
+
+    if (existingProfiles) {
+      const existingEmails = existingProfiles
+        .map((p: any) => p.users?.email)
+        .filter(Boolean);
+
+      if (existingEmails.includes(email.toLowerCase())) {
+        return NextResponse.json(
+          { error: "User is already a member of this organization" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Check for existing pending invitation
+    const { data: existingInvitation } = await supabase
+      .from("invitations")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .eq("organization_id", organizationId)
+      .eq("status", "pending")
+      .single();
+
+    if (existingInvitation) {
+      return NextResponse.json(
+        { error: "An invitation has already been sent to this email" },
+        { status: 409 }
+      );
+    }
+
+    // Create invitation
+    const { data: invitation, error } = await supabase
+      .from("invitations")
+      .insert({
+        email: email.toLowerCase(),
+        organization_id: organizationId,
+        status: "pending",
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating invitation:", error);
+      return NextResponse.json(
+        { error: "Failed to create invitation" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ invitation });
   } catch (error) {
-    console.error("Error fetching invitations:", error);
+    console.error("Error in POST /api/invitations:", error);
     return NextResponse.json(
-      { error: "Failed to fetch invitations" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/invitations - Create new invitation
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
-    // Check permission: owner only
     const permissionResult = await requireOwner();
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    // Parse and validate request body
-    const body = await request.json();
-    
-    const invitationSchema = z.object({
-      email: z.string().email("Invalid email address"),
-    });
+    const { organizationId } = permissionResult;
+    const supabase = await createClient();
 
-    const validationResult = invitationSchema.safeParse(body);
-    
-    if (!validationResult.success) {
+    const { data: invitations, error } = await supabase
+      .from("invitations")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching invitations:", error);
       return NextResponse.json(
-        { 
-          error: "Validation failed", 
-          details: validationResult.error.flatten().fieldErrors 
-        },
-        { status: 400 }
+        { error: "Failed to fetch invitations" },
+        { status: 500 }
       );
     }
 
-    const { email } = validationResult.data;
-
-    // Create invitation
-    const invitation = await createInvitation(email);
-
-    return NextResponse.json(
-      {
-        invitation,
-        message: "Invitation sent successfully",
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ invitations });
   } catch (error) {
-    console.error("Error creating invitation:", error);
-    const message = error instanceof Error ? error.message : "Failed to create invitation";
+    console.error("Error in GET /api/invitations:", error);
     return NextResponse.json(
-      { error: message },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

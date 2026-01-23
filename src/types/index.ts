@@ -1,57 +1,51 @@
-// Global type definitions
+export interface Member {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  imageUrl?: string;
+  dateOfBirth: Date;
+  dateJoined: Date;
+  status: "active" | "archived";
+  archivedAt?: Date;
+  organizationId: string;
+}
 
-// ============================================================================
-// ENUMS
-// ============================================================================
+export type MemberFormData = Omit<Member, "id" | "dateJoined" | "organizationId">;
 
-export type UserRole = "owner" | "staff";
-export type InvitationStatus = "pending" | "accepted" | "expired";
-
-// ============================================================================
-// CORE ENTITIES
-// ============================================================================
+export interface Profile {
+  id: string;
+  userId: string;
+  organizationId: string;
+  role: "owner" | "staff";
+  createdAt: Date;
+}
 
 export interface Organization {
   id: string;
   name: string;
   ownerId: string;
   createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Profile {
-  id: string;
-  userId: string;
-  organizationId: string;
-  role: UserRole;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface User {
   id: string;
   email: string;
+  created_at: string;
   profile?: Profile;
-  organization?: Organization;
+  organization?: {
+    id: string;
+    name: string;
+    ownerEmail: string;
+  };
 }
 
 export interface Invitation {
   id: string;
-  organizationId: string;
   email: string;
-  invitedBy: string;
-  status: InvitationStatus;
+  organizationId: string;
+  status: "pending" | "accepted" | "expired";
   token: string;
   expiresAt: Date;
   createdAt: Date;
-}
-
-// ============================================================================
-// API RESPONSES
-// ============================================================================
-
-export interface ApiResponse<T> {
-  data: T;
-  error?: string;
-  success: boolean;
 }
