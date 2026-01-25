@@ -22,7 +22,7 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
  * Use this ONLY for admin operations that require elevated privileges
  */
 export function createAdminClient() {
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+  return createClient(supabaseUrl!, supabaseServiceRoleKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
