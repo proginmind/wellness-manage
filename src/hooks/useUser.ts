@@ -1,10 +1,13 @@
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { Organization, Profile } from "@/types";
 
 interface User {
   id: string;
   email: string;
   created_at: string;
+  organization?: Organization;
+  profile?: Profile;
 }
 
 interface UserResponse {

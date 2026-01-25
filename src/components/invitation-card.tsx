@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Calendar, UserPlus } from "lucide-react";
+import { Mail, Calendar } from "lucide-react";
 import { Invitation, InvitationStatus } from "@/types";
 
 interface InvitationCardProps {

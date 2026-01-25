@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Settings,
   LogOut,
+  Calendar,
 } from "lucide-react";
 
 const menuItems = [
@@ -24,6 +25,11 @@ const menuItems = [
     title: "Members",
     href: "/members",
     icon: Users,
+  },
+  {
+    title: "Visits",
+    href: "/visits",
+    icon: Calendar,
   },
 ];
 

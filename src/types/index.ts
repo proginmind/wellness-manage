@@ -13,12 +13,15 @@ export interface Member {
 
 export type MemberFormData = Omit<Member, "id" | "dateJoined" | "organizationId">;
 
+export type UserRole = "owner" | "staff";
+
 export interface Profile {
   id: string;
   userId: string;
   organizationId: string;
-  role: "owner" | "staff";
+  role: UserRole;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Organization {
@@ -26,6 +29,7 @@ export interface Organization {
   name: string;
   ownerId: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface User {
@@ -40,11 +44,14 @@ export interface User {
   };
 }
 
+export type InvitationStatus = "pending" | "accepted" | "expired";
+
 export interface Invitation {
   id: string;
   email: string;
+  invitedBy: string;
   organizationId: string;
-  status: "pending" | "accepted" | "expired";
+  status: InvitationStatus;
   token: string;
   expiresAt: Date;
   createdAt: Date;
