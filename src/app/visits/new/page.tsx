@@ -4,21 +4,22 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/app-layout";
-import { MemberForm } from "@/components/member-form";
-import { type MemberFormValues } from "@/lib/validations/member";
+import { VisitForm } from "@/components/visit-form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { mutate } from "swr";
+import { VisitFormValues } from "@/lib/validations/visit";
 
-export default function NewMemberPage() {
+export default function NewVisitPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function onSubmit(data: MemberFormValues) {
+
+  async function onSubmit(data: VisitFormValues) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/members", {
+      const response = await fetch("/api/visits", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,24 +29,24 @@ export default function NewMemberPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create member");
+        throw new Error(error.error || "Failed to create visit");
       }
 
       const result = await response.json();
 
       // Invalidate members cache to refetch with new member
-      mutate("/api/members");
-      mutate((key) => typeof key === "string" && key.startsWith("/api/members"));
+      mutate("/api/visits");
+      mutate((key) => typeof key === "string" && key.startsWith("/api/visits"));
 
-      toast.success("Member created successfully", {
+      toast.success("Visit created successfully", {
         description: `${result.member.firstName} ${result.member.lastName} has been added to the system.`,
       });
 
       // Redirect to members page
-      router.push("/members");
+      router.push("/visits");
     } catch (error) {
-      console.error("Error creating member:", error);
-      toast.error("Failed to create member", {
+      console.error("Error creating visit:", error);
+      toast.error("Failed to create visit", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
     } finally {
@@ -59,26 +60,26 @@ export default function NewMemberPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/members"
+            href="/visits"
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Members
+            Back to Visits
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Add New Member
+            Add New Visit
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Fill in the information to add a new member to the wellness center
+            Fill in the information to add a new visit to the wellness center
           </p>
         </div>
 
         {/* Form */}
-        <MemberForm
+        <VisitForm
           mode="create"
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
-          onCancel={() => router.push("/members")}
+          onCancel={() => router.push("/visits")}
         />
       </div>
     </AppLayout>

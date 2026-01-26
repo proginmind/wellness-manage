@@ -9,6 +9,8 @@ interface InvitationCardProps {
 }
 
 export function InvitationCard({ invitation }: InvitationCardProps) {
+  console.log(invitation)
+
   const getStatusVariant = (status: InvitationStatus) => {
     switch (status) {
       case "accepted":

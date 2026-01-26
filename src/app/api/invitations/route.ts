@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireOwner } from "@/lib/api-permissions";
 import { z } from "zod";
+import { getInvitations } from "@/lib/supabase/queries";
 
 const inviteSchema = z.object({
   email: z.string().email(),
@@ -97,22 +98,7 @@ export async function GET(request: Request) {
     const permissionResult = await requireOwner();
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    const { organizationId } = permissionResult;
-    const supabase = await createClient();
-
-    const { data: invitations, error } = await supabase
-      .from("invitations")
-      .select("*")
-      .eq("organization_id", organizationId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching invitations:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch invitations" },
-        { status: 500 }
-      );
-    }
+    const invitations = await getInvitations();
 
     return NextResponse.json({ invitations });
   } catch (error) {
