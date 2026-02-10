@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+
+import { getVisits } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
-import { getMembers, getVisits } from "@/lib/supabase/queries";
 
 export async function GET(request: Request) {
   try {
@@ -31,10 +32,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching visits:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch visits" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch visits" }, { status: 500 });
   }
 }
 
@@ -55,7 +53,7 @@ export async function POST(request: Request) {
 
     // Import queries dynamically to avoid circular dependency issues
     const { createVisit } = await import("@/lib/supabase/queries");
-    
+
     // Create visit in database
     const newVisit = await createVisit(body, user.id);
 
@@ -69,9 +67,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating visit:", error);
     const message = error instanceof Error ? error.message : "Failed to create visit";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
