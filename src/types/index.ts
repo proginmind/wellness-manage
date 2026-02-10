@@ -1,3 +1,5 @@
+import { UserRole } from "@/lib/permissions";
+
 export interface Member {
   id: string;
   firstName: string;
@@ -12,8 +14,6 @@ export interface Member {
 }
 
 export type MemberFormData = Omit<Member, "id" | "dateJoined" | "organizationId">;
-
-export type UserRole = "owner" | "staff";
 
 export interface Profile {
   id: string;

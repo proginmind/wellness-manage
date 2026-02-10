@@ -1,19 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import useSWR from "swr";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { PermissionGate } from "@/components/PermissionGate";
 import { InvitationCard } from "@/components/invitation-card";
-import { Plus, Loader2 } from "lucide-react";
+import { Loader } from "@/components/loader";
+import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
 import { Invitation } from "@/types";
-import { PermissionGate } from "@/components/PermissionGate"
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import useSWR from "swr";
 
 export default function InvitationsPage() {
-  const router = useRouter();
-
   const {
     data,
     error,
@@ -69,9 +66,7 @@ export default function InvitationsPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
-        </div>
+        <Loader />
       )}
 
       {/* Empty State */}

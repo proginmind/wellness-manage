@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { TeamList } from "@/components/settings/team-list";
 import { useIsOwner } from "@/hooks/usePermissions";
 import { useUser } from "@/hooks/useUser";
+import { Loader } from "@/components/loader";
 
 export default function TeamSettingsPage() {
   const { isLoading } = useUser();
@@ -19,7 +20,10 @@ export default function TeamSettingsPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Team</h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-1">Loading...</p>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
+            View and manage your organization&apos;s staff members
+          </p>
+          <Loader />
         </div>
       </div>
     );
@@ -30,7 +34,7 @@ export default function TeamSettingsPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Team</h2>
         <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-          View and manage your organization's staff members
+          View and manage your organization&apos;s staff members
         </p>
       </div>
 

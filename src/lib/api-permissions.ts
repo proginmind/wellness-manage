@@ -7,8 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserProfile } from "@/lib/supabase/queries";
-import { can, assertPermission, type Resource, type Action } from "@/lib/permissions";
-import { UserRole } from "@/types";
+import { can, type Resource, type Action, type UserRole } from "@/lib/permissions";
 
 // ============================================================================
 // TYPES

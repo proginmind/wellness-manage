@@ -37,11 +37,11 @@ export function VisitForm({
     resolver: zodResolver(visitFormSchema),
     defaultValues: defaultValues || {
       memberId: "",
-      visitDate: new Date().toISOString().split("T")[0],
-      visitTime: new Date().toISOString().split("T")[1],
-      visitDuration: 0,
-      visitType: "",
-      visitNotes: "",
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toISOString().split("T")[1],
+      duration: 0,
+      type: "",
+      notes: "",
     },
   });
 
@@ -87,7 +87,7 @@ export function VisitForm({
             {/* Visit Date */}
             <FormField
               control={form.control}
-              name="visitDate"
+              name="date"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visit Date *</FormLabel>
@@ -102,7 +102,7 @@ export function VisitForm({
             {/* Visit Time */}
             <FormField
               control={form.control}
-              name="visitTime"
+              name="time"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visit Time *</FormLabel>
@@ -117,7 +117,7 @@ export function VisitForm({
             {/* Visit Duration */}
             <FormField
               control={form.control}
-              name="visitDuration"
+              name="duration"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visit Duration *</FormLabel>
@@ -143,7 +143,7 @@ export function VisitForm({
             {/* Visit Type */}
             <FormField
               control={form.control}
-              name="visitType"
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visit Type *</FormLabel>
@@ -169,7 +169,7 @@ export function VisitForm({
             {/* Visit Notes */}
             <FormField
               control={form.control}
-              name="visitNotes"
+              name="notes"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visit Notes (Optional)</FormLabel>

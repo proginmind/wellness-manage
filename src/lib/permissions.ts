@@ -5,11 +5,14 @@
  * for the wellness management application.
  */
 
-import { UserRole } from "@/types";
-
 // ============================================================================
 // TYPES
 // ============================================================================
+
+/**
+ * Roles 
+ */
+export type UserRole = "owner" | "staff";
 
 /**
  * Resources in the system

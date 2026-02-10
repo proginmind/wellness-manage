@@ -5,23 +5,23 @@ export const visitFormSchema = z.object({
     .string()
     .min(1, "Member ID is required"),
   
-  visitDate: z
+  date: z
     .string()
     .min(1, "Visit date is required"),
   
-  visitTime: z
+  time: z
     .string()
     .min(1, "Visit time is required"),
   
-  visitDuration: z
+  duration: z
     .number()
     .min(1, "Visit duration is required"),
   
-  visitType: z
+  type: z
     .string()
     .min(1, "Visit type is required"),
 
-  visitNotes: z
+  notes: z
     .string()
     .optional(),
 });

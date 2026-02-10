@@ -4,10 +4,10 @@ import { MemberFormValues } from "@/lib/validations/member";
 import {
   Organization,
   Profile,
-  UserRole,
   Invitation,
   InvitationStatus,
 } from "@/types";
+import { UserRole } from "@/lib/permissions";
 import { Visit, VisitStatus } from "@/types/visit";
 import { VisitFormValues } from "../validations/visit";
 
@@ -587,12 +587,12 @@ interface VisitRow {
   id: string;
   organization_id: string;
   member_id: string;
-  visit_date: string;
-  visit_time: string;
-  visit_duration: number;
-  visit_type: string;
-  visit_status: VisitStatus;
-  visit_notes: string | null;
+  date: string;
+  time: string;
+  duration: number;
+  type: string;
+  status: VisitStatus;
+  notes: string | null;
   staff_id: string;
   created_at: string;
   updated_at: string;
@@ -603,12 +603,12 @@ export function dbToVisit(row: VisitRow): Visit {
     id: row.id,
     organizationId: row.organization_id,
     memberId: row.member_id,
-    visitDate: new Date(row.visit_date),
-    visitTime: new Date(row.visit_time),
-    visitDuration: row.visit_duration,
-    visitType: row.visit_type,
-    visitStatus: row.visit_status,
-    visitNotes: row.visit_notes || undefined,
+    date: new Date(row.date),
+    time: new Date(row.time),
+    duration: row.duration,
+    type: row.type,
+    status: row.status,
+    notes: row.notes || undefined,
     staffId: row.staff_id,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
@@ -630,7 +630,7 @@ export async function getVisits(search?: string): Promise<{ visit: Visit, member
     .from("visits")
     .select("*, member:members(id, first_name, last_name, email, image, date_of_birth, date_joined)")
     .eq("organization_id", profile.organizationId)
-    .order("visit_date", { ascending: false });
+    .order("date", { ascending: false });
 
   const { data, error } = await query;
 
@@ -664,12 +664,12 @@ export async function createVisit(
   const dbData = {
     organization_id: profile.organizationId,
     member_id: formData.memberId,
-    visit_date: formData.visitDate,
-    visit_time: formData.visitTime,
-    visit_duration: formData.visitDuration,
-    visit_type: formData.visitType,
-    visit_status: 'pending' as VisitStatus,
-    visit_notes: formData.visitNotes,
+    date: formData.date,
+    time: formData.time,
+    duration: formData.duration,
+    type: formData.type,
+    status: 'pending' as VisitStatus,
+    notes: formData.notes,
     staff_id: userId,
   };
 

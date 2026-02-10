@@ -8,17 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Mail, Calendar, Plus } from "lucide-react";
+import { Search, Mail, Calendar, Plus } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
 import { format } from "date-fns";
 import { PermissionGate } from "../PermissionGate";
+import { UserRole } from "@/lib/permissions";
 
 interface StaffMember {
   id: string;
   userId: string;
   email: string;
-  role: "owner" | "staff";
+  role: UserRole;
   createdAt: string;
 }
 

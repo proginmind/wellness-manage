@@ -17,9 +17,9 @@ import {
   isStaff,
   type Resource, 
   type Action, 
-  type Permission 
+  type Permission,
+  type UserRole
 } from "@/lib/permissions";
-import { UserRole } from "@/types";
 
 // ============================================================================
 // MAIN HOOK

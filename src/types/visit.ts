@@ -4,12 +4,12 @@ export interface Visit {
   id: string;
   organizationId: string;
   memberId: string;
-  visitDate: Date;
-  visitTime: Date;
-  visitDuration: number;
-  visitType: string;
-  visitStatus: VisitStatus;
-  visitNotes?: string;
+  date: Date;
+  time: Date;
+  duration: number;
+  type: string;
+  status: VisitStatus;
+  notes?: string;
   staffId: string;
   createdAt: Date;
   updatedAt: Date;
