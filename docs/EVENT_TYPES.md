@@ -4,6 +4,24 @@
 
 EventTypes are service templates that define the configuration for bookable services (similar to Calendly's event types). Each EventType represents a specific service offering with its own duration, price, and booking rules.
 
+## Permissions
+
+EventType management is primarily an **owner-controlled** feature:
+
+**Owner:**
+
+- ✅ View event types
+- ✅ Create new event types
+- ✅ Update event types
+- ✅ Delete event types
+
+**Staff:**
+
+- ✅ View event types (read-only)
+- ❌ Create, update, or delete event types
+
+Staff need read access to view available services when creating bookings/visits for members.
+
 ## Files Created
 
 ### 1. Database Migration

@@ -1,6 +1,6 @@
 /**
  * Granular Resource-Action Permission System
- * 
+ *
  * This module defines the complete RBAC (Role-Based Access Control) system
  * for the wellness management application.
  */
@@ -10,28 +10,29 @@
 // ============================================================================
 
 /**
- * Roles 
+ * Roles
  */
 export type UserRole = "owner" | "staff";
 
 /**
  * Resources in the system
  */
-export type Resource = 
-  | "members" 
-  | "organization" 
-  | "staff" 
+export type Resource =
+  | "members"
+  | "organization"
+  | "staff"
   | "invitations"
+  | "event_types"
   | "profile";
 
 /**
  * Actions that can be performed on resources
  */
-export type Action = 
-  | "view" 
-  | "create" 
-  | "update" 
-  | "delete" 
+export type Action =
+  | "view"
+  | "create"
+  | "update"
+  | "delete"
   | "archive"
   | "export"
   | "invite"
@@ -50,40 +51,46 @@ export type Permission = `${Resource}.${Action}`;
 
 /**
  * Complete permission matrix for all roles
- * 
+ *
  * This is the single source of truth for what each role can do.
  */
 export const PERMISSIONS = {
   owner: {
     // Members: Full access
     members: ["view", "create", "update", "delete", "archive", "export"] as Action[],
-    
+
     // Organization: Full management
     organization: ["view", "update", "delete"] as Action[],
-    
+
     // Staff: Full management
     staff: ["view", "invite", "remove"] as Action[],
-    
+
     // Invitations: Full management
     invitations: ["view", "create", "update", "delete", "manage"] as Action[],
-    
+
+    // Event Types: Full management (owner only)
+    event_types: ["view", "create", "update", "delete"] as Action[],
+
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
   },
-  
+
   staff: {
     // Members: Day-to-day operations (no permanent delete)
     members: ["view", "create", "update", "archive", "export"] as Action[],
-    
+
     // Organization: Read-only
     organization: ["view"] as Action[],
-    
+
     // Staff: View only (can see colleagues)
     staff: ["view"] as Action[],
-    
+
     // Invitations: No access
     invitations: [] as Action[],
-    
+
+    // Event Types: Read-only (needed for creating bookings/visits)
+    event_types: ["view"] as Action[],
+
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
   },
@@ -95,55 +102,48 @@ export const PERMISSIONS = {
 
 /**
  * Check if a role has permission to perform an action on a resource
- * 
+ *
  * @param role - User's role (owner, staff)
  * @param resource - Resource being accessed
  * @param action - Action being performed
  * @returns true if permitted, false otherwise
- * 
+ *
  * @example
  * can('staff', 'members', 'delete') // false
  * can('owner', 'members', 'delete') // true
  */
-export function can(
-  role: UserRole,
-  resource: Resource,
-  action: Action
-): boolean {
+export function can(role: UserRole, resource: Resource, action: Action): boolean {
   const rolePermissions = PERMISSIONS[role];
   if (!rolePermissions) return false;
-  
+
   const resourceActions = rolePermissions[resource];
   if (!resourceActions) return false;
-  
+
   return resourceActions.includes(action);
 }
 
 /**
  * Check if a role has permission using permission string format
- * 
+ *
  * @param role - User's role
  * @param permission - Permission string (e.g., "members.delete")
  * @returns true if permitted, false otherwise
- * 
+ *
  * @example
  * hasPermission('owner', 'staff.invite') // true
  * hasPermission('staff', 'staff.invite') // false
  */
-export function hasPermission(
-  role: UserRole,
-  permission: Permission
-): boolean {
+export function hasPermission(role: UserRole, permission: Permission): boolean {
   const [resource, action] = permission.split(".") as [Resource, Action];
   return can(role, resource, action);
 }
 
 /**
  * Get all permissions for a role
- * 
+ *
  * @param role - User's role
  * @returns Array of permission strings
- * 
+ *
  * @example
  * getPermissions('staff')
  * // ['members.view', 'members.create', 'members.update', ...]
@@ -151,64 +151,56 @@ export function hasPermission(
 export function getPermissions(role: UserRole): Permission[] {
   const rolePermissions = PERMISSIONS[role];
   if (!rolePermissions) return [];
-  
+
   const permissions: Permission[] = [];
-  
+
   for (const [resource, actions] of Object.entries(rolePermissions)) {
     for (const action of actions) {
       permissions.push(`${resource}.${action}` as Permission);
     }
   }
-  
+
   return permissions;
 }
 
 /**
  * Check if a role can perform ANY of the given actions on a resource
- * 
+ *
  * @param role - User's role
  * @param resource - Resource being accessed
  * @param actions - Array of actions
  * @returns true if ANY action is permitted
- * 
+ *
  * @example
  * canAny('staff', 'members', ['delete', 'archive']) // true (has archive)
  */
-export function canAny(
-  role: UserRole,
-  resource: Resource,
-  actions: Action[]
-): boolean {
+export function canAny(role: UserRole, resource: Resource, actions: Action[]): boolean {
   return actions.some((action) => can(role, resource, action));
 }
 
 /**
  * Check if a role can perform ALL of the given actions on a resource
- * 
+ *
  * @param role - User's role
  * @param resource - Resource being accessed
  * @param actions - Array of actions
  * @returns true if ALL actions are permitted
- * 
+ *
  * @example
  * canAll('owner', 'members', ['view', 'create']) // true
  * canAll('staff', 'members', ['view', 'delete']) // false
  */
-export function canAll(
-  role: UserRole,
-  resource: Resource,
-  actions: Action[]
-): boolean {
+export function canAll(role: UserRole, resource: Resource, actions: Action[]): boolean {
   return actions.every((action) => can(role, resource, action));
 }
 
 /**
  * Get actions a role can perform on a resource
- * 
+ *
  * @param role - User's role
  * @param resource - Resource being accessed
  * @returns Array of permitted actions
- * 
+ *
  * @example
  * getActions('staff', 'members')
  * // ['view', 'create', 'update', 'archive', 'export']
@@ -216,13 +208,13 @@ export function canAll(
 export function getActions(role: UserRole, resource: Resource): Action[] {
   const rolePermissions = PERMISSIONS[role];
   if (!rolePermissions) return [];
-  
+
   return rolePermissions[resource] || [];
 }
 
 /**
  * Check if user is an owner (convenience function)
- * 
+ *
  * @param role - User's role
  * @returns true if owner
  */
@@ -232,7 +224,7 @@ export function isOwner(role: UserRole): boolean {
 
 /**
  * Check if user is staff (convenience function)
- * 
+ *
  * @param role - User's role
  * @returns true if staff
  */
@@ -260,21 +252,17 @@ export class PermissionError extends Error {
 
 /**
  * Throw error if permission is denied
- * 
+ *
  * @param role - User's role
  * @param resource - Resource being accessed
  * @param action - Action being performed
  * @throws PermissionError if not permitted
- * 
+ *
  * @example
  * assertPermission('staff', 'members', 'delete')
  * // throws: PermissionError: Permission denied: staff cannot delete members
  */
-export function assertPermission(
-  role: UserRole,
-  resource: Resource,
-  action: Action
-): void {
+export function assertPermission(role: UserRole, resource: Resource, action: Action): void {
   if (!can(role, resource, action)) {
     throw new PermissionError(role, resource, action);
   }
@@ -295,28 +283,34 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "members.delete": "Permanently delete members",
   "members.archive": "Archive members",
   "members.export": "Export member data",
-  
+
   // Organization
   "organization.view": "View organization details",
   "organization.update": "Update organization settings",
   "organization.delete": "Delete organization",
-  
+
   // Staff
   "staff.view": "View staff members",
   "staff.invite": "Invite new staff",
   "staff.remove": "Remove staff members",
-  
+
   // Invitations
   "invitations.view": "View pending invitations",
   "invitations.create": "Create new invitations",
   "invitations.update": "Update invitations",
   "invitations.delete": "Delete invitations",
   "invitations.manage": "Manage all invitations",
-  
+
+  // Event Types
+  "event_types.view": "View event types",
+  "event_types.create": "Create new event types",
+  "event_types.update": "Update event types",
+  "event_types.delete": "Delete event types",
+
   // Profile
   "profile.view": "View own profile",
   "profile.update": "Update own profile",
-  
+
   // Unused combinations (for type safety)
   "members.invite": "N/A",
   "members.remove": "N/A",
@@ -337,6 +331,11 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "invitations.export": "N/A",
   "invitations.invite": "N/A",
   "invitations.remove": "N/A",
+  "event_types.archive": "N/A",
+  "event_types.export": "N/A",
+  "event_types.invite": "N/A",
+  "event_types.remove": "N/A",
+  "event_types.manage": "N/A",
   "profile.create": "N/A",
   "profile.delete": "N/A",
   "profile.archive": "N/A",
