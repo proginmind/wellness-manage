@@ -1,11 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { Invitation, InvitationStatus } from "@/types/invitation";
 import { Member, MemberStatus } from "@/types/member";
-import { MemberFormValues } from "@/lib/validations/member";
 import { Organization } from "@/types/organization";
 import { Profile } from "@/types/profile";
-import { Invitation, InvitationStatus } from "@/types/invitation";
-import { UserRole } from "@/lib/permissions";
 import { Visit, VisitStatus } from "@/types/visit";
+import { UserRole } from "@/lib/permissions";
+import { createClient } from "@/lib/supabase/server";
+import { MemberFormValues } from "@/lib/validations/member";
+
 import { VisitFormValues } from "../validations/visit";
 
 // ============================================================================
@@ -110,9 +111,7 @@ export function dbToMember(row: MemberRow): Member {
 
 export function memberToDb(
   member: Partial<Member>
-): Partial<
-  Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">
-> {
+): Partial<Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">> {
   const db: Partial<
     Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">
   > = {};
@@ -164,16 +163,10 @@ export async function getCurrentUserProfile(): Promise<Profile | null> {
 /**
  * Get organization by ID
  */
-export async function getOrganizationById(
-  id: string
-): Promise<Organization | null> {
+export async function getOrganizationById(id: string): Promise<Organization | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("organizations")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("organizations").select("*").eq("id", id).single();
 
   if (error || !data) {
     console.error("Error fetching organization:", error);
@@ -264,10 +257,7 @@ export async function getMemberById(id: string): Promise<Member | null> {
 /**
  * Create a new member (organization-scoped)
  */
-export async function createMember(
-  formData: MemberFormValues,
-  userId: string
-): Promise<Member> {
+export async function createMember(formData: MemberFormValues, userId: string): Promise<Member> {
   const supabase = await createClient();
   const profile = await getCurrentUserProfile();
 
@@ -287,17 +277,11 @@ export async function createMember(
     status: "active" as MemberStatus,
   };
 
-  const { data, error } = await supabase
-    .from("members")
-    .insert(dbData)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("members").insert(dbData).select().single();
 
   if (error) {
     console.error("Error creating member:", error);
-    throw new Error(
-      error.code === "23505" ? "Email already exists" : "Failed to create member"
-    );
+    throw new Error(error.code === "23505" ? "Email already exists" : "Failed to create member");
   }
 
   return dbToMember(data);
@@ -306,10 +290,7 @@ export async function createMember(
 /**
  * Update a member
  */
-export async function updateMember(
-  id: string,
-  updates: Partial<Member>
-): Promise<Member> {
+export async function updateMember(id: string, updates: Partial<Member>): Promise<Member> {
   const supabase = await createClient();
 
   const dbUpdates = memberToDb(updates);
@@ -323,9 +304,7 @@ export async function updateMember(
 
   if (error) {
     console.error("Error updating member:", error);
-    throw new Error(
-      error.code === "23505" ? "Email already exists" : "Failed to update member"
-    );
+    throw new Error(error.code === "23505" ? "Email already exists" : "Failed to update member");
   }
 
   return dbToMember(data);
@@ -508,11 +487,7 @@ export async function createInvitation(email: string): Promise<Invitation> {
     invited_by: user.id,
   };
 
-  const { data, error } = await supabase
-    .from("invitations")
-    .insert(dbData)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("invitations").insert(dbData).select().single();
 
   if (error) {
     console.error("Error creating invitation:", error);
@@ -529,9 +504,7 @@ export async function createInvitation(email: string): Promise<Invitation> {
 /**
  * Get invitation by token (public access)
  */
-export async function getInvitationByToken(
-  token: string
-): Promise<Invitation | null> {
+export async function getInvitationByToken(token: string): Promise<Invitation | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -615,7 +588,7 @@ export function dbToVisit(row: VisitRow): Visit {
 /**
  * Get all visits with optional search filter (organization-scoped)
  */
-export async function getVisits(search?: string): Promise<{ visit: Visit, member: Member }[]> {
+export async function getVisits(search?: string): Promise<{ visit: Visit; member: Member }[]> {
   const supabase = await createClient();
   const profile = await getCurrentUserProfile();
 
@@ -625,7 +598,9 @@ export async function getVisits(search?: string): Promise<{ visit: Visit, member
 
   const query = supabase
     .from("visits")
-    .select("*, member:members(id, first_name, last_name, email, image, date_of_birth, date_joined)")
+    .select(
+      "*, member:members(id, first_name, last_name, email, image, date_of_birth, date_joined)"
+    )
     .eq("organization_id", profile.organizationId)
     .order("date", { ascending: false });
 
@@ -647,10 +622,7 @@ export async function getVisits(search?: string): Promise<{ visit: Visit, member
 /**
  * Create a new visit
  */
-export async function createVisit(
-  formData: VisitFormValues,
-  userId: string,
-): Promise<Visit> {
+export async function createVisit(formData: VisitFormValues, userId: string): Promise<Visit> {
   const supabase = await createClient();
   const profile = await getCurrentUserProfile();
 
@@ -665,22 +637,16 @@ export async function createVisit(
     time: formData.time,
     duration: formData.duration,
     type: formData.type,
-    status: 'pending' as VisitStatus,
+    status: "pending" as VisitStatus,
     notes: formData.notes,
     staff_id: userId,
   };
 
-  const { data, error } = await supabase
-    .from("visits")
-    .insert(dbData)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("visits").insert(dbData).select().single();
 
   if (error) {
     console.error("Error creating visit:", error);
-    throw new Error(
-      error.code === "23505" ? "Visit already exists" : "Failed to create visit"
-    );
+    throw new Error(error.code === "23505" ? "Visit already exists" : "Failed to create visit");
   }
 
   return dbToVisit(data);

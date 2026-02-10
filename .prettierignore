@@ -1,0 +1,52 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Cache
+.turbo
+.cache
+.parcel-cache
+
+# Environment files
+.env
+.env*.local
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.DS_Store
+*.log
+*.tsbuildinfo
+next-env.d.ts
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Database
+*.db
+*.sqlite
+
+# Supabase
+.supabase
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+
+# Public assets (optional - uncomment if you don't want to format)
+# public
