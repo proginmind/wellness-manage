@@ -5,7 +5,7 @@ import { InvitationCard } from "@/components/invitation-card";
 import { Loader } from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
-import { Invitation } from "@/types";
+import { Invitation } from "@/types/invitation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";

@@ -1,12 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { Member, MemberStatus } from "@/types/member";
 import { MemberFormValues } from "@/lib/validations/member";
-import {
-  Organization,
-  Profile,
-  Invitation,
-  InvitationStatus,
-} from "@/types";
+import { Organization } from "@/types/organization";
+import { Profile } from "@/types/profile";
+import { Invitation, InvitationStatus } from "@/types/invitation";
 import { UserRole } from "@/lib/permissions";
 import { Visit, VisitStatus } from "@/types/visit";
 import { VisitFormValues } from "../validations/visit";

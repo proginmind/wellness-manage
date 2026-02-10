@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Mail, Calendar, Link as LinkIcon, X, Loader2, Copy, Check } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
-import { Invitation } from "@/types";
+import { Invitation } from "@/types/invitation";
 
 async function cancelInvitation(url: string) {
   const response = await fetch(url, {
