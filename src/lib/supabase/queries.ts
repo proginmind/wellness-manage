@@ -1,3 +1,4 @@
+import { EventType } from "@/types/event-type";
 import { Invitation, InvitationStatus } from "@/types/invitation";
 import { Member, MemberStatus } from "@/types/member";
 import { Organization } from "@/types/organization";
@@ -650,4 +651,121 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
   }
 
   return dbToVisit(data);
+}
+
+// ============================================================================
+// EVENT TYPES QUERIES (Organization-scoped)
+// ============================================================================
+
+interface EventTypeRow {
+  id: string;
+  organization_id: string;
+  name: string;
+  description: string | null;
+  color: string;
+  category: string | null;
+  duration: number;
+  buffer_before: number;
+  buffer_after: number;
+  price: number;
+  currency: string;
+  is_active: boolean;
+  is_bookable: boolean;
+  requires_approval: boolean;
+  max_advance_booking_days: number | null;
+  min_advance_booking_hours: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function dbToEventType(row: EventTypeRow): EventType {
+  return {
+    id: row.id,
+    organizationId: row.organization_id,
+    name: row.name,
+    description: row.description || undefined,
+    color: row.color,
+    category: row.category || undefined,
+    duration: row.duration,
+    bufferBefore: row.buffer_before,
+    bufferAfter: row.buffer_after,
+    price: Number(row.price),
+    currency: row.currency,
+    isActive: row.is_active,
+    isBookable: row.is_bookable,
+    requiresApproval: row.requires_approval,
+    maxAdvanceBookingDays: row.max_advance_booking_days || undefined,
+    minAdvanceBookingHours: row.min_advance_booking_hours,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+/**
+ * Get all event types (organization-scoped)
+ * Optionally filter by active/bookable status
+ */
+export async function getEventTypes(filters?: {
+  isActive?: boolean;
+  isBookable?: boolean;
+}): Promise<EventType[]> {
+  const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
+
+  let query = supabase
+    .from("event_types")
+    .select("*")
+    .eq("organization_id", profile.organizationId)
+    .order("name", { ascending: true });
+
+  // Apply filters if provided
+  if (filters?.isActive !== undefined) {
+    query = query.eq("is_active", filters.isActive);
+  }
+
+  if (filters?.isBookable !== undefined) {
+    query = query.eq("is_bookable", filters.isBookable);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching event types:", error);
+    throw new Error("Failed to fetch event types");
+  }
+
+  return (data || []).map(dbToEventType);
+}
+
+/**
+ * Get a single event type by ID (organization-scoped)
+ */
+export async function getEventType(id: string): Promise<EventType | null> {
+  const supabase = await createClient();
+  const profile = await getCurrentUserProfile();
+
+  if (!profile) {
+    throw new Error("User profile not found");
+  }
+
+  const { data, error } = await supabase
+    .from("event_types")
+    .select("*")
+    .eq("id", id)
+    .eq("organization_id", profile.organizationId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return null; // Not found
+    }
+    console.error("Error fetching event type:", error);
+    throw new Error("Failed to fetch event type");
+  }
+
+  return dbToEventType(data);
 }
