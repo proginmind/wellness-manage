@@ -139,23 +139,23 @@ export function memberToDb(
 /**
  * Get current user's profile (includes organization_id and role)
  */
-export async function getCurrentUserProfile(): Promise<Profile | null> {
+/**
+ * Get current user's profile
+ * @param userId - User ID to fetch profile for (required to avoid redundant auth calls)
+ * @throws Error if profile not found
+ */
+export async function getCurrentUserProfile(userId: string): Promise<Profile> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return null;
 
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .single();
 
   if (error || !data) {
     console.error("Error fetching user profile:", error);
-    return null;
+    throw new Error("User profile not found");
   }
 
   return dbToProfile(data);
@@ -181,8 +181,19 @@ export async function getOrganizationById(id: string): Promise<Organization | nu
  * Check if current user is an owner
  */
 export async function isCurrentUserOwner(): Promise<boolean> {
-  const profile = await getCurrentUserProfile();
-  return profile?.role === "owner";
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  try {
+    const profile = await getCurrentUserProfile(user.id);
+    return profile.role === "owner";
+  } catch {
+    return false;
+  }
 }
 
 // ============================================================================
@@ -194,11 +205,15 @@ export async function isCurrentUserOwner(): Promise<boolean> {
  */
 export async function getMembers(search?: string): Promise<Member[]> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   let query = supabase
     .from("members")
@@ -230,11 +245,15 @@ export async function getMembers(search?: string): Promise<Member[]> {
  */
 export async function getMemberById(id: string): Promise<Member | null> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   const { data, error } = await supabase
     .from("members")
@@ -260,11 +279,15 @@ export async function getMemberById(id: string): Promise<Member | null> {
  */
 export async function createMember(formData: MemberFormValues, userId: string): Promise<Member> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   const dbData = {
     user_id: userId,
@@ -364,11 +387,15 @@ export async function unarchiveMember(id: string): Promise<Member> {
  */
 export async function getMemberStats() {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   // Get all members count
   const { count: total, error: totalError } = await supabase
@@ -439,11 +466,15 @@ export async function getMemberStats() {
  */
 export async function getInvitations(): Promise<Invitation[]> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   const { data, error } = await supabase
     .from("invitations")
@@ -464,22 +495,18 @@ export async function getInvitations(): Promise<Invitation[]> {
  */
 export async function createInvitation(email: string): Promise<Invitation> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
-
-  if (!profile) {
-    throw new Error("User profile not found");
-  }
-
-  if (profile.role !== "owner") {
-    throw new Error("Only owners can send invitations");
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  if (profile.role !== "owner") {
+    throw new Error("Only owners can send invitations");
   }
 
   const dbData = {
@@ -591,11 +618,15 @@ export function dbToVisit(row: VisitRow): Visit {
  */
 export async function getVisits(search?: string): Promise<{ visit: Visit; member: Member }[]> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   const query = supabase
     .from("visits")
@@ -625,11 +656,15 @@ export async function getVisits(search?: string): Promise<{ visit: Visit; member
  */
 export async function createVisit(formData: VisitFormValues, userId: string): Promise<Visit> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile) {
-    throw new Error("User profile not found");
+  if (!user) {
+    throw new Error("User not authenticated");
   }
+
+  const profile = await getCurrentUserProfile(user.id);
 
   const dbData = {
     organization_id: profile.organizationId,
@@ -703,23 +738,22 @@ export function dbToEventType(row: EventTypeRow): EventType {
 
 /**
  * Get all event types (organization-scoped)
- * Optionally filter by active/bookable status
+ * @param organizationId - Organization ID (required for organization scoping)
+ * @param filters - Optional filters for active/bookable status
  */
-export async function getEventTypes(filters?: {
-  isActive?: boolean;
-  isBookable?: boolean;
-}): Promise<EventType[]> {
-  const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
-
-  if (!profile) {
-    throw new Error("User profile not found");
+export async function getEventTypes(
+  organizationId: string,
+  filters?: {
+    isActive?: boolean;
+    isBookable?: boolean;
   }
+): Promise<EventType[]> {
+  const supabase = await createClient();
 
   let query = supabase
     .from("event_types")
     .select("*")
-    .eq("organization_id", profile.organizationId)
+    .eq("organization_id", organizationId)
     .order("name", { ascending: true });
 
   // Apply filters if provided
@@ -743,20 +777,17 @@ export async function getEventTypes(filters?: {
 
 /**
  * Get a single event type by ID (organization-scoped)
+ * @param id - Event type ID
+ * @param organizationId - Organization ID (required for organization scoping)
  */
-export async function getEventType(id: string): Promise<EventType | null> {
+export async function getEventType(id: string, organizationId: string): Promise<EventType | null> {
   const supabase = await createClient();
-  const profile = await getCurrentUserProfile();
-
-  if (!profile) {
-    throw new Error("User profile not found");
-  }
 
   const { data, error } = await supabase
     .from("event_types")
     .select("*")
     .eq("id", id)
-    .eq("organization_id", profile.organizationId)
+    .eq("organization_id", organizationId)
     .single();
 
   if (error) {

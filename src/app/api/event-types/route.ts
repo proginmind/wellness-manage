@@ -9,6 +9,8 @@ export async function GET(request: Request) {
     const result = await requirePermission("event_types", "view");
     if (result instanceof NextResponse) return result;
 
+    const { organizationId } = result;
+
     // Get filter params from URL
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("is_active");
@@ -25,8 +27,11 @@ export async function GET(request: Request) {
       filters.isBookable = isBookable === "true";
     }
 
-    // Fetch event types from database
-    const eventTypes = await getEventTypes(Object.keys(filters).length > 0 ? filters : undefined);
+    // Fetch event types (organizationId is required)
+    const eventTypes = await getEventTypes(
+      organizationId,
+      Object.keys(filters).length > 0 ? filters : undefined
+    );
 
     return NextResponse.json({
       eventTypes,
@@ -38,6 +43,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching event types:", error);
-    return NextResponse.json({ error: "Failed to fetch event types" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to fetch event types";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

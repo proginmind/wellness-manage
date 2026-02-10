@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
+
+import { getCurrentUserProfile, getOrganizationById } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getCurrentUserProfile,
-  getOrganizationById,
-} from "@/lib/supabase/queries";
 
 export async function GET() {
   try {
@@ -18,12 +16,19 @@ export async function GET() {
     }
 
     // Get user's profile (includes organization_id and role)
-    const profile = await getCurrentUserProfile();
-
-    // Get organization details if profile exists
+    let profile = null;
     let organization = null;
-    if (profile) {
-      organization = await getOrganizationById(profile.organizationId);
+
+    try {
+      profile = await getCurrentUserProfile(user.id);
+
+      // Get organization details if profile exists
+      if (profile) {
+        organization = await getOrganizationById(profile.organizationId);
+      }
+    } catch (error) {
+      // Profile not found - this is okay for new users
+      console.log("Profile not found for user:", user.id);
     }
 
     return NextResponse.json({
@@ -37,9 +42,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error fetching user:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }

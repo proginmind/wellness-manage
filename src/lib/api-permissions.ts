@@ -1,13 +1,14 @@
 /**
  * API Permission Middleware
- * 
+ *
  * Server-side permission checking for API routes
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+
+import { can, type Action, type Resource, type UserRole } from "@/lib/permissions";
 import { getCurrentUserProfile } from "@/lib/supabase/queries";
-import { can, type Resource, type Action, type UserRole } from "@/lib/permissions";
+import { createClient } from "@/lib/supabase/server";
 
 // ============================================================================
 // TYPES
@@ -32,19 +33,19 @@ export interface PermissionCheckResult {
 
 /**
  * Check if current user has permission for an action
- * 
+ *
  * Returns either the permission context (if allowed) or an error response
  * Use this at the start of API routes to enforce permissions
- * 
+ *
  * @param resource - Resource being accessed
  * @param action - Action being performed
  * @returns Permission context or NextResponse error
- * 
+ *
  * @example
  * export async function DELETE(request: Request) {
  *   const result = await requirePermission('members', 'delete');
  *   if (result instanceof NextResponse) return result;
- *   
+ *
  *   const { role, organizationId } = result;
  *   // ... proceed with delete
  * }
@@ -61,21 +62,11 @@ export async function requirePermission(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user's profile (includes role and organization)
-    const profile = await getCurrentUserProfile();
-
-    if (!profile) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 403 }
-      );
-    }
+    // Get user's profile (pass userId to avoid redundant auth call)
+    const profile = await getCurrentUserProfile(user.id);
 
     // Check permission
     if (!can(profile.role, resource, action)) {
@@ -97,21 +88,19 @@ export async function requirePermission(
     };
   } catch (error) {
     console.error("Permission check error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 /**
  * Check permission without throwing (returns result object)
  * Use this when you need to check permissions programmatically
- * 
+ *
  * @param resource - Resource being accessed
  * @param action - Action being performed
  * @returns Result object with allowed flag and context
- * 
+ *
  * @example
  * const result = await checkPermission('staff', 'invite');
  * if (!result.allowed) {
@@ -135,14 +124,8 @@ export async function checkPermission(
       };
     }
 
-    const profile = await getCurrentUserProfile();
-
-    if (!profile) {
-      return {
-        allowed: false,
-        error: "Profile not found",
-      };
-    }
+    // Pass userId to avoid redundant auth call
+    const profile = await getCurrentUserProfile(user.id);
 
     const allowed = can(profile.role, resource, action);
 
@@ -164,9 +147,10 @@ export async function checkPermission(
     };
   } catch (error) {
     console.error("Permission check error:", error);
+    const message = error instanceof Error ? error.message : "Permission check failed";
     return {
       allowed: false,
-      error: "Permission check failed",
+      error: message,
     };
   }
 }
@@ -174,9 +158,9 @@ export async function checkPermission(
 /**
  * Get current user's permission context
  * Use this when you need user context but don't need to check a specific permission
- * 
+ *
  * @returns Permission context or null if not authenticated
- * 
+ *
  * @example
  * const context = await getPermissionContext();
  * if (!context) {
@@ -192,8 +176,8 @@ export async function getPermissionContext(): Promise<PermissionContext | null> 
 
     if (!user) return null;
 
-    const profile = await getCurrentUserProfile();
-    if (!profile) return null;
+    // Pass userId to avoid redundant auth call
+    const profile = await getCurrentUserProfile(user.id);
 
     return {
       userId: user.id,
@@ -213,7 +197,7 @@ export async function getPermissionContext(): Promise<PermissionContext | null> 
 
 /**
  * Require owner role
- * 
+ *
  * @example
  * export async function POST(request: Request) {
  *   const result = await requireOwner();
@@ -225,10 +209,7 @@ export async function requireOwner(): Promise<PermissionContext | NextResponse> 
   const context = await getPermissionContext();
 
   if (!context) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (context.role !== "owner") {
@@ -246,7 +227,7 @@ export async function requireOwner(): Promise<PermissionContext | NextResponse> 
 
 /**
  * Require authentication (any role)
- * 
+ *
  * @example
  * export async function GET(request: Request) {
  *   const result = await requireAuth();
@@ -258,10 +239,7 @@ export async function requireAuth(): Promise<PermissionContext | NextResponse> {
   const context = await getPermissionContext();
 
   if (!context) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   return context;
@@ -273,15 +251,12 @@ export async function requireAuth(): Promise<PermissionContext | NextResponse> {
 
 /**
  * Create a permission-denied response
- * 
+ *
  * @param resource - Resource being accessed
  * @param action - Action being performed
  * @returns NextResponse with 403 status
  */
-export function permissionDeniedResponse(
-  resource: Resource,
-  action: Action
-): NextResponse {
+export function permissionDeniedResponse(resource: Resource, action: Action): NextResponse {
   return NextResponse.json(
     {
       error: "Forbidden",
@@ -293,12 +268,9 @@ export function permissionDeniedResponse(
 
 /**
  * Create an unauthorized response
- * 
+ *
  * @returns NextResponse with 401 status
  */
 export function unauthorizedResponse(): NextResponse {
-  return NextResponse.json(
-    { error: "Unauthorized" },
-    { status: 401 }
-  );
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
