@@ -1,304 +1,248 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { differenceInYears, format } from "date-fns";
-import { Archive, ArrowLeft, Calendar, Clock, Edit, Mail, User } from "lucide-react";
-import { toast } from "sonner";
-import useSWR from "swr";
-import useSWRMutation from "swr/mutation";
-
-import { Member } from "@/types/member";
-import { fetcher } from "@/lib/fetcher";
-import { AppLayout } from "@/components/app-layout";
-import { MemberStatusBadge } from "@/components/member-status-badge";
+import { notFound } from "next/navigation";
+import { format } from "date-fns";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Archive,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Clock3,
+  Edit,
+  FileText,
+  User,
+  XCircle,
+} from "lucide-react";
+
+import { requireAuth } from "@/lib/auth";
+import { buildRoute } from "@/lib/routes";
+import { getCurrentUserProfile, getVisitById } from "@/lib/supabase/queries";
+import { AppLayout } from "@/components/app-layout";
+import { PageHeader } from "@/components/page-header";
+import { PermissionGate } from "@/components/PermissionGate";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-async function archiveMember(url: string) {
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status: "archived" }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to archive member");
-  }
-
-  return response.json();
+interface VisitDetailPageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default function MemberDetailPage() {
-  const params = useParams();
-  const memberId = params.id as string;
-  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "completed":
+      return (
+        <Badge variant="default" className="bg-green-500">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Completed
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge variant="secondary">
+          <Clock3 className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      );
+    case "cancelled":
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          Cancelled
+        </Badge>
+      );
+    default:
+      return <Badge>{status}</Badge>;
+  }
+}
 
-  const { data, error, isLoading } = useSWR<{ member: Member }>(
-    `/api/members/${memberId}`,
-    fetcher
-  );
+export default async function VisitDetailPage({ params }: VisitDetailPageProps) {
+  const { id } = await params;
 
-  const { trigger: triggerArchive, isMutating: isArchiving } = useSWRMutation(
-    `/api/members/${memberId}`,
-    archiveMember,
-    {
-      onSuccess: () => {
-        toast.success("Member archived successfully", {
-          description: `${data?.member.firstName} ${data?.member.lastName} has been archived.`,
-        });
-      },
-      onError: (error) => {
-        console.error("Error archiving member:", error);
-        toast.error("Failed to archive member", {
-          description: error instanceof Error ? error.message : "Please try again later",
-        });
-      },
-      // Automatically revalidate related endpoints
-      populateCache: false,
-      revalidate: true,
-    }
-  );
+  // Get authenticated user
+  const user = await requireAuth();
 
-  const handleArchive = async () => {
-    try {
-      await triggerArchive();
-    } catch {
-      // Error already handled by onError callback
-    } finally {
-      setIsArchiveDialogOpen(false);
-    }
-  };
+  // Get user's profile and organization
+  const profile = await getCurrentUserProfile(user.id);
 
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-8"></div>
-              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </AppLayout>
-    );
+  // Fetch visit with member details
+  const result = await getVisitById(id, profile.organizationId);
+
+  if (!result) {
+    notFound();
   }
 
-  if (error || !data) {
-    return (
-      <AppLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <Link
-              href="/members"
-              className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Members
-            </Link>
+  const { visit, member } = result;
+  const memberInitials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
+
+  return (
+    <AppLayout>
+      <PageHeader
+        title="Visit Details"
+        backLink={{ href: buildRoute.visits(), label: "Back to Visits" }}
+        action={
+          <div className="flex items-center gap-2">
+            <PermissionGate resource="members" action="update">
+              <Button asChild variant="outline">
+                <Link href={buildRoute.visitEdit(visit.id)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Link>
+              </Button>
+            </PermissionGate>
+
+            <PermissionGate resource="members" action="delete">
+              <Button asChild variant="outline" className="text-red-600 hover:text-red-700">
+                <Link href={`/visits/${visit.id}/archive`}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </Link>
+              </Button>
+            </PermissionGate>
+          </div>
+        }
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column - Main Details */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Visit Overview */}
             <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-gray-500 dark:text-gray-400">
-                  {error ? "Failed to load member" : "Member not found"}
-                </p>
+              <CardHeader>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <CardTitle>Visit Overview</CardTitle>
+                  {getStatusBadge(visit.status)}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Date & Time */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>Date</span>
+                    </div>
+                    <p className="font-medium">
+                      {format(new Date(visit.date), "EEEE, MMMM d, yyyy")}
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                      <Clock className="h-4 w-4" />
+                      <span>Time</span>
+                    </div>
+                    <p className="font-medium">{format(new Date(visit.time), "h:mm a")}</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Type & Duration */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Service Type</p>
+                    <p className="font-medium capitalize">{visit.type}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Duration</p>
+                    <p className="font-medium">{visit.duration} minutes</p>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {visit.notes && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-2">
+                        <FileText className="h-4 w-4" />
+                        <span>Notes</span>
+                      </div>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                        {visit.notes}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Member Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Member Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <Avatar className="h-16 w-16">
+                    {member.image && (
+                      <AvatarImage
+                        src={member.image}
+                        alt={`${member.firstName} ${member.lastName}`}
+                      />
+                    )}
+                    <AvatarFallback className="text-lg">{memberInitials}</AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1">
+                    <Link
+                      href={buildRoute.member(member.id)}
+                      className="text-lg font-semibold hover:underline"
+                    >
+                      {member.firstName} {member.lastName}
+                    </Link>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{member.email}</p>
+                  </div>
+
+                  <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                    <Link href={buildRoute.member(member.id)}>View Profile</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div className="space-y-6">
+            {/* Metadata */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400">Visit ID</p>
+                  <p className="font-mono text-xs">{visit.id}</p>
+                </div>
+                <Separator />
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400">Created</p>
+                  <p className="font-medium">
+                    {format(new Date(visit.createdAt), "MMM d, yyyy")}
+                    <span className="text-zinc-400 ml-1">
+                      at {format(new Date(visit.createdAt), "h:mm a")}
+                    </span>
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400">Last Updated</p>
+                  <p className="font-medium">
+                    {format(new Date(visit.updatedAt), "MMM d, yyyy")}
+                    <span className="text-zinc-400 ml-1">
+                      at {format(new Date(visit.updatedAt), "h:mm a")}
+                    </span>
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </AppLayout>
-    );
-  }
-
-  const { member } = data;
-  const age = differenceInYears(new Date(), new Date(member.dateOfBirth));
-  const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
-
-  return (
-    <AppLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <Link
-              href="/members"
-              className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Members
-            </Link>
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Member Details</h1>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link href={`/members/${memberId}/edit`}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Link>
-                </Button>
-                {member.status === "active" && (
-                  <Button variant="destructive" onClick={() => setIsArchiveDialogOpen(true)}>
-                    <Archive className="h-4 w-4 mr-2" />
-                    Archive
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Member Profile Card */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center gap-6">
-                <Avatar className="h-24 w-24">
-                  {member.image && (
-                    <AvatarImage
-                      src={member.image}
-                      alt={`${member.firstName} ${member.lastName}`}
-                    />
-                  )}
-                  <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <CardTitle className="text-2xl mb-2">
-                    {member.firstName} {member.lastName}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <MemberStatusBadge status={member.status} />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Member ID: {member.id}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Contact Information */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                    <a
-                      href={`mailto:${member.email}`}
-                      className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
-                    >
-                      {member.email}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Personal Information */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 shrink-0">
-                    <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {member.firstName} {member.lastName}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 shrink-0">
-                    <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Date of Birth</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {format(new Date(member.dateOfBirth), "MMMM d, yyyy")}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Age: {age} years
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Membership Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Membership Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 shrink-0">
-                  <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Date Joined</p>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {format(new Date(member.dateJoined), "MMMM d, yyyy")}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Member for {differenceInYears(new Date(), new Date(member.dateJoined))} years
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
-
-      {/* Archive Confirmation Dialog */}
-      <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Archive Member</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to archive {data?.member.firstName} {data?.member.lastName}?
-              This will remove them from the active members list. You can restore them later if
-              needed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isArchiving}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleArchive}
-              disabled={isArchiving}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isArchiving ? "Archiving..." : "Archive"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </AppLayout>
   );
 }

@@ -597,12 +597,19 @@ interface VisitRow {
 }
 
 export function dbToVisit(row: VisitRow): Visit {
+  // Combine date and time to create a proper Date object
+  // row.time is stored as TIME in database (e.g., "14:30:00")
+  // We need to combine it with the date to create a valid Date object
+  const dateStr = row.date; // e.g., "2024-01-15"
+  const timeStr = row.time; // e.g., "14:30:00"
+  const dateTimeStr = `${dateStr}T${timeStr}`; // e.g., "2024-01-15T14:30:00"
+
   return {
     id: row.id,
     organizationId: row.organization_id,
     memberId: row.member_id,
     date: new Date(row.date),
-    time: new Date(row.time),
+    time: new Date(dateTimeStr),
     duration: row.duration,
     type: row.type,
     status: row.status,
@@ -649,6 +656,40 @@ export async function getVisits(search?: string): Promise<{ visit: Visit; member
       member: dbToMember(visit.member),
     };
   });
+}
+
+/**
+ * Get a single visit by ID with member details (organization-scoped)
+ * @param id - Visit ID
+ * @param organizationId - Organization ID (required for organization scoping)
+ */
+export async function getVisitById(
+  id: string,
+  organizationId: string
+): Promise<{ visit: Visit; member: Member } | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select(
+      "*, member:members(id, first_name, last_name, email, image, date_of_birth, date_joined)"
+    )
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return null; // Not found
+    }
+    console.error("Error fetching visit:", error);
+    throw new Error("Failed to fetch visit");
+  }
+
+  return {
+    visit: dbToVisit(data),
+    member: dbToMember(data.member),
+  };
 }
 
 /**

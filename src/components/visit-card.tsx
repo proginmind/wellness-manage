@@ -1,62 +1,114 @@
 import Link from "next/link";
-import { differenceInYears, format } from "date-fns";
-import { Calendar, Clock, Mail, User } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar, CheckCircle, Clock, Clock3, User, XCircle } from "lucide-react";
 
 import { Member } from "@/types/member";
 import { Visit } from "@/types/visit";
+import { buildRoute } from "@/lib/routes";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface VisitCardProps {
   visit: Visit;
   member: Member;
 }
 
-export function VisitCard({ visit, member }: VisitCardProps) {
-  if (!member) {
-    return null;
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "completed":
+      return (
+        <Badge variant="default" className="bg-green-500">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Completed
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge variant="secondary">
+          <Clock3 className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      );
+    case "cancelled":
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          Cancelled
+        </Badge>
+      );
+    default:
+      return <Badge>{status}</Badge>;
   }
+}
+
+export function VisitCard({ visit, member }: VisitCardProps) {
+  const memberInitials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
 
   return (
-    <Link href={`/visits/${visit.id}`}>
+    <Link href={buildRoute.visit(visit.id)}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="shrink-0">
-              <Avatar>
-                <AvatarImage src={member?.image} alt={member?.firstName} />
-                <AvatarFallback>{member?.firstName?.charAt(0)}</AvatarFallback>
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            {/* Left: Member Avatar & Name */}
+            <div className="flex items-center gap-3 md:w-1/3">
+              <Avatar className="h-10 w-10">
+                {member.image && <AvatarImage src={member.image} alt={member.firstName} />}
+                <AvatarFallback>{memberInitials}</AvatarFallback>
               </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-50 truncate">
+                  {member.firstName} {member.lastName}
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">{member.email}</p>
+              </div>
             </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 truncate">
-                {member?.firstName} {member?.lastName}
-              </h3>
-              <div className="flex items-center gap-1 mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                <Mail className="h-4 w-4" />
-                <span className="truncate">{member?.email}</span>
+            {/* Middle: Visit Details */}
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+              <div className="flex items-start gap-2">
+                <Calendar className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Date</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {format(new Date(visit.date), "MMM d, yyyy")}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-4 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  <span>
-                    {differenceInYears(new Date(), new Date(member?.dateOfBirth || ""))} years old
-                  </span>
+
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Time</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {format(new Date(visit.time), "h:mm a")}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>Born {format(new Date(member?.dateOfBirth || ""), "MMM d, yyyy")}</span>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Service</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 capitalize truncate">
+                    {visit.type}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>Joined {format(new Date(member?.dateJoined || ""), "MMM d, yyyy")}</span>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Clock3 className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Duration</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {visit.duration} min
+                  </p>
                 </div>
               </div>
             </div>
+
+            {/* Right: Status */}
+            <div className="flex items-center md:justify-end">{getStatusBadge(visit.status)}</div>
           </div>
         </CardContent>
       </Card>
