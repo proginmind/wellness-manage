@@ -776,6 +776,46 @@ export async function getEventTypes(
 }
 
 /**
+ * Create a new event type
+ * @param eventTypeData - Event type data to create
+ * @param organizationId - Organization ID
+ */
+export async function createEventType(
+  eventTypeData: Omit<EventType, "id" | "organizationId" | "createdAt" | "updatedAt">,
+  organizationId: string
+): Promise<EventType> {
+  const supabase = await createClient();
+
+  // Convert camelCase to snake_case for database
+  const dbData = {
+    organization_id: organizationId,
+    name: eventTypeData.name,
+    description: eventTypeData.description || null,
+    color: eventTypeData.color,
+    category: eventTypeData.category || null,
+    duration: eventTypeData.duration,
+    buffer_before: eventTypeData.bufferBefore,
+    buffer_after: eventTypeData.bufferAfter,
+    price: eventTypeData.price,
+    currency: eventTypeData.currency,
+    is_active: eventTypeData.isActive,
+    is_bookable: eventTypeData.isBookable,
+    requires_approval: eventTypeData.requiresApproval,
+    max_advance_booking_days: eventTypeData.maxAdvanceBookingDays || null,
+    min_advance_booking_hours: eventTypeData.minAdvanceBookingHours,
+  };
+
+  const { data, error } = await supabase.from("event_types").insert(dbData).select().single();
+
+  if (error) {
+    console.error("Error creating event type:", error);
+    throw new Error("Failed to create event type");
+  }
+
+  return dbToEventType(data);
+}
+
+/**
  * Get a single event type by ID (organization-scoped)
  * @param id - Event type ID
  * @param organizationId - Organization ID (required for organization scoping)

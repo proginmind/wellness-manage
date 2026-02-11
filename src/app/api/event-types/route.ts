@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
-import { getEventTypes } from "@/lib/supabase/queries";
+import { createEventType, getEventTypes } from "@/lib/supabase/queries";
+import { eventTypeFormSchema } from "@/lib/validations/event-type";
 
 export async function GET(request: Request) {
   try {
@@ -44,6 +45,53 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching event types:", error);
     const message = error instanceof Error ? error.message : "Failed to fetch event types";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    // Check permission: event_types.create
+    const permissionResult = await requirePermission("event_types", "create");
+    if (permissionResult instanceof NextResponse) return permissionResult;
+
+    const { organizationId } = permissionResult;
+
+    // Parse request body
+    const body = await request.json();
+
+    // Validate with zod schema
+    const validationResult = eventTypeFormSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: validationResult.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const validated = validationResult.data;
+
+    // Convert null to undefined for maxAdvanceBookingDays
+    const eventTypeData = {
+      ...validated,
+      maxAdvanceBookingDays:
+        validated.maxAdvanceBookingDays === null ? undefined : validated.maxAdvanceBookingDays,
+    };
+
+    // Create event type in database
+    const newEventType = await createEventType(eventTypeData, organizationId);
+
+    return NextResponse.json(
+      {
+        eventType: newEventType,
+        message: "Event type created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating event type:", error);
+    const message = error instanceof Error ? error.message : "Failed to create event type";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
