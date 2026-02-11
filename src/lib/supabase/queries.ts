@@ -848,3 +848,50 @@ export async function unarchiveEventType(id: string): Promise<EventType> {
 
   return dbToEventType(data);
 }
+
+/**
+ * Update an event type
+ * @param id - Event type ID
+ * @param updates - Partial EventType updates
+ */
+export async function updateEventType(
+  id: string,
+  updates: Partial<Omit<EventType, "id" | "organizationId" | "createdAt" | "updatedAt">>
+): Promise<EventType> {
+  const supabase = await createClient();
+
+  // Convert camelCase to snake_case for database
+  const dbUpdates: Record<string, unknown> = {};
+
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.description !== undefined) dbUpdates.description = updates.description || null;
+  if (updates.color !== undefined) dbUpdates.color = updates.color;
+  if (updates.category !== undefined) dbUpdates.category = updates.category || null;
+  if (updates.duration !== undefined) dbUpdates.duration = updates.duration;
+  if (updates.bufferBefore !== undefined) dbUpdates.buffer_before = updates.bufferBefore;
+  if (updates.bufferAfter !== undefined) dbUpdates.buffer_after = updates.bufferAfter;
+  if (updates.price !== undefined) dbUpdates.price = updates.price;
+  if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+  if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+  if (updates.isBookable !== undefined) dbUpdates.is_bookable = updates.isBookable;
+  if (updates.requiresApproval !== undefined)
+    dbUpdates.requires_approval = updates.requiresApproval;
+  if (updates.maxAdvanceBookingDays !== undefined)
+    dbUpdates.max_advance_booking_days = updates.maxAdvanceBookingDays;
+  if (updates.minAdvanceBookingHours !== undefined)
+    dbUpdates.min_advance_booking_hours = updates.minAdvanceBookingHours;
+
+  const { data, error } = await supabase
+    .from("event_types")
+    .update(dbUpdates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating event type:", error);
+    throw new Error("Failed to update event type");
+  }
+
+  return dbToEventType(data);
+}

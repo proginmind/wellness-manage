@@ -1,18 +1,23 @@
 import { z } from "zod";
 
 export const eventTypeFormSchema = z.object({
+  // Basic Information
   name: z
     .string()
     .min(1, "Name is required")
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be less than 100 characters"),
 
-  description: z.string().max(500, "Description must be less than 500 characters").optional(),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional()
+    .or(z.literal("")),
 
   color: z
     .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, "Color must be a valid hex code (e.g., #3b82f6)")
-    .default("#3b82f6"),
+    .min(1, "Color is required")
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Color must be a valid hex color (e.g., #FF5733)"),
 
   category: z
     .string()
@@ -20,54 +25,62 @@ export const eventTypeFormSchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  // Scheduling
+  // Scheduling Configuration (in minutes)
   duration: z
     .number()
-    .min(1, "Duration must be at least 1 minute")
-    .max(1440, "Duration cannot exceed 24 hours"),
+    .int("Duration must be a whole number")
+    .min(5, "Duration must be at least 5 minutes")
+    .max(1440, "Duration cannot exceed 24 hours (1440 minutes)"),
 
-  bufferBefore: z.number().min(0, "Buffer before must be 0 or greater").default(0),
+  bufferBefore: z
+    .number()
+    .int("Buffer before must be a whole number")
+    .min(0, "Buffer before cannot be negative")
+    .max(480, "Buffer before cannot exceed 8 hours (480 minutes)"),
 
-  bufferAfter: z.number().min(0, "Buffer after must be 0 or greater").default(0),
+  bufferAfter: z
+    .number()
+    .int("Buffer after must be a whole number")
+    .min(0, "Buffer after cannot be negative")
+    .max(480, "Buffer after cannot exceed 8 hours (480 minutes)"),
 
   // Pricing
   price: z
     .number()
-    .min(0, "Price must be 0 or greater")
-    .max(999999.99, "Price cannot exceed 999,999.99"),
+    .min(0, "Price cannot be negative")
+    .max(999999.99, "Price is too high")
+    .refine((val) => {
+      // Check for max 2 decimal places
+      return /^\d+(\.\d{1,2})?$/.test(val.toString());
+    }, "Price can have at most 2 decimal places"),
 
   currency: z
     .string()
-    .length(3, "Currency must be a 3-letter code (e.g., USD)")
-    .toUpperCase()
-    .default("USD"),
+    .min(1, "Currency is required")
+    .length(3, "Currency must be a 3-letter code (e.g., USD, EUR)")
+    .regex(/^[A-Z]{3}$/, "Currency must be uppercase letters (e.g., USD)"),
 
-  // Availability
-  isActive: z.boolean().default(true),
+  // Availability Settings
+  isActive: z.boolean(),
 
-  isBookable: z.boolean().default(true),
+  isBookable: z.boolean(),
 
-  requiresApproval: z.boolean().default(false),
+  requiresApproval: z.boolean(),
 
   // Booking Limits
   maxAdvanceBookingDays: z
     .number()
+    .int("Max advance booking days must be a whole number")
     .min(1, "Must be at least 1 day")
-    .max(365, "Cannot exceed 365 days")
+    .max(730, "Cannot exceed 2 years (730 days)")
     .optional()
-    .or(z.literal(null))
-    .transform((val) => (val === null ? undefined : val)),
+    .nullable(),
 
   minAdvanceBookingHours: z
     .number()
-    .min(0, "Must be 0 or greater")
-    .max(168, "Cannot exceed 7 days (168 hours)")
-    .default(24),
+    .int("Min advance booking hours must be a whole number")
+    .min(0, "Cannot be negative")
+    .max(8760, "Cannot exceed 1 year (8760 hours)"),
 });
 
 export type EventTypeFormValues = z.infer<typeof eventTypeFormSchema>;
-
-// Schema for partial updates
-export const eventTypeUpdateSchema = eventTypeFormSchema.partial();
-
-export type EventTypeUpdateValues = z.infer<typeof eventTypeUpdateSchema>;

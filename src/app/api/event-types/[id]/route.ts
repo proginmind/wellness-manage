@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
-import { archiveEventType, getEventType, unarchiveEventType } from "@/lib/supabase/queries";
+import {
+  archiveEventType,
+  getEventType,
+  unarchiveEventType,
+  updateEventType,
+} from "@/lib/supabase/queries";
+import { eventTypeFormSchema } from "@/lib/validations/event-type";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -50,10 +56,35 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         eventType: updatedEventType,
         message: "Event type updated successfully",
       });
-    }
+    } else {
+      // Full event type update
+      // Validate with zod schema
+      const validationResult = eventTypeFormSchema.safeParse(body);
 
-    // TODO: Add full event type update logic when needed
-    return NextResponse.json({ error: "Full update not implemented yet" }, { status: 501 });
+      if (!validationResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: validationResult.error.issues },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Convert null to undefined for maxAdvanceBookingDays
+      const updates = {
+        ...validated,
+        maxAdvanceBookingDays:
+          validated.maxAdvanceBookingDays === null ? undefined : validated.maxAdvanceBookingDays,
+      };
+
+      // Update event type in database
+      const updatedEventType = await updateEventType(id, updates);
+
+      return NextResponse.json({
+        eventType: updatedEventType,
+        message: "Event type updated successfully",
+      });
+    }
   } catch (error) {
     console.error("Error updating event type:", error);
     const message = error instanceof Error ? error.message : "Failed to update event type";
