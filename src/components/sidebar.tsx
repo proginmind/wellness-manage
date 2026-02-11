@@ -147,7 +147,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col bg-white transition-all dark:bg-zinc-950",
+        "hidden md:flex h-screen flex-col bg-white transition-all dark:bg-zinc-950 border-r",
         collapsed ? "w-16" : "w-64"
       )}
     >
