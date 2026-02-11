@@ -800,3 +800,51 @@ export async function getEventType(id: string, organizationId: string): Promise<
 
   return dbToEventType(data);
 }
+
+/**
+ * Archive an event type (sets is_active to false)
+ * @param id - Event type ID
+ */
+export async function archiveEventType(id: string): Promise<EventType> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("event_types")
+    .update({
+      is_active: false,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error archiving event type:", error);
+    throw new Error("Failed to archive event type");
+  }
+
+  return dbToEventType(data);
+}
+
+/**
+ * Unarchive an event type (sets is_active to true)
+ * @param id - Event type ID
+ */
+export async function unarchiveEventType(id: string): Promise<EventType> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("event_types")
+    .update({
+      is_active: true,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error unarchiving event type:", error);
+    throw new Error("Failed to unarchive event type");
+  }
+
+  return dbToEventType(data);
+}

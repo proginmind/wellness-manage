@@ -84,11 +84,22 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
                 </Button>
               </PermissionGate>
 
-              <PermissionGate resource="event_types" action="delete">
-                <Button variant="outline" className="text-red-600 hover:text-red-700">
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive
-                </Button>
+              <PermissionGate resource="event_types" action="update">
+                {eventType.isActive ? (
+                  <Button asChild variant="outline" className="text-red-600 hover:text-red-700">
+                    <Link href={buildRoute.eventTypeArchive(eventType.id)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild variant="outline" className="text-green-600 hover:text-green-700">
+                    <Link href={buildRoute.eventTypeUnarchive(eventType.id)}>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Unarchive
+                    </Link>
+                  </Button>
+                )}
               </PermissionGate>
             </div>
           </div>

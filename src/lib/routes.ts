@@ -37,6 +37,8 @@ export const buildRoute = {
   eventTypesNew: () => "/event-types/new" as const,
   eventType: (id: string) => `/event-types/${id}` as const,
   eventTypeEdit: (id: string) => `/event-types/${id}/edit` as const,
+  eventTypeArchive: (id: string) => `/event-types/${id}/archive` as const,
+  eventTypeUnarchive: (id: string) => `/event-types/${id}/unarchive` as const,
 
   // Settings
   settingsProfile: () => "/settings/profile" as const,
