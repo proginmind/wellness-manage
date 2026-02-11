@@ -6,6 +6,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Layers,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -32,6 +33,11 @@ const menuItems = [
     title: "Visits",
     href: buildRoute.visits(),
     icon: Calendar,
+  },
+  {
+    title: "Event Types",
+    href: buildRoute.eventTypes(),
+    icon: Layers,
   },
 ];
 

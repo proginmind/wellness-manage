@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Define protected route patterns
-  const protectedRoutes = ["/dashboard", "/members", "/visits", "/settings"];
+  const protectedRoutes = ["/dashboard", "/members", "/visits", "/event-types", "/settings"];
 
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some((route) =>

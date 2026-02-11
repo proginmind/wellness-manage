@@ -32,6 +32,12 @@ export const buildRoute = {
   visit: (id: string) => `/visits/${id}` as const,
   visitEdit: (id: string) => `/visits/${id}/edit` as const,
 
+  // Event Types
+  eventTypes: () => "/event-types" as const,
+  eventTypesNew: () => "/event-types/new" as const,
+  eventType: (id: string) => `/event-types/${id}` as const,
+  eventTypeEdit: (id: string) => `/event-types/${id}/edit` as const,
+
   // Settings
   settingsProfile: () => "/settings/profile" as const,
   settingsOrganization: () => "/settings/organization" as const,
@@ -66,6 +72,7 @@ export const buildApiRoute = {
 
   // Event Types
   eventTypes: () => "/api/event-types" as const,
+  eventType: (id: string) => `/api/event-types/${id}` as const,
 
   // Invitations
   invitations: () => "/api/invitations" as const,
