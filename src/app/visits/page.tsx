@@ -1,21 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+import { buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { VisitsListContainer } from "@/components/visits-list-container";
 
 export default async function VisitsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Auth is handled by middleware - no need for manual checks!
 
   return (
     <AppLayout>
@@ -29,7 +20,7 @@ export default async function VisitsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/visits/new">
+            <Link href={buildRoute.visitsNew()}>
               <span className="mr-2">+</span>
               Add Visit
             </Link>

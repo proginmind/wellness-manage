@@ -1,21 +1,13 @@
-import { redirect } from "next/navigation";
-
-import { createClient } from "@/lib/supabase/server";
+import { getUser, requireAuth } from "@/lib/auth";
+import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Get user (middleware already ensured auth)
+  const user = await requireAuth();
 
   return (
     <AppLayout>

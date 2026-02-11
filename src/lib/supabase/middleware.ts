@@ -35,15 +35,26 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  // Define protected route patterns
+  const protectedRoutes = ["/dashboard", "/members", "/visits", "/settings"];
+
+  // Check if current path is a protected route
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  // Redirect to login if accessing protected route without auth
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users away from login
-  if (user && request.nextUrl.pathname === "/login") {
+  // Redirect logged-in users away from auth pages
+  const authPages = ["/login", "/forgot-password", "/reset-password"];
+  const isAuthPage = authPages.some((page) => request.nextUrl.pathname === page);
+
+  if (user && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

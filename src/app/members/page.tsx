@@ -1,22 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { buildRoute } from "@/lib/routes";
-import { createClient } from "@/lib/supabase/server";
 import { AppLayout } from "@/components/app-layout";
 import { MembersListContainer } from "@/components/members-list-container";
 import { Button } from "@/components/ui/button";
 
 export default async function MembersPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(buildRoute.login());
-  }
+  // Auth is handled by middleware - no need for manual checks!
 
   return (
     <AppLayout>
