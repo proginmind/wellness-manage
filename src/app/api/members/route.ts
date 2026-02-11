@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+
 import { getMembers } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
@@ -28,10 +29,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching members:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch members" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
   }
 }
 
@@ -52,7 +50,7 @@ export async function POST(request: Request) {
 
     // Import queries dynamically to avoid circular dependency issues
     const { createMember } = await import("@/lib/supabase/queries");
-    
+
     // Create member in database
     const newMember = await createMember(body, user.id);
 
@@ -66,9 +64,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating member:", error);
     const message = error instanceof Error ? error.message : "Failed to create member";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -19,6 +19,7 @@ npx shadcn@latest add [component-name]
 ```
 
 Examples:
+
 ```bash
 npx shadcn@latest add dialog
 npx shadcn@latest add dropdown-menu
@@ -31,9 +32,9 @@ npx shadcn@latest add tabs
 Import components from `@/components/ui/[component-name]`:
 
 ```typescript
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 ```
@@ -45,6 +46,7 @@ Full component documentation: https://ui.shadcn.com/docs/components
 ## Customization
 
 These components are fully customizable. You can:
+
 - Modify the component files directly in this directory
 - Adjust colors via CSS variables in `src/app/globals.css`
 - Change the default styles in `tailwind.config.ts`

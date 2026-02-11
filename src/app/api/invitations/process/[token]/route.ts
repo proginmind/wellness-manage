@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
+
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ token: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
     const { token } = await params;
     const supabase = await createClient();
@@ -26,20 +24,14 @@ export async function GET(
       .single();
 
     if (error || !invitation) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
     }
 
     // Check if expired
     const isExpired = new Date(invitation.expires_at) < new Date();
     if (isExpired && invitation.status === "pending") {
       // Auto-expire if needed
-      await supabase
-        .from("invitations")
-        .update({ status: "expired" })
-        .eq("token", token);
+      await supabase.from("invitations").update({ status: "expired" }).eq("token", token);
     }
 
     return NextResponse.json({
@@ -52,9 +44,6 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error in GET /api/invitations/[token]:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

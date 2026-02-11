@@ -1,19 +1,21 @@
 "use client";
 
-import useSWR from "swr";
 import { useState } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { Calendar, Mail, Plus, Search } from "lucide-react";
+import useSWR from "swr";
+
+import { fetcher } from "@/lib/fetcher";
+import { UserRole } from "@/lib/permissions";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mail, Calendar, Plus } from "lucide-react";
-import { fetcher } from "@/lib/fetcher";
-import { useDebounce } from "@/hooks/useDebounce";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
 import { PermissionGate } from "../PermissionGate";
-import { UserRole } from "@/lib/permissions";
 
 interface StaffMember {
   id: string;

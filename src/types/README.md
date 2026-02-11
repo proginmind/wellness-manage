@@ -10,7 +10,7 @@ This directory contains TypeScript type definitions and interfaces.
 ## Usage
 
 ```typescript
-import type { User, ApiResponse } from '@/types';
+import type { ApiResponse, User } from "@/types";
 ```
 
 ## Guidelines

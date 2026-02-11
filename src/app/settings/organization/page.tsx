@@ -1,13 +1,14 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from "react";
+import { format } from "date-fns";
+
+import { useOrganizationPermissions } from "@/hooks/usePermissions";
+import { useUser } from "@/hooks/useUser";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { useUser } from "@/hooks/useUser";
-import { useOrganizationPermissions } from "@/hooks/usePermissions";
-import { format } from "date-fns";
-import { useState } from "react";
 
 export default function OrganizationSettingsPage() {
   const { user, isLoading } = useUser();
@@ -28,15 +29,16 @@ export default function OrganizationSettingsPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Organization</h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-            Manage your organization settings
-          </p>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">Manage your organization settings</p>
         </div>
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-4 w-full bg-zinc-200 dark:bg-zinc-700 animate-pulse rounded" />
+                <div
+                  key={i}
+                  className="h-4 w-full bg-zinc-200 dark:bg-zinc-700 animate-pulse rounded"
+                />
               ))}
             </div>
           </CardContent>
@@ -50,15 +52,11 @@ export default function OrganizationSettingsPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Organization</h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-            Manage your organization settings
-          </p>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">Manage your organization settings</p>
         </div>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-zinc-500 dark:text-zinc-400">
-              Organization not found
-            </p>
+            <p className="text-center text-zinc-500 dark:text-zinc-400">Organization not found</p>
           </CardContent>
         </Card>
       </div>
@@ -80,9 +78,7 @@ export default function OrganizationSettingsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Organization</h2>
-        <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-          Manage your organization settings
-        </p>
+        <p className="text-zinc-600 dark:text-zinc-400 mt-1">Manage your organization settings</p>
       </div>
 
       {/* Organization Details */}

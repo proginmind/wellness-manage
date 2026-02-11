@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import useSWRMutation from "swr/mutation";
+import { useRef, useState } from "react";
+import { Loader2, Upload, User, X } from "lucide-react";
 import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+
+import { compressImage, validateImage } from "@/lib/utils/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { User, Upload, X, Loader2 } from "lucide-react";
-import { compressImage, validateImage } from "@/lib/utils/image";
 
 interface ImageUploadProps {
   value?: string;
@@ -52,9 +53,7 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     }
   );
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -74,8 +73,7 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
       await triggerUpload(compressed);
     } catch (error) {
       toast.error("Failed to process image", {
-        description:
-          error instanceof Error ? error.message : "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
       });
     }
 

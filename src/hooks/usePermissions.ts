@@ -1,25 +1,25 @@
 /**
  * React Hooks for Permission Checking
- * 
+ *
  * Client-side permission checking for UI components
  */
 
 "use client";
 
-import { useUser } from "@/hooks/useUser";
-import { 
-  can, 
-  hasPermission, 
-  canAny, 
+import {
+  can,
   canAll,
+  canAny,
   getActions,
+  hasPermission,
   isOwner,
   isStaff,
-  type Resource, 
-  type Action, 
+  type Action,
   type Permission,
-  type UserRole
+  type Resource,
+  type UserRole,
 } from "@/lib/permissions";
+import { useUser } from "@/hooks/useUser";
 
 // ============================================================================
 // MAIN HOOK
@@ -27,13 +27,13 @@ import {
 
 /**
  * Main hook for permission checking in React components
- * 
+ *
  * @returns Permission checking functions and user context
- * 
+ *
  * @example
  * function MyComponent() {
  *   const { can, isOwner, role } = usePermissions();
- *   
+ *
  *   return (
  *     <>
  *       {can('members', 'delete') && <DeleteButton />}
@@ -52,33 +52,33 @@ export function usePermissions() {
     role,
     isLoading,
     isAuthenticated: !!user,
-    
+
     // Permission checking functions
     can: (resource: Resource, action: Action) => {
       if (!role) return false;
       return can(role, resource, action);
     },
-    
+
     hasPermission: (permission: Permission) => {
       if (!role) return false;
       return hasPermission(role, permission);
     },
-    
+
     canAny: (resource: Resource, actions: Action[]) => {
       if (!role) return false;
       return canAny(role, resource, actions);
     },
-    
+
     canAll: (resource: Resource, actions: Action[]) => {
       if (!role) return false;
       return canAll(role, resource, actions);
     },
-    
+
     getActions: (resource: Resource) => {
       if (!role) return [];
       return getActions(role, resource);
     },
-    
+
     // Role helpers
     isOwner: role ? isOwner(role) : false,
     isStaff: role ? isStaff(role) : false,
@@ -92,11 +92,11 @@ export function usePermissions() {
 /**
  * Hook to check a specific permission
  * Returns boolean indicating if user has the permission
- * 
+ *
  * @param resource - Resource to check
  * @param action - Action to check
  * @returns true if user has permission
- * 
+ *
  * @example
  * function DeleteButton() {
  *   const canDelete = useHasPermission('members', 'delete');
@@ -111,9 +111,9 @@ export function useHasPermission(resource: Resource, action: Action): boolean {
 
 /**
  * Hook to check if user is owner
- * 
+ *
  * @returns true if user is owner
- * 
+ *
  * @example
  * function OwnerPanel() {
  *   const isOwner = useIsOwner();
@@ -128,7 +128,7 @@ export function useIsOwner(): boolean {
 
 /**
  * Hook to check if user is staff
- * 
+ *
  * @returns true if user is staff
  */
 export function useIsStaff(): boolean {
@@ -138,9 +138,9 @@ export function useIsStaff(): boolean {
 
 /**
  * Hook to get user's role
- * 
+ *
  * @returns User's role or undefined
- * 
+ *
  * @example
  * function RoleBadge() {
  *   const role = useRole();
@@ -159,13 +159,13 @@ export function useRole(): UserRole | undefined {
 /**
  * Hook to create a permission gate function
  * Useful for conditional rendering
- * 
+ *
  * @returns Gate function
- * 
+ *
  * @example
  * function MyComponent() {
  *   const gate = usePermissionGate();
- *   
+ *
  *   return (
  *     <>
  *       {gate('members', 'create', <AddButton />)}
@@ -176,7 +176,7 @@ export function useRole(): UserRole | undefined {
  */
 export function usePermissionGate() {
   const { can } = usePermissions();
-  
+
   return <T extends React.ReactNode>(
     resource: Resource,
     action: Action,
@@ -192,12 +192,12 @@ export function usePermissionGate() {
 
 /**
  * Hook for member permissions
- * 
+ *
  * @returns Member-specific permission checks
  */
 export function useMemberPermissions() {
   const { can } = usePermissions();
-  
+
   return {
     canView: can("members", "view"),
     canCreate: can("members", "create"),
@@ -210,12 +210,12 @@ export function useMemberPermissions() {
 
 /**
  * Hook for staff/invitation permissions
- * 
+ *
  * @returns Staff management permission checks
  */
 export function useStaffPermissions() {
   const { can } = usePermissions();
-  
+
   return {
     canViewStaff: can("staff", "view"),
     canInviteStaff: can("staff", "invite"),
@@ -227,12 +227,12 @@ export function useStaffPermissions() {
 
 /**
  * Hook for organization permissions
- * 
+ *
  * @returns Organization management permission checks
  */
 export function useOrganizationPermissions() {
   const { can } = usePermissions();
-  
+
   return {
     canView: can("organization", "view"),
     canUpdate: can("organization", "update"),

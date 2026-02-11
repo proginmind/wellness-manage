@@ -1,9 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { VisitsListContainer } from "@/components/visits-list-container";
-import Link from "next/link";
 
 export default async function VisitsPage() {
   const supabase = await createClient();
@@ -22,9 +23,7 @@ export default async function VisitsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Visits
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Visits</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Manage your wellness center visits
             </p>

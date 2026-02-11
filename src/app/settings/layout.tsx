@@ -3,11 +3,7 @@
 import { AppLayout } from "@/components/app-layout";
 import { SettingsNav } from "@/components/settings/settings-nav";
 
-export default function SettingsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
@@ -27,9 +23,7 @@ export default function SettingsLayout({
           </aside>
 
           {/* Content Area */}
-          <main className="flex-1 min-w-0">
-            {children}
-          </main>
+          <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
     </AppLayout>

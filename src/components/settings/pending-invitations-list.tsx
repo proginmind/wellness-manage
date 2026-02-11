@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { format } from "date-fns";
+import { Calendar, Check, Copy, Link as LinkIcon, Loader2, Mail, X } from "lucide-react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
+import { Invitation } from "@/types/invitation";
+import { fetcher } from "@/lib/fetcher";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,9 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Mail, Calendar, Link as LinkIcon, X, Loader2, Copy, Check } from "lucide-react";
-import { fetcher } from "@/lib/fetcher";
-import { Invitation } from "@/types/invitation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 async function cancelInvitation(url: string) {
   const response = await fetch(url, {
@@ -63,12 +64,12 @@ export function PendingInvitationsList() {
 
   const handleCopyLink = async (token: string, id: string) => {
     const inviteUrl = `${window.location.origin}/invite/${token}`;
-    
+
     try {
       await navigator.clipboard.writeText(inviteUrl);
       setCopiedId(id);
       toast.success("Invitation link copied to clipboard");
-      
+
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       toast.error("Failed to copy link");
@@ -106,9 +107,7 @@ export function PendingInvitationsList() {
 
   if (pendingInvitations.length === 0) {
     return (
-      <p className="text-center text-zinc-500 dark:text-zinc-400 py-8">
-        No pending invitations.
-      </p>
+      <p className="text-center text-zinc-500 dark:text-zinc-400 py-8">No pending invitations.</p>
     );
   }
 
@@ -141,9 +140,7 @@ export function PendingInvitationsList() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-3 w-3" />
-                        <span>
-                          Expires {format(new Date(invitation.expiresAt), "MMM d, yyyy")}
-                        </span>
+                        <span>Expires {format(new Date(invitation.expiresAt), "MMM d, yyyy")}</span>
                       </div>
                     </div>
 

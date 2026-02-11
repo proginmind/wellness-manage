@@ -47,7 +47,7 @@ Access at: `http://localhost:3000/about`
 ```
 
 ```typescript
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
   return NextResponse.json({ users: [] });
@@ -103,9 +103,11 @@ pnpm type-check  # Check TypeScript types
 ## 💡 Tips
 
 1. **Import Aliases:** Use `@/` instead of relative paths
+
    ```typescript
-   import { formatDate } from '@/lib/utils';  // ✅ Good
-   import { formatDate } from '../lib/utils'; // ❌ Avoid
+   import { formatDate } from "@/lib/utils"; // ✅ Good
+
+   import { formatDate } from "../lib/utils"; // ❌ Avoid
    ```
 
 2. **Server vs Client Components:**
@@ -113,6 +115,7 @@ pnpm type-check  # Check TypeScript types
    - Add `'use client'` at the top for client-side features (hooks, events)
 
 3. **Dark Mode:** Use `dark:` prefix for dark mode styles
+
    ```typescript
    <div className="bg-white dark:bg-gray-900">
    ```

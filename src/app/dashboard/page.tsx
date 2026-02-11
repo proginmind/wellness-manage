@@ -1,15 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
 import { AppLayout } from "@/components/app-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { DashboardStats } from "@/components/dashboard-stats";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -28,12 +23,8 @@ export default async function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Dashboard
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Welcome back, {user.email}
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {user.email}</p>
           </div>
         </div>
 
@@ -45,16 +36,12 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>
-                Your latest wellness activities
-              </CardDescription>
+              <CardDescription>Your latest wellness activities</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                 <p>No activities recorded yet.</p>
-                <p className="text-sm mt-2">
-                  Start tracking your wellness journey!
-                </p>
+                <p className="text-sm mt-2">Start tracking your wellness journey!</p>
               </div>
             </CardContent>
           </Card>
@@ -62,9 +49,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>
-                Get started with wellness tracking
-              </CardDescription>
+              <CardDescription>Get started with wellness tracking</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="w-full justify-start" variant="outline">

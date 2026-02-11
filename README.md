@@ -102,7 +102,7 @@ pnpm dev
 - ✅ Custom hooks (useLocalStorage)
 - ✅ Utility functions
 - ✅ API routes ready
-- ✅ Path aliases (@/* for src/*)
+- ✅ Path aliases (@/_ for src/_)
 - ✅ Node.js version pinned with .nvmrc
 
 ## Development Guidelines
@@ -112,8 +112,9 @@ pnpm dev
 Use the `@/` alias to import from the src directory:
 
 ```typescript
-import { formatDate } from '@/lib/utils';
-import { User } from '@/types';
+import { User } from "@/types";
+
+import { formatDate } from "@/lib/utils";
 ```
 
 ### File Organization
@@ -149,6 +150,7 @@ export default function MyComponent() {
 ```
 
 Available components:
+
 - Button
 - Card (with CardHeader, CardTitle, CardDescription, CardContent, CardFooter)
 - Badge
@@ -170,10 +172,12 @@ The project uses Supabase for authentication. See [SUPABASE_SETUP.md](./SUPABASE
 5. Access `/dashboard` after authentication
 
 **Protected Routes:**
+
 - `/dashboard` - Requires authentication
 - Middleware automatically redirects unauthenticated users to `/login`
 
 **Sign Out:**
+
 - Click "Sign Out" button on dashboard
 - Or POST to `/auth/signout`
 
@@ -208,6 +212,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 ### Post-Deployment
 
 After deploying, update your Supabase project settings:
+
 - Add Vercel URL to **Site URL**
 - Add `https://your-app.vercel.app/**` to **Redirect URLs**
 

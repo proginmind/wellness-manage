@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import useSWR from "swr";
-import { Input } from "@/components/ui/input";
-import { VisitsList } from "@/components/visits-list";
+
+import { Member } from "@/types/member";
 import { Visit } from "@/types/visit";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Search } from "lucide-react";
-import { Member } from "@/types/member";
+import { Input } from "@/components/ui/input";
+import { VisitsList } from "@/components/visits-list";
 
 interface VisitsResponse {
   visits: {
@@ -21,7 +22,7 @@ interface VisitsResponse {
 
 export function VisitsListContainer() {
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Debounce search query to avoid excessive API calls
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -63,9 +64,7 @@ export function VisitsListContainer() {
           </p>
         )}
         {searchQuery !== debouncedSearch && (
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
-            Searching...
-          </p>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">Searching...</p>
         )}
       </div>
 

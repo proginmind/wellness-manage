@@ -42,7 +42,7 @@ This guide walks you through setting up Supabase database for the Wellness Cente
    - Click on the `member-images` bucket
    - Click the settings gear icon
    - Set **File size limit**: 5 MB (5242880 bytes)
-   - Set **Allowed MIME types**: 
+   - Set **Allowed MIME types**:
      ```
      image/jpeg
      image/jpg
@@ -82,6 +82,7 @@ supabase db push
 ### Check Members Table
 
 Go to "Table Editor" in Supabase Dashboard:
+
 - ✅ You should see a new table called `members`
 - ✅ Click on it to see the columns:
   - id, user_id, first_name, last_name, email, image, date_of_birth
@@ -90,6 +91,7 @@ Go to "Table Editor" in Supabase Dashboard:
 ### Check RLS Policies
 
 Go to "Authentication" → "Policies":
+
 - ✅ You should see 4 policies for `members` table:
   - "Authenticated users can read members"
   - "Authenticated users can create members"
@@ -99,13 +101,15 @@ Go to "Authentication" → "Policies":
 ### Check Indexes
 
 Run this query in SQL Editor to verify indexes:
+
 ```sql
-SELECT indexname, indexdef 
-FROM pg_indexes 
+SELECT indexname, indexdef
+FROM pg_indexes
 WHERE tablename = 'members';
 ```
 
 ✅ You should see 5 indexes:
+
 - idx_members_status
 - idx_members_email
 - idx_members_date_joined
@@ -148,7 +152,7 @@ If you want to populate with test data from mock data:
 -- Insert test members (replace user_id with your actual user ID)
 INSERT INTO public.members (
   user_id, first_name, last_name, email, date_of_birth, date_joined, status
-) VALUES 
+) VALUES
   ('your-user-id', 'Emma', 'Johnson', 'emma.johnson@example.com', '1992-05-20', '2024-01-15', 'active'),
   ('your-user-id', 'Michael', 'Chen', 'michael.chen@example.com', '1988-11-08', '2024-02-03', 'active'),
   ('your-user-id', 'Sarah', 'Williams', 'sarah.williams@example.com', '1995-07-14', '2024-03-12', 'active');
@@ -158,11 +162,12 @@ SELECT * FROM public.members;
 ```
 
 **Note:** Replace `'your-user-id'` with your actual authenticated user ID. You can get it by:
+
 1. Log into your app
-2. Run in browser console: 
+2. Run in browser console:
    ```javascript
-   const { data } = await supabase.auth.getUser()
-   console.log(data.user.id)
+   const { data } = await supabase.auth.getUser();
+   console.log(data.user.id);
    ```
 
 ---
@@ -173,24 +178,25 @@ Run this query in SQL Editor to test everything:
 
 ```sql
 -- Test members table
-SELECT 
+SELECT
   COUNT(*) as total_members,
   COUNT(*) FILTER (WHERE status = 'active') as active_members,
   COUNT(*) FILTER (WHERE status = 'archived') as archived_members
 FROM public.members;
 
 -- Test indexes exist
-SELECT schemaname, tablename, indexname 
-FROM pg_indexes 
+SELECT schemaname, tablename, indexname
+FROM pg_indexes
 WHERE tablename = 'members';
 
 -- Test RLS is enabled
-SELECT tablename, rowsecurity 
-FROM pg_tables 
+SELECT tablename, rowsecurity
+FROM pg_tables
 WHERE tablename = 'members';
 ```
 
 ✅ Expected results:
+
 - Row security should be: `true`
 - All indexes should be listed
 - Counts should match your data (0 if no seed data)
@@ -237,7 +243,7 @@ DECLARE
 BEGIN
   -- Get your user ID
   SELECT id INTO v_user_id FROM auth.users WHERE email = 'YOUR_EMAIL';
-  
+
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'User not found. Please sign up first.';
   END IF;
@@ -259,7 +265,7 @@ END $$;
 
 ```sql
 -- Update existing members to belong to your organization
-UPDATE public.members 
+UPDATE public.members
 SET organization_id = (SELECT id FROM public.organizations WHERE owner_id = (SELECT id FROM auth.users WHERE email = 'YOUR_EMAIL'))
 WHERE organization_id IS NULL;
 
@@ -274,6 +280,7 @@ ALTER TABLE public.members ALTER COLUMN organization_id SET NOT NULL;
 3. **Click "Run"**.
 
 This will create:
+
 - ✅ An organization named "Wellness Center"
 - ✅ A profile for your user (owner role)
 - ✅ 10 fake members
@@ -294,19 +301,25 @@ The seed script automatically associates all members with your first authenticat
 ## Troubleshooting
 
 ### Issue: "relation 'members' already exists"
+
 **Solution:** Table already created. Check "Table Editor" to verify structure.
 
 ### Issue: "permission denied for table members"
-**Solution:** 
+
+**Solution:**
+
 1. Check RLS policies are created
 2. Verify user is authenticated
 3. Run: `GRANT ALL ON public.members TO authenticated;`
 
 ### Issue: "bucket 'member-images' already exists"
+
 **Solution:** Bucket already created. Check Storage section to verify.
 
 ### Issue: Cannot upload images
+
 **Solution:**
+
 1. Check bucket exists and is public
 2. Verify storage policies are created
 3. Check file size < 5MB
@@ -317,6 +330,7 @@ The seed script automatically associates all members with your first authenticat
 ## Next Steps
 
 After completing this setup, proceed to:
+
 1. ✅ **Integration Phase:** Update API routes to use Supabase
 2. ✅ **Testing Phase:** Test all CRUD operations
 3. ✅ **Migration Phase:** Migrate image uploads to Supabase Storage
@@ -341,6 +355,7 @@ Before proceeding to integration:
 ## Support
 
 If you encounter issues:
+
 1. Check Supabase Dashboard logs (Settings → API → Logs)
 2. Verify RLS policies match authenticated user
 3. Check browser console for errors

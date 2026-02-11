@@ -1,10 +1,11 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { TeamList } from "@/components/settings/team-list";
+
 import { useIsOwner } from "@/hooks/usePermissions";
 import { useUser } from "@/hooks/useUser";
 import { Loader } from "@/components/loader";
+import { TeamList } from "@/components/settings/team-list";
 
 export default function TeamSettingsPage() {
   const { isLoading } = useUser();

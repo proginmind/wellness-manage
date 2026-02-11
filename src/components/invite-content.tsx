@@ -1,21 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { AlertCircle, Building2, Calendar, CheckCircle, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Building2, Mail, Calendar, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+
+import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { useUser } from "@/hooks/useUser";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface InvitationData {
   email: string;
@@ -35,8 +31,8 @@ export function InviteContent({ token }: { token: string }) {
   useEffect(() => {
     async function fetchInvitation() {
       try {
-        const response = await fetch(`/api/invitations/${token}`);
-        
+        const response = await fetch(`${buildApiRoute.invitations()}/${token}`);
+
         if (!response.ok) {
           const errorData = await response.json();
           setError(errorData.error || "Invalid invitation");
@@ -59,7 +55,7 @@ export function InviteContent({ token }: { token: string }) {
   const handleAccept = async () => {
     if (!user) {
       // Redirect to login with invitation token
-      router.push(`/login?invitation=${token}`);
+      router.push(`${buildRoute.login()}?invitation=${token}`);
       return;
     }
 
@@ -74,7 +70,7 @@ export function InviteContent({ token }: { token: string }) {
     setIsAccepting(true);
 
     try {
-      const response = await fetch(`/api/invitations/${token}/accept`, {
+      const response = await fetch(`${buildApiRoute.invitations()}/${token}/accept`, {
         method: "POST",
       });
 
@@ -87,7 +83,7 @@ export function InviteContent({ token }: { token: string }) {
         description: "You've successfully joined the organization.",
       });
 
-      router.push("/dashboard");
+      router.push(buildRoute.dashboard());
     } catch (err) {
       toast.error("Failed to accept invitation", {
         description: err instanceof Error ? err.message : "Please try again later",
@@ -121,7 +117,7 @@ export function InviteContent({ token }: { token: string }) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           <div className="mt-4">
-            <Link href="/login">
+            <Link href={buildRoute.login()}>
               <Button variant="outline" className="w-full">
                 Go to Login
               </Button>
@@ -145,9 +141,7 @@ export function InviteContent({ token }: { token: string }) {
           <CheckCircle className="h-5 w-5 text-green-600" />
           You're Invited!
         </CardTitle>
-        <CardDescription>
-          Join {invitation.organizationName} as a staff member
-        </CardDescription>
+        <CardDescription>Join {invitation.organizationName} as a staff member</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Invitation Details */}
@@ -158,9 +152,7 @@ export function InviteContent({ token }: { token: string }) {
           </div>
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-zinc-500" />
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {invitation.email}
-            </span>
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">{invitation.email}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-zinc-500" />
@@ -175,7 +167,8 @@ export function InviteContent({ token }: { token: string }) {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              This invitation has expired. Please contact the organization owner for a new invitation.
+              This invitation has expired. Please contact the organization owner for a new
+              invitation.
             </AlertDescription>
           </Alert>
         )}
@@ -195,11 +188,7 @@ export function InviteContent({ token }: { token: string }) {
         <div className="space-y-3">
           {!user ? (
             <>
-              <Button
-                onClick={handleAccept}
-                disabled={isExpired || isAccepting}
-                className="w-full"
-              >
+              <Button onClick={handleAccept} disabled={isExpired || isAccepting} className="w-full">
                 {isAccepting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Continue to Sign In
               </Button>
@@ -222,7 +211,7 @@ export function InviteContent({ token }: { token: string }) {
                 Accept Invitation
               </Button>
               {user.email.toLowerCase() !== invitation.email.toLowerCase() && (
-                <Link href="/auth/signout">
+                <Link href={buildApiRoute.authSignout()}>
                   <Button variant="outline" className="w-full">
                     Sign Out
                   </Button>

@@ -1,13 +1,13 @@
 /**
  * Permission Gate Component
- * 
+ *
  * Conditionally renders children based on permissions
  */
 
 "use client";
 
+import { type Action, type Resource } from "@/lib/permissions";
 import { usePermissions } from "@/hooks/usePermissions";
-import { type Resource, type Action } from "@/lib/permissions";
 
 interface PermissionGateProps {
   resource: Resource;
@@ -18,15 +18,15 @@ interface PermissionGateProps {
 
 /**
  * Gate component that shows/hides content based on permissions
- * 
+ *
  * @example
  * <PermissionGate resource="members" action="delete">
  *   <DeleteButton />
  * </PermissionGate>
- * 
+ *
  * @example With fallback
- * <PermissionGate 
- *   resource="staff" 
+ * <PermissionGate
+ *   resource="staff"
  *   action="invite"
  *   fallback={<p>Only owners can invite staff</p>}
  * >

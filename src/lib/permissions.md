@@ -19,6 +19,7 @@ This application uses a **Granular Resource-Action** permission system (Option B
 ## Core Concepts
 
 ### Resources
+
 - `members` - Wellness center members
 - `organization` - Organization settings
 - `staff` - Staff management
@@ -26,6 +27,7 @@ This application uses a **Granular Resource-Action** permission system (Option B
 - `profile` - User profile
 
 ### Actions
+
 - `view` - Read access
 - `create` - Create new items
 - `update` - Modify existing items
@@ -37,33 +39,35 @@ This application uses a **Granular Resource-Action** permission system (Option B
 - `manage` - Full management
 
 ### Permission Format
+
 Permissions are expressed as `resource.action`:
+
 - `members.delete` - Delete members
 - `staff.invite` - Invite staff
 - `organization.update` - Update organization
 
 ## Permission Matrix
 
-| Resource | Owner | Staff |
-|----------|-------|-------|
-| **Members** |
-| view | ✅ | ✅ |
-| create | ✅ | ✅ |
-| update | ✅ | ✅ |
-| archive | ✅ | ✅ |
-| delete | ✅ | ❌ |
-| export | ✅ | ✅ |
+| Resource         | Owner | Staff |
+| ---------------- | ----- | ----- |
+| **Members**      |
+| view             | ✅    | ✅    |
+| create           | ✅    | ✅    |
+| update           | ✅    | ✅    |
+| archive          | ✅    | ✅    |
+| delete           | ✅    | ❌    |
+| export           | ✅    | ✅    |
 | **Organization** |
-| view | ✅ | ✅ |
-| update | ✅ | ❌ |
-| delete | ✅ | ❌ |
-| **Staff** |
-| view | ✅ | ✅ |
-| invite | ✅ | ❌ |
-| remove | ✅ | ❌ |
-| **Invitations** |
-| view | ✅ | ❌ |
-| manage | ✅ | ❌ |
+| view             | ✅    | ✅    |
+| update           | ✅    | ❌    |
+| delete           | ✅    | ❌    |
+| **Staff**        |
+| view             | ✅    | ✅    |
+| invite           | ✅    | ❌    |
+| remove           | ✅    | ❌    |
+| **Invitations**  |
+| view             | ✅    | ❌    |
+| manage           | ✅    | ❌    |
 
 ## Usage
 
@@ -74,19 +78,20 @@ import { requirePermission } from "@/lib/api-permissions";
 
 export async function DELETE(request: Request) {
   // Check permission before processing
-  const result = await requirePermission('members', 'delete');
+  const result = await requirePermission("members", "delete");
   if (result instanceof NextResponse) return result;
-  
+
   const { role, organizationId } = result;
   // ... proceed with delete
 }
 ```
 
 **Other API helpers:**
+
 ```typescript
-requireOwner()      // Require owner role
-requireAuth()       // Require any authenticated user
-checkPermission()   // Non-throwing permission check
+requireOwner(); // Require owner role
+requireAuth(); // Require any authenticated user
+checkPermission(); // Non-throwing permission check
 ```
 
 ### 2. Client-Side (React Components)
@@ -99,7 +104,7 @@ import { usePermissions, useMemberPermissions } from "@/hooks/usePermissions";
 function MyComponent() {
   const { can, isOwner } = usePermissions();
   const { canDelete, canArchive } = useMemberPermissions();
-  
+
   return (
     <>
       {can('members', 'create') && <AddButton />}
@@ -121,7 +126,7 @@ function MyComponent() {
       <PermissionGate resource="staff" action="invite">
         <InviteButton />
       </PermissionGate>
-      
+
       <OwnerGate fallback={<p>Owner only</p>}>
         <SettingsPanel />
       </OwnerGate>
@@ -133,82 +138,71 @@ function MyComponent() {
 ### 3. Utility Functions
 
 ```typescript
-import { can, hasPermission, assertPermission } from "@/lib/permissions";
+import { assertPermission, can, hasPermission } from "@/lib/permissions";
 
 // Check permission
-if (can('staff', 'members', 'delete')) {
+if (can("staff", "members", "delete")) {
   // ...
 }
 
 // Check with string format
-if (hasPermission('owner', 'staff.invite')) {
+if (hasPermission("owner", "staff.invite")) {
   // ...
 }
 
 // Throw error if denied
-assertPermission('staff', 'members', 'delete');
+assertPermission("staff", "members", "delete");
 // throws: PermissionError if denied
 ```
 
 ## Available Hooks
 
 ### usePermissions()
+
 Main hook with all permission checking functions.
 
 ```typescript
 const {
-  user,                    // Current user
-  role,                    // User's role
-  isOwner,                 // Is owner?
-  isStaff,                 // Is staff?
-  can,                     // Check permission
-  hasPermission,           // Check by string
-  canAny,                  // Any of actions?
-  canAll,                  // All actions?
+  user, // Current user
+  role, // User's role
+  isOwner, // Is owner?
+  isStaff, // Is staff?
+  can, // Check permission
+  hasPermission, // Check by string
+  canAny, // Any of actions?
+  canAll, // All actions?
 } = usePermissions();
 ```
 
 ### useMemberPermissions()
+
 Member-specific permissions.
 
 ```typescript
-const {
-  canView,
-  canCreate,
-  canUpdate,
-  canDelete,
-  canArchive,
-  canExport,
-} = useMemberPermissions();
+const { canView, canCreate, canUpdate, canDelete, canArchive, canExport } = useMemberPermissions();
 ```
 
 ### useStaffPermissions()
+
 Staff management permissions.
 
 ```typescript
-const {
-  canViewStaff,
-  canInviteStaff,
-  canRemoveStaff,
-  canViewInvitations,
-  canManageInvitations,
-} = useStaffPermissions();
+const { canViewStaff, canInviteStaff, canRemoveStaff, canViewInvitations, canManageInvitations } =
+  useStaffPermissions();
 ```
 
 ### useOrganizationPermissions()
+
 Organization management permissions.
 
 ```typescript
-const {
-  canView,
-  canUpdate,
-  canDelete,
-} = useOrganizationPermissions();
+const { canView, canUpdate, canDelete } = useOrganizationPermissions();
 ```
 
 ## Security Layers
 
 ### ✅ Layer 1: Database (RLS)
+
 PostgreSQL Row Level Security enforces organization isolation and permission checks at the database level.
 
 - **Cannot be bypassed** by application code
@@ -216,6 +210,7 @@ PostgreSQL Row Level Security enforces organization isolation and permission che
 - Enforces owner-only deletes
 
 ### ✅ Layer 2: API Routes
+
 Permission middleware checks before processing requests.
 
 - Validates user authentication
@@ -223,6 +218,7 @@ Permission middleware checks before processing requests.
 - Returns 403 if denied
 
 ### ✅ Layer 3: UI Components
+
 Hide/show UI elements based on permissions.
 
 - Improves UX (don't show unusable buttons)
@@ -241,7 +237,7 @@ export const PERMISSIONS = {
     reports: ["view", "create", "export"], // ← Add here
   },
   staff: {
-    reports: ["view"],                      // ← Add here
+    reports: ["view"], // ← Add here
   },
 };
 ```
@@ -252,7 +248,7 @@ export const PERMISSIONS = {
 // src/app/api/reports/route.ts
 
 export async function GET() {
-  const result = await requirePermission('reports', 'view');
+  const result = await requirePermission("reports", "view");
   if (result instanceof NextResponse) return result;
   // ...
 }
@@ -296,9 +292,9 @@ export async function DELETE(request: Request) {
 // UI Component
 function DeleteButton() {
   const { canDelete } = useMemberPermissions();
-  
+
   if (!canDelete) return null; // ❌ Staff won't see this
-  
+
   return <Button variant="destructive">Delete</Button>;
 }
 ```
@@ -327,17 +323,17 @@ export async function POST(request: Request) {
 function Dashboard() {
   const { isOwner } = usePermissions();
   const { canExport } = useMemberPermissions();
-  
+
   return (
     <>
       <h1>Dashboard</h1>
-      
+
       {/* Everyone sees this */}
       <MemberList />
-      
+
       {/* Only if can export */}
       {canExport && <ExportButton />}
-      
+
       {/* Owner-only panel */}
       {isOwner && <BillingPanel />}
     </>
@@ -348,15 +344,18 @@ function Dashboard() {
 ## Troubleshooting
 
 ### Permission Denied in API
+
 - Check user has profile in database
 - Verify role is set correctly
 - Check PERMISSIONS matrix in `permissions.ts`
 
 ### UI shows button but API blocks
+
 - This is correct behavior (defense in depth)
 - Fix by hiding button: `{can('resource', 'action') && <Button />}`
 
 ### Staff can access owner features
+
 - Check RLS policies in database
 - Verify API route uses `requirePermission()`
 - Check UI uses permission gates

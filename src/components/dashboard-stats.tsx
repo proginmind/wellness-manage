@@ -1,8 +1,9 @@
 "use client";
 
 import useSWR from "swr";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { fetcher } from "@/lib/fetcher";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StatsResponse {
   total: number;
@@ -12,22 +13,16 @@ interface StatsResponse {
 }
 
 export function DashboardStats() {
-  const { data, error, isLoading } = useSWR<StatsResponse>(
-    "/api/stats",
-    fetcher,
-    {
-      refreshInterval: 30000, // Refresh every 30 seconds
-    }
-  );
+  const { data, error, isLoading } = useSWR<StatsResponse>("/api/stats", fetcher, {
+    refreshInterval: 30000, // Refresh every 30 seconds
+  });
 
   if (error) {
     return (
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <Card className="md:col-span-4">
           <CardContent className="pt-6">
-            <p className="text-center text-red-500 dark:text-red-400">
-              Failed to load statistics
-            </p>
+            <p className="text-center text-red-500 dark:text-red-400">Failed to load statistics</p>
           </CardContent>
         </Card>
       </div>
@@ -75,9 +70,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.active}</div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Currently active
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Currently active</p>
         </CardContent>
       </Card>
 
@@ -88,9 +81,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.newThisMonth}</div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Joined this month
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Joined this month</p>
         </CardContent>
       </Card>
 
@@ -101,9 +92,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.archived}</div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Archived members
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Archived members</p>
         </CardContent>
       </Card>
     </div>

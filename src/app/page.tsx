@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,10 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
 
 export default function Home() {
   return (
@@ -25,8 +26,8 @@ export default function Home() {
             Welcome to Wellness Manage
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-            A modern Next.js application built with TypeScript, Tailwind CSS,
-            and shadcn/ui components
+            A modern Next.js application built with TypeScript, Tailwind CSS, and shadcn/ui
+            components
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/login">
@@ -43,14 +44,12 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle>🚀 Next.js 16</CardTitle>
-              <CardDescription>
-                Built with the latest App Router
-              </CardDescription>
+              <CardDescription>Built with the latest App Router</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Leverage React Server Components, streaming, and advanced
-                routing capabilities for optimal performance.
+                Leverage React Server Components, streaming, and advanced routing capabilities for
+                optimal performance.
               </p>
             </CardContent>
           </Card>
@@ -62,8 +61,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Enhanced developer experience with type safety, IntelliSense,
-                and better code quality.
+                Enhanced developer experience with type safety, IntelliSense, and better code
+                quality.
               </p>
             </CardContent>
           </Card>
@@ -75,8 +74,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Rapidly build modern interfaces with a comprehensive utility
-                class system and dark mode support.
+                Rapidly build modern interfaces with a comprehensive utility class system and dark
+                mode support.
               </p>
             </CardContent>
           </Card>
@@ -88,8 +87,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Accessible, customizable components built with Radix UI and
-                Tailwind CSS.
+                Accessible, customizable components built with Radix UI and Tailwind CSS.
               </p>
             </CardContent>
           </Card>
@@ -101,8 +99,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Automatic code splitting, image optimization, and font loading
-                for blazing-fast experiences.
+                Automatic code splitting, image optimization, and font loading for blazing-fast
+                experiences.
               </p>
             </CardContent>
           </Card>
@@ -114,8 +112,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Full TypeScript support with strict mode enabled for maximum
-                type safety.
+                Full TypeScript support with strict mode enabled for maximum type safety.
               </p>
             </CardContent>
           </Card>
@@ -126,9 +123,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle>Try the Components</CardTitle>
-              <CardDescription>
-                Example form using shadcn/ui components
-              </CardDescription>
+              <CardDescription>Example form using shadcn/ui components</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

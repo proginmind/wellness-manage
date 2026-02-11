@@ -9,12 +9,12 @@ This directory contains custom React hooks.
 ## Usage
 
 ```typescript
-'use client';
+"use client";
 
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 function MyComponent() {
-  const [value, setValue] = useLocalStorage('key', 'defaultValue');
+  const [value, setValue] = useLocalStorage("key", "defaultValue");
   // ...
 }
 ```

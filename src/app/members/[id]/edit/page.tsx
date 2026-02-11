@@ -1,18 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { toast } from "sonner";
+
+import { Member } from "@/types/member";
+import { fetcher } from "@/lib/fetcher";
+import { dateToInputValue } from "@/lib/utils/date-helpers";
+import { type MemberFormValues } from "@/lib/validations/member";
 import { AppLayout } from "@/components/app-layout";
 import { MemberForm } from "@/components/member-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { fetcher } from "@/lib/fetcher";
-import { Member } from "@/types/member";
-import { type MemberFormValues } from "@/lib/validations/member";
-import { dateToInputValue } from "@/lib/utils/date-helpers";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 // Convert Member to MemberFormValues for form population
 function memberToFormValues(member: Member): MemberFormValues {
@@ -141,9 +142,7 @@ export default function EditMemberPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Member Details
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Edit Member
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Member</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Update {member.firstName} {member.lastName}'s information
           </p>

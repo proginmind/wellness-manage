@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserCircle, Building2, Users, Mail } from "lucide-react";
+import { Building2, Mail, UserCircle, Users } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useIsOwner } from "@/hooks/usePermissions";
 
@@ -43,9 +44,7 @@ export function SettingsNav() {
   const isOwner = useIsOwner();
 
   // Filter items based on permissions
-  const visibleItems = navigationItems.filter(
-    (item) => !item.ownerOnly || isOwner
-  );
+  const visibleItems = navigationItems.filter((item) => !item.ownerOnly || isOwner);
 
   return (
     <nav className="space-y-1">

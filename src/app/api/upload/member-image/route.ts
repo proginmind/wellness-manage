@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -33,10 +34,7 @@ export async function POST(request: Request) {
     // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: "File too large. Maximum size is 5MB" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "File too large. Maximum size is 5MB" }, { status: 400 });
     }
 
     // Generate unique filename
@@ -58,10 +56,7 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Error uploading to Supabase Storage:", error);
-      return NextResponse.json(
-        { error: "Failed to upload image" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
     }
 
     // Get public URL
@@ -72,9 +67,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: publicUrl }, { status: 200 });
   } catch (error) {
     console.error("Error uploading image:", error);
-    return NextResponse.json(
-      { error: "Failed to upload image" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
   }
 }

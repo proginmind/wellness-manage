@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { requireOwner } from "@/lib/api-permissions";
 import { z } from "zod";
+
+import { requireOwner } from "@/lib/api-permissions";
 import { getInvitations } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 
 const inviteSchema = z.object({
   email: z.string().email(),
@@ -19,10 +20,7 @@ export async function POST(request: Request) {
     const validation = inviteSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json(
-        { error: "Invalid email address" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
     const { email } = validation.data;
@@ -35,9 +33,7 @@ export async function POST(request: Request) {
       .eq("organization_id", organizationId);
 
     if (existingProfiles) {
-      const existingEmails = existingProfiles
-        .map((p: any) => p.users?.email)
-        .filter(Boolean);
+      const existingEmails = existingProfiles.map((p: any) => p.users?.email).filter(Boolean);
 
       if (existingEmails.includes(email.toLowerCase())) {
         return NextResponse.json(
@@ -77,19 +73,13 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Error creating invitation:", error);
-      return NextResponse.json(
-        { error: "Failed to create invitation" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to create invitation" }, { status: 500 });
     }
 
     return NextResponse.json({ invitation });
   } catch (error) {
     console.error("Error in POST /api/invitations:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -103,9 +93,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ invitations });
   } catch (error) {
     console.error("Error in GET /api/invitations:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

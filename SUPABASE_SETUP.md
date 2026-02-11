@@ -69,7 +69,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function MyComponent() {
   const supabase = createClient();
-  
+
   // Use supabase client
   const signIn = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -87,9 +87,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function MyServerComponent() {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   return <div>Hello {user?.email}</div>;
 }
 ```
@@ -143,6 +143,7 @@ The middleware (`src/middleware.ts`) protects routes:
 ### 3. Configure Redirect URLs
 
 Add allowed redirect URLs:
+
 - `http://localhost:3000/**` (development)
 - `http://localhost:3000/reset-password` (password recovery - development)
 - `https://yourdomain.com/**` (production)
@@ -228,10 +229,14 @@ await supabase.auth.signInWithPassword({ email, password });
 await supabase.auth.signOut();
 
 // Get current user
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 
 // Get session
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
 // Reset password for email
 const origin = window.location.origin;
@@ -266,6 +271,7 @@ await supabase.auth.updateUser({
 ## Support
 
 For issues or questions:
+
 1. Check [Supabase Documentation](https://supabase.com/docs)
 2. Visit [Supabase Discord](https://discord.supabase.com)
 3. Check project issues on GitHub

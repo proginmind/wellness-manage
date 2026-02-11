@@ -11,9 +11,9 @@ This directory contains reusable React components.
 ## Example
 
 ```tsx
-// components/Header/index.tsx
-export { Header } from './Header';
-
 // Usage in other files
-import { Header } from '@/components/Header';
+import { Header } from "@/components/Header";
+
+// components/Header/index.tsx
+export { Header } from "./Header";
 ```

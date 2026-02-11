@@ -10,6 +10,6 @@ This directory contains utility functions, helpers, and shared logic.
 ## Usage
 
 ```typescript
-import { formatDate } from '@/lib/utils';
-import { APP_NAME } from '@/lib/constants';
+import { APP_NAME } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 ```

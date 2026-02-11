@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Loader2, UserPlus } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,9 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -26,7 +26,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { UserPlus, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const inviteSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -63,25 +64,21 @@ export function InviteStaffDialog({ onInvitationSent }: InviteStaffDialogProps) 
     },
   });
 
-  const { trigger, isMutating } = useSWRMutation(
-    "/api/invitations",
-    createInvitation,
-    {
-      onSuccess: (data) => {
-        toast.success("Invitation sent!", {
-          description: `Invitation sent to ${form.getValues("email")}`,
-        });
-        form.reset();
-        setOpen(false);
-        onInvitationSent?.();
-      },
-      onError: (error) => {
-        toast.error("Failed to send invitation", {
-          description: error instanceof Error ? error.message : "Please try again later",
-        });
-      },
-    }
-  );
+  const { trigger, isMutating } = useSWRMutation("/api/invitations", createInvitation, {
+    onSuccess: (data) => {
+      toast.success("Invitation sent!", {
+        description: `Invitation sent to ${form.getValues("email")}`,
+      });
+      form.reset();
+      setOpen(false);
+      onInvitationSent?.();
+    },
+    onError: (error) => {
+      toast.error("Failed to send invitation", {
+        description: error instanceof Error ? error.message : "Please try again later",
+      });
+    },
+  });
 
   const onSubmit = async (data: InviteFormData) => {
     await trigger(data);

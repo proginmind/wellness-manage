@@ -1,14 +1,17 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { differenceInYears, format } from "date-fns";
+import { Archive, ArrowLeft, Calendar, Clock, Edit, Mail, User } from "lucide-react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { toast } from "sonner";
+
+import { Member } from "@/types/member";
+import { fetcher } from "@/lib/fetcher";
 import { AppLayout } from "@/components/app-layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberStatusBadge } from "@/components/member-status-badge";
 import {
   AlertDialog,
@@ -20,11 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { fetcher } from "@/lib/fetcher";
-import { Member } from "@/types/member";
-import { ArrowLeft, Edit, Archive, Mail, Calendar, Clock, User } from "lucide-react";
-import Link from "next/link";
-import { format, differenceInYears } from "date-fns";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 async function archiveMember(url: string) {
   const response = await fetch(url, {
@@ -142,9 +143,7 @@ export default function MemberDetailPage() {
               Back to Members
             </Link>
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Member Details
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Member Details</h1>
               <div className="flex gap-3">
                 <Button variant="outline" asChild>
                   <Link href={`/members/${memberId}/edit`}>
@@ -153,10 +152,7 @@ export default function MemberDetailPage() {
                   </Link>
                 </Button>
                 {member.status === "active" && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => setIsArchiveDialogOpen(true)}
-                  >
+                  <Button variant="destructive" onClick={() => setIsArchiveDialogOpen(true)}>
                     <Archive className="h-4 w-4 mr-2" />
                     Archive
                   </Button>
@@ -170,7 +166,12 @@ export default function MemberDetailPage() {
             <CardHeader>
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24">
-                  {member.image && <AvatarImage src={member.image} alt={`${member.firstName} ${member.lastName}`} />}
+                  {member.image && (
+                    <AvatarImage
+                      src={member.image}
+                      alt={`${member.firstName} ${member.lastName}`}
+                    />
+                  )}
                   <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -282,7 +283,8 @@ export default function MemberDetailPage() {
             <AlertDialogTitle>Archive Member</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to archive {data?.member.firstName} {data?.member.lastName}?
-              This will remove them from the active members list. You can restore them later if needed.
+              This will remove them from the active members list. You can restore them later if
+              needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

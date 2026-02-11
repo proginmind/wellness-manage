@@ -1,19 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { mutate } from "swr";
+
+import { VisitFormValues } from "@/lib/validations/visit";
 import { AppLayout } from "@/components/app-layout";
 import { VisitForm } from "@/components/visit-form";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { mutate } from "swr";
-import { VisitFormValues } from "@/lib/validations/visit";
 
 export default function NewVisitPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
 
   async function onSubmit(data: VisitFormValues) {
     setIsSubmitting(true);
@@ -66,9 +66,7 @@ export default function NewVisitPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Visits
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Add New Visit
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Visit</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Fill in the information to add a new visit to the wellness center
           </p>

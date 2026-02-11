@@ -112,7 +112,7 @@ Vercel automatically deploys on:
 # Production only
 NEXT_PUBLIC_APP_URL=https://wellness-manage.com
 
-# Preview only  
+# Preview only
 NEXT_PUBLIC_APP_URL=https://preview.wellness-manage.com
 
 # All environments
@@ -174,7 +174,8 @@ The project includes a `vercel.json` configuration:
 
 **Problem:** `Module not found` errors
 
-**Solution:** 
+**Solution:**
+
 1. Clear Vercel cache in deployment settings
 2. Verify all dependencies in `package.json`
 3. Redeploy
@@ -184,6 +185,7 @@ The project includes a `vercel.json` configuration:
 **Problem:** Environment variables not working
 
 **Solution:**
+
 1. Ensure variables start with `NEXT_PUBLIC_` for client-side access
 2. Redeploy after adding/changing variables
 3. Check variable names for typos
@@ -193,6 +195,7 @@ The project includes a `vercel.json` configuration:
 **Problem:** `SUPABASE_URL is undefined`
 
 **Solution:**
+
 1. Verify environment variables are set in Vercel
 2. Check they're added to correct environment (Production/Preview)
 3. Ensure variable names match exactly
@@ -203,6 +206,7 @@ The project includes a `vercel.json` configuration:
 **Problem:** Authentication redirects fail
 
 **Solution:**
+
 1. Update Supabase redirect URLs with Vercel domain
 2. Check `NEXT_PUBLIC_APP_URL` is set correctly
 3. Verify Site URL in Supabase settings
@@ -212,6 +216,7 @@ The project includes a `vercel.json` configuration:
 **Problem:** Slow page loads
 
 **Solution:**
+
 1. Enable Vercel Edge Functions
 2. Optimize images with Next.js Image component
 3. Check database query performance
@@ -228,15 +233,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },
@@ -254,8 +259,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/home',
-        destination: '/',
+        source: "/home",
+        destination: "/",
         permanent: true,
       },
     ];
@@ -268,7 +273,7 @@ const nextConfig: NextConfig = {
 Convert API routes to Edge Functions by adding:
 
 ```typescript
-export const runtime = 'edge';
+export const runtime = "edge";
 ```
 
 ## CI/CD Integration
@@ -303,11 +308,13 @@ jobs:
 ### Environment Variables
 
 ✅ **DO:**
+
 - Store secrets in Vercel environment variables
 - Use `NEXT_PUBLIC_` prefix only for client-safe values
 - Rotate API keys regularly
 
 ❌ **DON'T:**
+
 - Commit `.env.local` to Git
 - Expose sensitive keys with `NEXT_PUBLIC_` prefix
 - Hardcode secrets in code
@@ -315,11 +322,13 @@ jobs:
 ### Authentication
 
 ✅ **DO:**
+
 - Use HTTPS only (automatic on Vercel)
 - Set proper CORS headers
 - Validate sessions on server-side
 
 ❌ **DON'T:**
+
 - Store sensitive data in client state
 - Trust client-side validation alone
 - Skip middleware authentication checks
@@ -350,6 +359,7 @@ Vercel keeps all previous deployments active. You can instantly switch back to a
 ### Pro Plan ($20/month)
 
 Consider upgrading for:
+
 - Team collaboration
 - Advanced analytics
 - Password protection

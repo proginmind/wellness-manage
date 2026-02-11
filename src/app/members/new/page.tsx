@@ -1,14 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { mutate } from "swr";
+
+import { type MemberFormValues } from "@/lib/validations/member";
 import { AppLayout } from "@/components/app-layout";
 import { MemberForm } from "@/components/member-form";
-import { type MemberFormValues } from "@/lib/validations/member";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { mutate } from "swr";
 
 export default function NewMemberPage() {
   const router = useRouter();
@@ -65,9 +66,7 @@ export default function NewMemberPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Members
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Add New Member
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Member</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Fill in the information to add a new member to the wellness center
           </p>

@@ -56,17 +56,20 @@ wellness-manage/
 ## Key Features
 
 ### 1. Next.js App Router (src/app/)
+
 - **Modern routing:** File-system based routing with App Router
 - **Server Components:** React Server Components by default
 - **API Routes:** Backend endpoints in `src/app/api/`
 - **Layouts:** Shared layouts with `layout.tsx`
 
 ### 2. TypeScript Configuration
+
 - **Strict mode:** Enabled for better type safety
 - **Path aliases:** `@/*` maps to `src/*`
 - **Modern target:** ES2017 with ESNext modules
 
 ### 3. Tailwind CSS
+
 - **Version 4:** Latest Tailwind CSS with PostCSS
 - **Dark mode:** Built-in dark mode support
 - **Utility-first:** Rapid UI development
@@ -74,7 +77,9 @@ wellness-manage/
 ### 4. Project Organization
 
 #### Components (`src/components/`)
+
 Place all reusable UI components here. For complex components:
+
 ```
 components/
 ├── Header/
@@ -84,18 +89,24 @@ components/
 ```
 
 #### Hooks (`src/hooks/`)
+
 Custom React hooks for shared logic:
+
 - Must start with "use" prefix
 - Include TypeScript types
 - Mark client-side hooks with 'use client'
 
 #### Library (`src/lib/`)
+
 Utility functions and helpers:
+
 - `utils.ts` - General utilities (formatDate, sleep, etc.)
 - `constants.ts` - App-wide constants
 
 #### Types (`src/types/`)
+
 TypeScript type definitions:
+
 - Global types in `index.ts`
 - Domain-specific types in separate files
 
@@ -105,12 +116,13 @@ Use the `@/` alias for cleaner imports:
 
 ```typescript
 // ✅ Good
-import { formatDate } from '@/lib/utils';
-import { User } from '@/types';
-import { Button } from '@/components/Button';
+import { User } from "@/types";
+
+import { formatDate } from "@/lib/utils";
+import { Button } from "@/components/Button";
 
 // ❌ Avoid
-import { formatDate } from '../../../lib/utils';
+import { formatDate } from "../../../lib/utils";
 ```
 
 ## Available Scripts
@@ -130,10 +142,10 @@ API routes are located in `src/app/api/`:
 
 ```typescript
 // src/app/api/health/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  return NextResponse.json({ status: 'ok' });
+  return NextResponse.json({ status: "ok" });
 }
 ```
 

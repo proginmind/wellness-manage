@@ -1,9 +1,9 @@
 /**
  * Supabase Admin Client
- * 
+ *
  * This client uses the service role key for admin operations
  * that require elevated privileges (like accessing auth.admin APIs)
- * 
+ *
  * ⚠️ ONLY use this server-side!
  * ⚠️ Never expose the service role key to the client
  */

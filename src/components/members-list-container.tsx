@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import useSWR from "swr";
-import { Input } from "@/components/ui/input";
-import { MembersList } from "@/components/members-list";
+
 import { Member } from "@/types/member";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Search } from "lucide-react";
+import { MembersList } from "@/components/members-list";
+import { Input } from "@/components/ui/input";
 
 interface MembersResponse {
   members: Member[];
@@ -17,7 +18,7 @@ interface MembersResponse {
 
 export function MembersListContainer() {
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Debounce search query to avoid excessive API calls
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -59,9 +60,7 @@ export function MembersListContainer() {
           </p>
         )}
         {searchQuery !== debouncedSearch && (
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
-            Searching...
-          </p>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">Searching...</p>
         )}
       </div>
 

@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useUser } from "@/hooks/useUser";
 import { format } from "date-fns";
+
+import { useUser } from "@/hooks/useUser";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ProfileContent() {
   const { user, isLoading, isError } = useUser();

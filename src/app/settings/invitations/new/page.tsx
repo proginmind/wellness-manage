@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import useSWRMutation from "swr/mutation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -18,8 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Input } from "@/components/ui/input";
 
 const invitationSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -83,9 +84,7 @@ export default function NewInvitationPage() {
             Back to Invitations
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
-          Invite Staff Member
-        </h1>
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Invite Staff Member</h1>
         <p className="text-zinc-600 dark:text-zinc-400 mt-1">
           Send an invitation to join your organization
         </p>
@@ -120,17 +119,10 @@ export default function NewInvitationPage() {
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Send Invitation
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  asChild
-                >
+                <Button type="button" variant="outline" disabled={isSubmitting} asChild>
                   <Link href="/settings/invitations">Cancel</Link>
                 </Button>
               </div>

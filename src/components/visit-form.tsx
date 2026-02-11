@@ -2,7 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
+import { visitFormSchema, VisitFormValues } from "@/lib/validations/visit";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -13,8 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { visitFormSchema, VisitFormValues } from "@/lib/validations/visit";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 
@@ -45,17 +47,20 @@ export function VisitForm({
     },
   });
 
-  const submitButtonText = mode === "create" 
-    ? (isSubmitting ? "Creating..." : "Create Visit")
-    : (isSubmitting ? "Updating..." : "Update Visit");
+  const submitButtonText =
+    mode === "create"
+      ? isSubmitting
+        ? "Creating..."
+        : "Create Visit"
+      : isSubmitting
+        ? "Updating..."
+        : "Update Visit";
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Visit Information</CardTitle>
-        <CardDescription>
-          All fields marked with * are required
-        </CardDescription>
+        <CardDescription>All fields marked with * are required</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -122,7 +127,11 @@ export function VisitForm({
                 <FormItem>
                   <FormLabel>Visit Duration *</FormLabel>
                   <FormControl>
-                    <Select {...field} value={field.value.toString()} onValueChange={field.onChange}>
+                    <Select
+                      {...field}
+                      value={field.value.toString()}
+                      onValueChange={field.onChange}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a duration" />
                       </SelectTrigger>
@@ -132,9 +141,7 @@ export function VisitForm({
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormDescription>
-                    Visit duration
-                  </FormDescription>
+                  <FormDescription>Visit duration</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -158,9 +165,7 @@ export function VisitForm({
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormDescription>
-                    Visit type
-                  </FormDescription>
+                  <FormDescription>Visit type</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -183,19 +188,10 @@ export function VisitForm({
 
             {/* Submit Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
                 {submitButtonText}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                 Cancel
               </Button>
             </div>

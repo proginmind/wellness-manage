@@ -24,7 +24,9 @@ shadcn/ui is a collection of beautifully designed, accessible components built w
 ### 2. Configuration Files
 
 #### `components.json`
+
 Configuration file for shadcn/ui CLI:
+
 - Style: "new-york"
 - Base color: "zinc"
 - CSS variables: enabled
@@ -32,12 +34,15 @@ Configuration file for shadcn/ui CLI:
 - React Server Components: enabled
 
 #### `tailwind.config.ts`
+
 Tailwind configuration with shadcn/ui color system using CSS variables.
 
 #### `src/app/globals.css`
+
 CSS variables for light and dark themes with shadcn/ui color palette.
 
 #### `src/lib/utils.ts`
+
 Contains the `cn()` utility function for merging Tailwind classes.
 
 ### 3. Components Installed
@@ -105,7 +110,7 @@ import {
   <CardFooter>
     <Button>Action</Button>
   </CardFooter>
-</Card>
+</Card>;
 ```
 
 ### Form Components
@@ -117,7 +122,7 @@ import { Label } from "@/components/ui/label";
 <div className="space-y-2">
   <Label htmlFor="email">Email</Label>
   <Input id="email" type="email" placeholder="Enter your email" />
-</div>
+</div>;
 ```
 
 ### Badge Component
@@ -147,6 +152,7 @@ npx shadcn@latest add
 ```
 
 Popular components to add:
+
 - `dialog` - Modal dialogs
 - `dropdown-menu` - Dropdown menus
 - `select` - Select inputs
@@ -185,17 +191,14 @@ Since components are in your project, you can modify them directly:
 Use `class-variance-authority` (cva) to add new variants:
 
 ```tsx
-const buttonVariants = cva(
-  "base-classes",
-  {
-    variants: {
-      variant: {
-        default: "...",
-        custom: "your-custom-classes",
-      },
+const buttonVariants = cva("base-classes", {
+  variants: {
+    variant: {
+      default: "...",
+      custom: "your-custom-classes",
     },
-  }
-);
+  },
+});
 ```
 
 ## Dark Mode
@@ -214,7 +217,7 @@ The `cn()` function in `src/lib/utils.ts` merges Tailwind classes intelligently:
 ```tsx
 import { cn } from "@/lib/utils";
 
-<Button className={cn("custom-class", isActive && "active-class")} />
+<Button className={cn("custom-class", isActive && "active-class")} />;
 ```
 
 ## Resources

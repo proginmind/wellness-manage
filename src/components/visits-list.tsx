@@ -1,7 +1,8 @@
-import { VisitCard } from "@/components/visit-card";
-import { Visit } from "@/types/visit";
 import { Calendar, Search } from "lucide-react";
+
 import { Member } from "@/types/member";
+import { Visit } from "@/types/visit";
+import { VisitCard } from "@/components/visit-card";
 
 interface VisitsListProps {
   visits: {
@@ -31,18 +32,14 @@ export function VisitsList({ visits, searchQuery }: VisitsListProps) {
         <>
           <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium mb-2">No visits found</p>
-          <p className="text-sm">
-            Try adjusting your search to find what you&apos;re looking for
-          </p>
+          <p className="text-sm">Try adjusting your search to find what you&apos;re looking for</p>
         </>
       ) : (
         // No visits at all
         <>
           <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium mb-2">No visits yet</p>
-          <p className="text-sm">
-            Get started by adding your first visit to the wellness center
-          </p>
+          <p className="text-sm">Get started by adding your first visit to the wellness center</p>
         </>
       )}
     </div>

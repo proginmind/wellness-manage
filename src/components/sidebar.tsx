@@ -2,33 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import {
-  LayoutDashboard,
-  Users,
+  Calendar,
   ChevronLeft,
   ChevronRight,
-  Settings,
+  LayoutDashboard,
   LogOut,
-  Calendar,
+  Settings,
+  Users,
 } from "lucide-react";
+
+import { buildApiRoute, buildRoute, isRouteActive } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   {
     title: "Dashboard",
-    href: "/dashboard",
+    href: buildRoute.dashboard(),
     icon: LayoutDashboard,
   },
   {
     title: "Members",
-    href: "/members",
+    href: buildRoute.members(),
     icon: Users,
   },
   {
     title: "Visits",
-    href: "/visits",
+    href: buildRoute.visits(),
     icon: Calendar,
   },
 ];
@@ -44,12 +46,14 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className={cn(
-        "flex items-center px-4 py-4",
-        collapsed ? "justify-center" : "justify-between"
-      )}>
+      <div
+        className={cn(
+          "flex items-center px-4 py-4",
+          collapsed ? "justify-center" : "justify-between"
+        )}
+      >
         {!collapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href={buildRoute.dashboard()} className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900">
               <span className="text-lg font-bold">W</span>
             </div>
@@ -73,7 +77,7 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-          
+
           return (
             <Link
               key={item.href}
@@ -98,10 +102,10 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
       <div className="p-2">
         {/* Settings */}
         <Link
-          href="/settings/profile"
+          href={buildRoute.settingsProfile()}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-            pathname?.startsWith("/settings")
+            pathname && isRouteActive("/settings", pathname)
               ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
               : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
             collapsed && "justify-center"
@@ -113,7 +117,7 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
         </Link>
 
         {/* Sign out */}
-        <form action="/auth/signout" method="post">
+        <form action={buildApiRoute.authSignout()} method="post">
           <Button
             type="submit"
             variant="ghost"

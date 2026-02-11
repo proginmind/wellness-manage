@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+
 import { requireOwner } from "@/lib/api-permissions";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
@@ -20,26 +21,21 @@ export async function GET(request: Request) {
 
     // Step 1: Get all auth users to access emails (requires admin client)
     const { data: authUsersData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
-    
+
     if (authError || !authUsersData) {
       console.error("Error fetching auth users:", authError);
-      return NextResponse.json(
-        { error: "Failed to fetch users" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
     }
-    
+
     const authUsers = authUsersData.users;
 
     // Step 2: If search provided, filter users by email and get matching user_ids
     let userIdsToFetch: string[] | undefined;
-    
+
     if (search) {
-      const matchingUsers = authUsers.filter((user) =>
-        user.email?.toLowerCase().includes(search)
-      );
+      const matchingUsers = authUsers.filter((user) => user.email?.toLowerCase().includes(search));
       userIdsToFetch = matchingUsers.map((u) => u.id);
-      
+
       // If no matching emails, return empty result early
       if (userIdsToFetch.length === 0) {
         return NextResponse.json({
@@ -65,16 +61,11 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error("Error fetching staff:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch staff" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
     }
 
     // Step 4: Create email map and transform results
-    const emailMap = new Map(
-      authUsers.map((u) => [u.id, u.email || ""])
-    );
+    const emailMap = new Map(authUsers.map((u) => [u.id, u.email || ""]));
 
     const staff = (profiles || []).map((profile: any) => ({
       id: profile.id,
@@ -90,9 +81,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching staff:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch staff" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
   }
 }

@@ -1,12 +1,9 @@
 import { Suspense } from "react";
-import { InviteContent } from "@/components/invite-content";
 import { Loader2 } from "lucide-react";
 
-export default async function InvitePage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+import { InviteContent } from "@/components/invite-content";
+
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
   return (

@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
+
+import { requirePermission } from "@/lib/api-permissions";
 import { getMemberById } from "@/lib/supabase/queries";
 import { memberFormSchema } from "@/lib/validations/member";
-import { requirePermission } from "@/lib/api-permissions";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Check permission: members.view
     const permissionResult = await requirePermission("members", "view");
@@ -25,17 +23,11 @@ export async function GET(
     return NextResponse.json({ member });
   } catch (error) {
     console.error("Error fetching member:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch member" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch member" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Check permission: members.update (covers both status and full update)
     const permissionResult = await requirePermission("members", "update");
@@ -48,17 +40,13 @@ export async function PATCH(
     const body = await request.json();
 
     // Import queries dynamically
-    const { archiveMember, unarchiveMember, updateMember } = await import(
-      "@/lib/supabase/queries"
-    );
+    const { archiveMember, unarchiveMember, updateMember } = await import("@/lib/supabase/queries");
 
     // Check if this is a status update (archive/unarchive) or full member update
     if ("status" in body && Object.keys(body).length === 1) {
       // Status update only (archive/unarchive)
       const updatedMember =
-        body.status === "archived"
-          ? await archiveMember(id)
-          : await unarchiveMember(id);
+        body.status === "archived" ? await archiveMember(id) : await unarchiveMember(id);
 
       return NextResponse.json({
         member: updatedMember,
@@ -98,8 +86,7 @@ export async function PATCH(
     }
   } catch (error) {
     console.error("Error updating member:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to update member";
+    const message = error instanceof Error ? error.message : "Failed to update member";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

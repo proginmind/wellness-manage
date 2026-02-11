@@ -2,7 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
+import { memberFormSchema, type MemberFormValues } from "@/lib/validations/member";
+import { ImageUpload } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -13,9 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/image-upload";
-import { memberFormSchema, type MemberFormValues } from "@/lib/validations/member";
 
 interface MemberFormProps {
   mode: "create" | "edit";
@@ -44,17 +45,20 @@ export function MemberForm({
     },
   });
 
-  const submitButtonText = mode === "create" 
-    ? (isSubmitting ? "Creating..." : "Create Member")
-    : (isSubmitting ? "Updating..." : "Update Member");
+  const submitButtonText =
+    mode === "create"
+      ? isSubmitting
+        ? "Creating..."
+        : "Create Member"
+      : isSubmitting
+        ? "Updating..."
+        : "Update Member";
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Member Information</CardTitle>
-        <CardDescription>
-          All fields marked with * are required
-        </CardDescription>
+        <CardDescription>All fields marked with * are required</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -97,11 +101,7 @@ export function MemberForm({
                 <FormItem>
                   <FormLabel>Email *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="john.doe@example.com"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="john.doe@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -118,9 +118,7 @@ export function MemberForm({
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Member's date of birth
-                  </FormDescription>
+                  <FormDescription>Member's date of birth</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -136,9 +134,7 @@ export function MemberForm({
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Date the member joined the wellness center
-                  </FormDescription>
+                  <FormDescription>Date the member joined the wellness center</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -165,19 +161,10 @@ export function MemberForm({
 
             {/* Submit Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
                 {submitButtonText}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                 Cancel
               </Button>
             </div>
