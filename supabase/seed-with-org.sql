@@ -10,11 +10,12 @@
 DO $$
 DECLARE
   v_user_id uuid;
+  v_user_email text;
   v_org_id uuid;
   v_staff_user_id uuid;
 BEGIN
   -- Get the first user from auth (will be the owner)
-  SELECT id INTO v_user_id FROM auth.users ORDER BY created_at LIMIT 1;
+  SELECT id, email INTO v_user_id, v_user_email FROM auth.users ORDER BY created_at LIMIT 1;
   
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'No users found. Please create a user account first.';
@@ -28,8 +29,8 @@ BEGIN
   RAISE NOTICE 'Created organization: %', v_org_id;
 
   -- Create profile for owner
-  INSERT INTO public.profiles (user_id, organization_id, role)
-  VALUES (v_user_id, v_org_id, 'owner');
+  INSERT INTO public.profiles (user_id, organization_id, role, email)
+  VALUES (v_user_id, v_org_id, 'owner', v_user_email);
 
   RAISE NOTICE 'Created owner profile for user: %', v_user_id;
 

@@ -44,8 +44,8 @@ BEGIN
     RAISE NOTICE 'Created organization: % (ID: %)', 'My Wellness Center', v_org_id;
 
     -- Create profile for owner
-    INSERT INTO public.profiles (user_id, organization_id, role)
-    VALUES (v_user_id, v_org_id, 'owner');
+    INSERT INTO public.profiles (user_id, organization_id, role, email)
+    VALUES (v_user_id, v_org_id, 'owner', v_user_email);
 
     RAISE NOTICE '✅ Profile created successfully for: %', v_user_email;
     RAISE NOTICE '✅ You are now the owner of: My Wellness Center';

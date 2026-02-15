@@ -4,6 +4,7 @@ export interface Profile {
   id: string;
   userId: string;
   organizationId: string;
+  email: string;
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;

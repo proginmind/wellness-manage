@@ -29,11 +29,11 @@ export async function POST(request: Request) {
     // Check if user is already a member of this organization
     const { data: existingProfiles } = await supabase
       .from("profiles")
-      .select("id, users:auth.users!inner(email)")
+      .select("id, email")
       .eq("organization_id", organizationId);
 
     if (existingProfiles) {
-      const existingEmails = existingProfiles.map((p: any) => p.users?.email).filter(Boolean);
+      const existingEmails = existingProfiles.map((p) => p.email).filter(Boolean);
 
       if (existingEmails.includes(email.toLowerCase())) {
         return NextResponse.json(

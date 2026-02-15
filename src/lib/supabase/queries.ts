@@ -28,6 +28,7 @@ interface ProfileRow {
   id: string;
   user_id: string;
   organization_id: string;
+  email: string;
   role: UserRole;
   created_at: string;
   updated_at: string;
@@ -79,6 +80,7 @@ export function dbToProfile(row: ProfileRow): Profile {
     id: row.id,
     userId: row.user_id,
     organizationId: row.organization_id,
+    email: row.email,
     role: row.role,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
@@ -1287,20 +1289,16 @@ export async function getProfileWithEventTypes(
   organizationId: string
 ): Promise<any | null> {
   const supabase = await createClient();
-  const supabaseAdmin = createAdminClient();
 
-  // Get profile
+  // Get profile with email
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, user_id, role, created_at")
+    .select("id, user_id, role, email, created_at")
     .eq("id", profileId)
     .eq("organization_id", organizationId)
     .single();
 
   if (error || !profile) return null;
-
-  // Get email from auth
-  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.user_id);
 
   // Get assigned event types
   const { data: assignments } = await supabase
@@ -1320,7 +1318,7 @@ export async function getProfileWithEventTypes(
   return {
     id: profile.id,
     userId: profile.user_id,
-    email: authUser?.user?.email || "",
+    email: profile.email,
     role: profile.role,
     createdAt: profile.created_at,
     eventTypes,
