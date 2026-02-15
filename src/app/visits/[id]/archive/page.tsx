@@ -194,11 +194,11 @@ export default function ArchiveVisitPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <User className="h-4 w-4 text-gray-400" />
-                  <span className="capitalize">{visit.type}</span>
+                  <span>{visit.eventTypeName}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-gray-400" />
-                  <span>{visit.duration} min</span>
+                  <span>{visit.eventTypeDuration} min</span>
                 </div>
               </div>
             </div>
