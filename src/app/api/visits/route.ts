@@ -1,25 +1,19 @@
 import { NextResponse } from "next/server";
 
+import { requirePermission } from "@/lib/api-permissions";
 import { getVisits } from "@/lib/supabase/queries";
-import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    // Check authentication
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Check permission: visits.view
+    const permissionResult = await requirePermission("visits", "view");
+    if (permissionResult instanceof NextResponse) return permissionResult;
 
     // Get search query from URL params
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || undefined;
 
-    // Fetch members from database
+    // Fetch visits from database (organization-scoped via query function)
     const visitsData = await getVisits(search);
 
     return NextResponse.json({
@@ -38,15 +32,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // Check authentication
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Check permission: visits.create
+    const permissionResult = await requirePermission("visits", "create");
+    if (permissionResult instanceof NextResponse) return permissionResult;
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { userId } = permissionResult;
 
     // Parse request body
     const body = await request.json();
@@ -55,7 +45,7 @@ export async function POST(request: Request) {
     const { createVisit } = await import("@/lib/supabase/queries");
 
     // Create visit in database
-    const newVisit = await createVisit(body, user.id);
+    const newVisit = await createVisit(body, userId);
 
     return NextResponse.json(
       {

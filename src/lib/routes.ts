@@ -31,6 +31,7 @@ export const buildRoute = {
   visitsNew: () => "/visits/new" as const,
   visit: (id: string) => `/visits/${id}` as const,
   visitEdit: (id: string) => `/visits/${id}/edit` as const,
+  visitArchive: (id: string) => `/visits/${id}/archive` as const,
 
   // Event Types
   eventTypes: () => "/event-types" as const,

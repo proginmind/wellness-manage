@@ -19,6 +19,7 @@ export type UserRole = "owner" | "staff";
  */
 export type Resource =
   | "members"
+  | "visits"
   | "organization"
   | "staff"
   | "invitations"
@@ -59,6 +60,9 @@ export const PERMISSIONS = {
     // Members: Full access
     members: ["view", "create", "update", "delete", "archive", "export"] as Action[],
 
+    // Visits: Full management
+    visits: ["view", "create", "update", "delete", "archive"] as Action[],
+
     // Organization: Full management
     organization: ["view", "update", "delete"] as Action[],
 
@@ -78,6 +82,9 @@ export const PERMISSIONS = {
   staff: {
     // Members: Day-to-day operations (no permanent delete)
     members: ["view", "create", "update", "archive", "export"] as Action[],
+
+    // Visits: Day-to-day operations (can manage visits)
+    visits: ["view", "create", "update", "archive"] as Action[],
 
     // Organization: Read-only
     organization: ["view"] as Action[],
@@ -284,6 +291,13 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "members.archive": "Archive members",
   "members.export": "Export member data",
 
+  // Visits
+  "visits.view": "View visit information",
+  "visits.create": "Create new visits",
+  "visits.update": "Edit visit details",
+  "visits.delete": "Permanently delete visits",
+  "visits.archive": "Cancel/archive visits",
+
   // Organization
   "organization.view": "View organization details",
   "organization.update": "Update organization settings",
@@ -315,6 +329,10 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "members.invite": "N/A",
   "members.remove": "N/A",
   "members.manage": "N/A",
+  "visits.export": "N/A",
+  "visits.invite": "N/A",
+  "visits.remove": "N/A",
+  "visits.manage": "N/A",
   "organization.create": "N/A",
   "organization.archive": "N/A",
   "organization.export": "N/A",

@@ -83,23 +83,27 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
         backLink={{ href: buildRoute.visits(), label: "Back to Visits" }}
         action={
           <div className="flex items-center gap-2">
-            <PermissionGate resource="members" action="update">
-              <Button asChild variant="outline">
-                <Link href={buildRoute.visitEdit(visit.id)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Link>
-              </Button>
-            </PermissionGate>
+            {visit.status !== "cancelled" && (
+              <>
+                <PermissionGate resource="visits" action="update">
+                  <Button asChild variant="outline">
+                    <Link href={buildRoute.visitEdit(visit.id)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Link>
+                  </Button>
+                </PermissionGate>
 
-            <PermissionGate resource="members" action="delete">
-              <Button asChild variant="outline" className="text-red-600 hover:text-red-700">
-                <Link href={`/visits/${visit.id}/archive`}>
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive
-                </Link>
-              </Button>
-            </PermissionGate>
+                <PermissionGate resource="visits" action="archive">
+                  <Button asChild variant="outline" className="text-red-600 hover:text-red-700">
+                    <Link href={buildRoute.visitArchive(visit.id)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </Link>
+                  </Button>
+                </PermissionGate>
+              </>
+            )}
           </div>
         }
       />

@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
+import { PageHeader } from "@/components/page-header";
+import { PermissionGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
 import { VisitsListContainer } from "@/components/visits-list-container";
 
@@ -10,24 +12,19 @@ export default async function VisitsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Visits</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage your wellness center visits
-            </p>
-          </div>
-          <Button asChild>
-            <Link href={buildRoute.visitsNew()}>
-              <span className="mr-2">+</span>
-              Add Visit
-            </Link>
-          </Button>
-        </div>
+      <PageHeader
+        title="Visits"
+        description="Manage your wellness center visits"
+        action={
+          <PermissionGate resource="visits" action="create">
+            <Button asChild>
+              <Link href={buildRoute.visitsNew()}>Add Visit</Link>
+            </Button>
+          </PermissionGate>
+        }
+      />
 
-        {/* Members List with Search */}
+      <div className="container mx-auto px-4 py-6">
         <VisitsListContainer />
       </div>
     </AppLayout>

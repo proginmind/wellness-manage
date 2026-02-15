@@ -693,6 +693,30 @@ export async function getVisitById(
 }
 
 /**
+ * Archive a visit (sets status to cancelled)
+ * @param id - Visit ID
+ */
+export async function archiveVisit(id: string): Promise<Visit> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("visits")
+    .update({
+      status: "cancelled",
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error archiving visit:", error);
+    throw new Error("Failed to archive visit");
+  }
+
+  return dbToVisit(data);
+}
+
+/**
  * Create a new visit
  */
 export async function createVisit(formData: VisitFormValues, userId: string): Promise<Visit> {
