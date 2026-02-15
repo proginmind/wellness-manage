@@ -142,6 +142,12 @@ erDiagram
     uuid user_id FK
     uuid organization_id FK
   }
+  PROFILES_EVENT_TYPES {
+    uuid id PK
+    uuid profile_id FK
+    uuid event_type_id FK
+    uuid organization_id FK
+  }
   VISITS {
     uuid id PK
     uuid member_id FK
@@ -160,6 +166,9 @@ erDiagram
   ORGANIZATIONS ||--o{ MEMBERS : contains
   AUTH_USERS o|--|| PROFILES : has
   ORGANIZATIONS ||--o{ PROFILES : contains
+  PROFILES ||--o{ PROFILES_EVENT_TYPES : assigned_to
+  EVENT_TYPES ||--o{ PROFILES_EVENT_TYPES : qualified_for
+  ORGANIZATIONS ||--o{ PROFILES_EVENT_TYPES : scopes
   MEMBERS ||--o{ VISITS : has
   PROFILES ||--o{ VISITS : staffs
   ORGANIZATIONS ||--o{ VISITS : contains
@@ -174,6 +183,7 @@ erDiagram
 - **MEMBERS**: Clients/members of the wellness center
 - **EVENT_CATEGORIES**: Service categories (e.g., Massage, Yoga, Therapy)
 - **EVENT_TYPES**: Specific services/treatments offered
+- **PROFILES_EVENT_TYPES**: Junction table linking profiles to services they can perform (many-to-many)
 - **VISITS**: Appointments/visits scheduled for members
 - **INVITATIONS**: Pending staff invitations to join organizations
 

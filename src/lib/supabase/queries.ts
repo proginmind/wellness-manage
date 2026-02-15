@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MemberFormValues } from "@/lib/validations/member";
 
 import { VisitFormValues } from "../validations/visit";
+import { createAdminClient } from "./admin";
 
 // ============================================================================
 // DATABASE ROW TYPES (snake_case from PostgreSQL)
@@ -1270,4 +1271,106 @@ export async function updateEventCategory(
   }
 
   return dbToEventCategory(data);
+}
+
+// ============================================================================
+// PROFILE EVENT TYPES QUERIES (Organization-scoped)
+// ============================================================================
+
+/**
+ * Get profile by ID with event types
+ * @param profileId - Profile ID
+ * @param organizationId - Organization ID (required for organization scoping)
+ */
+export async function getProfileWithEventTypes(
+  profileId: string,
+  organizationId: string
+): Promise<any | null> {
+  const supabase = await createClient();
+  const supabaseAdmin = createAdminClient();
+
+  // Get profile
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, user_id, role, created_at")
+    .eq("id", profileId)
+    .eq("organization_id", organizationId)
+    .single();
+
+  if (error || !profile) return null;
+
+  // Get email from auth
+  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.user_id);
+
+  // Get assigned event types
+  const { data: assignments } = await supabase
+    .from("profiles_event_types")
+    .select("event_types(id, name, duration, color, event_categories:category_id(name))")
+    .eq("profile_id", profileId)
+    .eq("organization_id", organizationId);
+
+  const eventTypes = (assignments || []).map((a: any) => ({
+    id: a.event_types.id,
+    name: a.event_types.name,
+    duration: a.event_types.duration,
+    color: a.event_types.color,
+    categoryName: a.event_types.event_categories?.name,
+  }));
+
+  return {
+    id: profile.id,
+    userId: profile.user_id,
+    email: authUser?.user?.email || "",
+    role: profile.role,
+    createdAt: profile.created_at,
+    eventTypes,
+  };
+}
+
+/**
+ * Assign event type to profile
+ * @param profileId - Profile ID
+ * @param eventTypeId - Event type ID
+ * @param organizationId - Organization ID (required for organization scoping)
+ */
+export async function assignEventTypeToProfile(
+  profileId: string,
+  eventTypeId: string,
+  organizationId: string
+): Promise<void> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("profiles_event_types").insert({
+    profile_id: profileId,
+    event_type_id: eventTypeId,
+    organization_id: organizationId,
+  });
+
+  if (error) {
+    throw new Error(
+      error.code === "23505" ? "Assignment already exists" : "Failed to assign event type"
+    );
+  }
+}
+
+/**
+ * Remove event type from profile
+ * @param profileId - Profile ID
+ * @param eventTypeId - Event type ID
+ */
+export async function removeEventTypeFromProfile(
+  profileId: string,
+  eventTypeId: string
+): Promise<void> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("profiles_event_types")
+    .delete()
+    .eq("profile_id", profileId)
+    .eq("event_type_id", eventTypeId);
+
+  if (error) {
+    throw new Error("Failed to remove event type");
+  }
 }

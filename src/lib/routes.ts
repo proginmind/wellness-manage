@@ -20,6 +20,8 @@ export const buildRoute = {
   // Main app routes
   dashboard: () => "/dashboard" as const,
   team: () => "/team" as const,
+  teamMember: (id: string) => `/team/${id}` as const,
+  teamMemberEdit: (id: string) => `/team/${id}/edit` as const,
 
   // Members
   members: () => "/members" as const,
@@ -98,6 +100,10 @@ export const buildApiRoute = {
 
   // Staff
   staff: () => "/api/staff" as const,
+
+  // Team
+  teamMemberApi: (id: string) => `/api/team/${id}` as const,
+  teamMemberEventTypes: (id: string) => `/api/team/${id}/event-types` as const,
 
   // Stats
   stats: () => "/api/stats" as const,

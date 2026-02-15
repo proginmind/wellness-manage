@@ -68,7 +68,7 @@ export const PERMISSIONS = {
     organization: ["view", "update", "delete"] as Action[],
 
     // Staff: Full management
-    staff: ["view", "invite", "remove"] as Action[],
+    staff: ["view", "invite", "remove", "update"] as Action[],
 
     // Invitations: Full management
     invitations: ["view", "create", "update", "delete", "manage"] as Action[],
@@ -314,6 +314,7 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "staff.view": "View staff members",
   "staff.invite": "Invite new staff",
   "staff.remove": "Remove staff members",
+  "staff.update": "Update staff member qualifications",
 
   // Invitations
   "invitations.view": "View pending invitations",
@@ -353,7 +354,6 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "organization.remove": "N/A",
   "organization.manage": "N/A",
   "staff.create": "N/A",
-  "staff.update": "N/A",
   "staff.delete": "N/A",
   "staff.archive": "N/A",
   "staff.export": "N/A",

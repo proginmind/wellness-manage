@@ -8,6 +8,7 @@ import useSWR from "swr";
 
 import { fetcher } from "@/lib/fetcher";
 import { UserRole } from "@/lib/permissions";
+import { buildRoute } from "@/lib/routes";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -97,46 +98,48 @@ export function TeamList() {
             const initials = displayName.slice(0, 2).toUpperCase();
 
             return (
-              <Card key={member.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    {/* Avatar */}
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-semibold">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
+              <Link href={buildRoute.teamMember(member.id)} key={member.id}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      {/* Name */}
-                      <div className="font-medium text-zinc-900 dark:text-white truncate mb-1">
-                        {displayName}
-                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        {/* Name */}
+                        <div className="font-medium text-zinc-900 dark:text-white truncate mb-1">
+                          {displayName}
+                        </div>
 
-                      {/* Email & Role */}
-                      <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{member.email}</span>
-                      </div>
+                        {/* Email & Role */}
+                        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                          <Mail className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{member.email}</span>
+                        </div>
 
-                      {/* Role Badge & Date */}
-                      <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                        <Badge
-                          variant={member.role === "owner" ? "default" : "secondary"}
-                          className="capitalize text-xs"
-                        >
-                          {member.role}
-                        </Badge>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>Joined {format(new Date(member.createdAt), "MMM d, yyyy")}</span>
+                        {/* Role Badge & Date */}
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                          <Badge
+                            variant={member.role === "owner" ? "default" : "secondary"}
+                            className="capitalize text-xs"
+                          >
+                            {member.role}
+                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>Joined {format(new Date(member.createdAt), "MMM d, yyyy")}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
