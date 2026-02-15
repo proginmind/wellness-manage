@@ -21,7 +21,7 @@ function eventTypeToFormValues(eventType: EventType): EventTypeFormValues {
     name: eventType.name,
     description: eventType.description || "",
     color: eventType.color,
-    category: eventType.category || "",
+    categoryId: eventType.categoryId,
     duration: eventType.duration,
     bufferBefore: eventType.bufferBefore,
     bufferAfter: eventType.bufferAfter,

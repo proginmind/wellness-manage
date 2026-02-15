@@ -1,5 +1,6 @@
 import { UserRole } from "@/lib/permissions";
 
+import { EventCategory } from "./event-category";
 import { EventType } from "./event-type";
 import { Member } from "./member";
 
@@ -22,6 +23,15 @@ export interface EventTypesListResponse {
   filters: {
     isActive: boolean | null;
     isBookable: boolean | null;
+  };
+}
+
+// Event Categories API Response
+export interface EventCategoriesListResponse {
+  eventCategories: EventCategory[];
+  total: number;
+  filters: {
+    isActive: boolean | null;
   };
 }
 

@@ -30,11 +30,6 @@ export function EventTypeCard({ eventType }: EventTypeCardProps) {
                   <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 truncate">
                     {eventType.name}
                   </h3>
-                  {eventType.category && (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">
-                      {eventType.category}
-                    </p>
-                  )}
                 </div>
 
                 {/* Status badges */}

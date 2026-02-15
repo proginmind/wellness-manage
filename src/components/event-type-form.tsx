@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 
+import { EventCategoriesListResponse } from "@/types/api";
+import { fetcher } from "@/lib/fetcher";
+import { buildRoute } from "@/lib/routes";
 import { eventTypeFormSchema, type EventTypeFormValues } from "@/lib/validations/event-type";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +22,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 interface EventTypeFormProps {
@@ -34,13 +46,19 @@ export function EventTypeForm({
   isSubmitting,
   onCancel,
 }: EventTypeFormProps) {
+  // Fetch categories
+  const { data: categoriesResponse, isLoading: categoriesLoading } =
+    useSWR<EventCategoriesListResponse>("/api/event-categories?is_active=true", fetcher);
+
+  const categories = categoriesResponse?.eventCategories;
+
   const form = useForm<EventTypeFormValues>({
     resolver: zodResolver(eventTypeFormSchema),
     defaultValues: defaultValues || {
       name: "",
       description: "",
       color: "#3B82F6",
-      category: "",
+      categoryId: undefined,
       duration: 60,
       bufferBefore: 0,
       bufferAfter: 0,
@@ -113,14 +131,45 @@ export function EventTypeForm({
               {/* Category */}
               <FormField
                 control={form.control}
-                name="category"
+                name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>Category (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="massage" {...field} value={field.value || ""} />
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(value) => field.onChange(value || undefined)}
+                        disabled={categoriesLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories?.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="w-3 h-3 rounded"
+                                  style={{ backgroundColor: category.color }}
+                                />
+                                {category.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
-                    <FormDescription>E.g., massage, consultation, therapy</FormDescription>
+                    <FormDescription>
+                      Organize services by category.{" "}
+                      {categories && categories.length === 0 && (
+                        <Link
+                          href={buildRoute.eventCategoriesNew()}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Create a category
+                        </Link>
+                      )}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

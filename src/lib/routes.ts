@@ -41,6 +41,14 @@ export const buildRoute = {
   eventTypeArchive: (id: string) => `/event-types/${id}/archive` as const,
   eventTypeUnarchive: (id: string) => `/event-types/${id}/unarchive` as const,
 
+  // Event Categories
+  eventCategories: () => "/event-categories" as const,
+  eventCategoriesNew: () => "/event-categories/new" as const,
+  eventCategory: (id: string) => `/event-categories/${id}` as const,
+  eventCategoryEdit: (id: string) => `/event-categories/${id}/edit` as const,
+  eventCategoryArchive: (id: string) => `/event-categories/${id}/archive` as const,
+  eventCategoryUnarchive: (id: string) => `/event-categories/${id}/unarchive` as const,
+
   // Settings
   settingsProfile: () => "/settings/profile" as const,
   settingsOrganization: () => "/settings/organization" as const,
@@ -76,6 +84,10 @@ export const buildApiRoute = {
   // Event Types
   eventTypes: () => "/api/event-types" as const,
   eventType: (id: string) => `/api/event-types/${id}` as const,
+
+  // Event Categories
+  eventCategories: () => "/api/event-categories" as const,
+  eventCategory: (id: string) => `/api/event-categories/${id}` as const,
 
   // Invitations
   invitations: () => "/api/invitations" as const,

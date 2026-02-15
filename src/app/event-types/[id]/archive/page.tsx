@@ -166,11 +166,6 @@ export default function ArchiveEventTypePage() {
               />
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{eventType.name}</h3>
-                {eventType.category && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                    {eventType.category}
-                  </p>
-                )}
                 <div className="flex gap-2 mt-2">
                   <Badge variant="outline">{eventType.duration} minutes</Badge>
                   <Badge variant="outline">

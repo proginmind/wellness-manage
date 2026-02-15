@@ -1,3 +1,4 @@
+import { EventCategory } from "@/types/event-category";
 import { EventType } from "@/types/event-type";
 import { Invitation, InvitationStatus } from "@/types/invitation";
 import { Member, MemberStatus } from "@/types/member";
@@ -589,7 +590,8 @@ interface VisitRow {
   event_type_name: string;
   event_type_duration: number;
   event_type_price: number;
-  event_type_category: string | null;
+  event_type_category_name: string | null;
+  event_type_category_color: string | null;
   date: string;
   time: string;
   status: VisitStatus;
@@ -615,7 +617,8 @@ export function dbToVisit(row: VisitRow): Visit {
     eventTypeName: row.event_type_name,
     eventTypeDuration: row.event_type_duration,
     eventTypePrice: row.event_type_price,
-    eventTypeCategory: row.event_type_category || undefined,
+    eventTypeCategoryName: row.event_type_category_name || undefined,
+    eventTypeCategoryColor: row.event_type_category_color || undefined,
     date: new Date(row.date),
     time: new Date(dateTimeStr),
     status: row.status,
@@ -738,16 +741,33 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
   const profile = await getCurrentUserProfile(user.id);
 
   // Fetch event type to create snapshot
-  const { data: eventType, error: eventTypeError } = await supabase
+  const { data: eventTypeData, error: eventTypeError } = await supabase
     .from("event_types")
-    .select("name, duration, price, category")
+    .select("name, duration, price, category_id")
     .eq("id", formData.eventTypeId)
     .eq("organization_id", profile.organizationId)
     .single();
 
-  if (eventTypeError || !eventType) {
+  if (eventTypeError || !eventTypeData) {
     console.error("Error fetching event type:", eventTypeError);
     throw new Error("Event type not found");
+  }
+
+  // Fetch category if it exists
+  let categoryName: string | null = null;
+  let categoryColor: string | null = null;
+
+  if (eventTypeData.category_id) {
+    const { data: categoryData } = await supabase
+      .from("event_categories")
+      .select("name, color")
+      .eq("id", eventTypeData.category_id)
+      .single();
+
+    if (categoryData) {
+      categoryName = categoryData.name;
+      categoryColor = categoryData.color;
+    }
   }
 
   const dbData = {
@@ -755,10 +775,11 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
     member_id: formData.memberId,
     event_type_id: formData.eventTypeId,
     // Snapshot event type data at booking time
-    event_type_name: eventType.name,
-    event_type_duration: eventType.duration,
-    event_type_price: eventType.price,
-    event_type_category: eventType.category,
+    event_type_name: eventTypeData.name,
+    event_type_duration: eventTypeData.duration,
+    event_type_price: eventTypeData.price,
+    event_type_category_name: categoryName,
+    event_type_category_color: categoryColor,
     date: formData.date,
     time: formData.time,
     status: "pending" as VisitStatus,
@@ -786,7 +807,7 @@ interface EventTypeRow {
   name: string;
   description: string | null;
   color: string;
-  category: string | null;
+  category_id: string | null;
   duration: number;
   buffer_before: number;
   buffer_after: number;
@@ -808,7 +829,7 @@ export function dbToEventType(row: EventTypeRow): EventType {
     name: row.name,
     description: row.description || undefined,
     color: row.color,
-    category: row.category || undefined,
+    categoryId: row.category_id || undefined,
     duration: row.duration,
     bufferBefore: row.buffer_before,
     bufferAfter: row.buffer_after,
@@ -880,7 +901,7 @@ export async function createEventType(
     name: eventTypeData.name,
     description: eventTypeData.description || null,
     color: eventTypeData.color,
-    category: eventTypeData.category || null,
+    category_id: eventTypeData.categoryId || null,
     duration: eventTypeData.duration,
     buffer_before: eventTypeData.bufferBefore,
     buffer_after: eventTypeData.bufferAfter,
@@ -994,7 +1015,7 @@ export async function updateEventType(
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.description !== undefined) dbUpdates.description = updates.description || null;
   if (updates.color !== undefined) dbUpdates.color = updates.color;
-  if (updates.category !== undefined) dbUpdates.category = updates.category || null;
+  if (updates.categoryId !== undefined) dbUpdates.category_id = updates.categoryId || null;
   if (updates.duration !== undefined) dbUpdates.duration = updates.duration;
   if (updates.bufferBefore !== undefined) dbUpdates.buffer_before = updates.bufferBefore;
   if (updates.bufferAfter !== undefined) dbUpdates.buffer_after = updates.bufferAfter;
@@ -1022,4 +1043,207 @@ export async function updateEventType(
   }
 
   return dbToEventType(data);
+}
+
+// ============================================================================
+// EVENT CATEGORIES QUERIES (Organization-scoped)
+// ============================================================================
+
+interface EventCategoryRow {
+  id: string;
+  organization_id: string;
+  name: string;
+  description: string | null;
+  color: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function dbToEventCategory(row: EventCategoryRow): EventCategory {
+  return {
+    id: row.id,
+    organizationId: row.organization_id,
+    name: row.name,
+    description: row.description || undefined,
+    color: row.color,
+    isActive: row.is_active,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+/**
+ * Get all event categories (organization-scoped)
+ * @param organizationId - Organization ID (required for organization scoping)
+ * @param filters - Optional filters for active status
+ */
+export async function getEventCategories(
+  organizationId: string,
+  filters?: {
+    isActive?: boolean;
+  }
+): Promise<EventCategory[]> {
+  const supabase = await createClient();
+
+  let query = supabase
+    .from("event_categories")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("name", { ascending: true });
+
+  // Apply filters if provided
+  if (filters?.isActive !== undefined) {
+    query = query.eq("is_active", filters.isActive);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching event categories:", error);
+    throw new Error("Failed to fetch event categories");
+  }
+
+  return (data || []).map(dbToEventCategory);
+}
+
+/**
+ * Create a new event category
+ * @param categoryData - Event category data to create
+ * @param organizationId - Organization ID
+ */
+export async function createEventCategory(
+  categoryData: Omit<EventCategory, "id" | "organizationId" | "createdAt" | "updatedAt">,
+  organizationId: string
+): Promise<EventCategory> {
+  const supabase = await createClient();
+
+  // Convert camelCase to snake_case for database
+  const dbData = {
+    organization_id: organizationId,
+    name: categoryData.name,
+    description: categoryData.description || null,
+    color: categoryData.color,
+    is_active: categoryData.isActive,
+  };
+
+  const { data, error } = await supabase.from("event_categories").insert(dbData).select().single();
+
+  if (error) {
+    console.error("Error creating event category:", error);
+    throw new Error("Failed to create event category");
+  }
+
+  return dbToEventCategory(data);
+}
+
+/**
+ * Get a single event category by ID (organization-scoped)
+ * @param id - Event category ID
+ * @param organizationId - Organization ID (required for organization scoping)
+ */
+export async function getEventCategoryById(
+  id: string,
+  organizationId: string
+): Promise<EventCategory | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("event_categories")
+    .select("*")
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return null; // Not found
+    }
+    console.error("Error fetching event category:", error);
+    throw new Error("Failed to fetch event category");
+  }
+
+  return dbToEventCategory(data);
+}
+
+/**
+ * Archive an event category (sets is_active to false)
+ * @param id - Event category ID
+ */
+export async function archiveEventCategory(id: string): Promise<EventCategory> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("event_categories")
+    .update({
+      is_active: false,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error archiving event category:", error);
+    throw new Error("Failed to archive event category");
+  }
+
+  return dbToEventCategory(data);
+}
+
+/**
+ * Unarchive an event category (sets is_active to true)
+ * @param id - Event category ID
+ */
+export async function unarchiveEventCategory(id: string): Promise<EventCategory> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("event_categories")
+    .update({
+      is_active: true,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error unarchiving event category:", error);
+    throw new Error("Failed to unarchive event category");
+  }
+
+  return dbToEventCategory(data);
+}
+
+/**
+ * Update an event category
+ * @param id - Event category ID
+ * @param updates - Partial EventCategory updates
+ */
+export async function updateEventCategory(
+  id: string,
+  updates: Partial<Omit<EventCategory, "id" | "organizationId" | "createdAt" | "updatedAt">>
+): Promise<EventCategory> {
+  const supabase = await createClient();
+
+  // Convert camelCase to snake_case for database
+  const dbUpdates: Record<string, unknown> = {};
+
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.description !== undefined) dbUpdates.description = updates.description || null;
+  if (updates.color !== undefined) dbUpdates.color = updates.color;
+  if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+
+  const { data, error } = await supabase
+    .from("event_categories")
+    .update(dbUpdates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating event category:", error);
+    throw new Error("Failed to update event category");
+  }
+
+  return dbToEventCategory(data);
 }

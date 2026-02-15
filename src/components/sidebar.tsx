@@ -6,6 +6,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Folder,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -38,6 +39,11 @@ const menuItems = [
     title: "Event Types",
     href: buildRoute.eventTypes(),
     icon: Layers,
+  },
+  {
+    title: "Categories",
+    href: buildRoute.eventCategories(),
+    icon: Folder,
   },
 ];
 

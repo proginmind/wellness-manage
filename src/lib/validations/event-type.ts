@@ -19,11 +19,7 @@ export const eventTypeFormSchema = z.object({
     .min(1, "Color is required")
     .regex(/^#[0-9A-Fa-f]{6}$/, "Color must be a valid hex color (e.g., #FF5733)"),
 
-  category: z
-    .string()
-    .max(50, "Category must be less than 50 characters")
-    .optional()
-    .or(z.literal("")),
+  categoryId: z.string().uuid("Invalid category ID").optional(),
 
   // Scheduling Configuration (in minutes)
   duration: z

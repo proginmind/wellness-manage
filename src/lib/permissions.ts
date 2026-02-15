@@ -24,6 +24,7 @@ export type Resource =
   | "staff"
   | "invitations"
   | "event_types"
+  | "event_categories"
   | "profile";
 
 /**
@@ -75,6 +76,9 @@ export const PERMISSIONS = {
     // Event Types: Full management (owner only)
     event_types: ["view", "create", "update", "delete"] as Action[],
 
+    // Event Categories: Full management (owner only)
+    event_categories: ["view", "create", "update", "delete"] as Action[],
+
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
   },
@@ -97,6 +101,9 @@ export const PERMISSIONS = {
 
     // Event Types: Read-only (needed for creating bookings/visits)
     event_types: ["view"] as Action[],
+
+    // Event Categories: Read-only (needed for viewing event types)
+    event_categories: ["view"] as Action[],
 
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
@@ -321,6 +328,12 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "event_types.update": "Update event types",
   "event_types.delete": "Delete event types",
 
+  // Event Categories
+  "event_categories.view": "View event categories",
+  "event_categories.create": "Create new event categories",
+  "event_categories.update": "Update event categories",
+  "event_categories.delete": "Delete event categories",
+
   // Profile
   "profile.view": "View own profile",
   "profile.update": "Update own profile",
@@ -354,6 +367,11 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "event_types.invite": "N/A",
   "event_types.remove": "N/A",
   "event_types.manage": "N/A",
+  "event_categories.archive": "N/A",
+  "event_categories.export": "N/A",
+  "event_categories.invite": "N/A",
+  "event_categories.remove": "N/A",
+  "event_categories.manage": "N/A",
   "profile.create": "N/A",
   "profile.delete": "N/A",
   "profile.archive": "N/A",

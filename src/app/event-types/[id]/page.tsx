@@ -66,11 +66,6 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   {eventType.name}
                 </h1>
-                {eventType.category && (
-                  <p className="text-gray-600 dark:text-gray-400 mt-1 capitalize">
-                    {eventType.category}
-                  </p>
-                )}
               </div>
             </div>
 

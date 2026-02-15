@@ -6,7 +6,7 @@ export interface EventType {
   name: string;
   description?: string;
   color: string;
-  category?: string;
+  categoryId?: string;
 
   // Scheduling Configuration
   duration: number; // in minutes

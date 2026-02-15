@@ -149,10 +149,18 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
                   <div>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Service</p>
                     <p className="font-medium">{visit.eventTypeName}</p>
-                    {visit.eventTypeCategory && (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">
-                        {visit.eventTypeCategory}
-                      </p>
+                    {visit.eventTypeCategoryName && (
+                      <div className="flex items-center gap-2 mt-1">
+                        {visit.eventTypeCategoryColor && (
+                          <div
+                            className="w-3 h-3 rounded"
+                            style={{ backgroundColor: visit.eventTypeCategoryColor }}
+                          />
+                        )}
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          {visit.eventTypeCategoryName}
+                        </p>
+                      </div>
                     )}
                   </div>
 
