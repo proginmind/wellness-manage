@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { MembersListResponse } from "@/types/api";
 import { getMembers } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,11 +23,13 @@ export async function GET(request: Request) {
     // Fetch members from database
     const members = await getMembers(search);
 
-    return NextResponse.json({
+    const response: MembersListResponse = {
       members,
       total: members.length,
       search: search || null,
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching members:", error);
     return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });

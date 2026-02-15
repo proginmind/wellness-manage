@@ -1,17 +1,34 @@
 import { z } from "zod";
 
-export const visitFormSchema = z.object({
-  memberId: z.string().min(1, "Member ID is required"),
+export const visitFormSchema = z
+  .object({
+    memberId: z.string().uuid("Invalid member ID"),
 
-  date: z.string().min(1, "Visit date is required"),
+    eventTypeId: z.string().uuid("Invalid event type ID"),
 
-  time: z.string().min(1, "Visit time is required"),
+    staffId: z.string().uuid("Invalid staff ID").optional(),
 
-  duration: z.number().min(1, "Visit duration is required"),
+    date: z.string().min(1, "Visit date is required"),
 
-  type: z.string().min(1, "Visit type is required"),
+    time: z
+      .string()
+      .min(1, "Visit time is required")
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
 
-  notes: z.string().optional(),
-});
+    notes: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // Validate that the date is not in the past
+      const visitDate = new Date(data.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return visitDate >= today;
+    },
+    {
+      message: "Visit date cannot be in the past",
+      path: ["date"],
+    }
+  );
 
 export type VisitFormValues = z.infer<typeof visitFormSchema>;

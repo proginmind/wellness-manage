@@ -144,16 +144,25 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
 
                 <Separator />
 
-                {/* Type & Duration */}
+                {/* Service Details - using snapshot data from booking time */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Service Type</p>
-                    <p className="font-medium capitalize">{visit.type}</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Service</p>
+                    <p className="font-medium">{visit.eventTypeName}</p>
+                    {visit.eventTypeCategory && (
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">
+                        {visit.eventTypeCategory}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Duration</p>
-                    <p className="font-medium">{visit.duration} minutes</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                      Duration & Price
+                    </p>
+                    <p className="font-medium">
+                      {visit.eventTypeDuration} minutes • ${visit.eventTypePrice.toFixed(2)}
+                    </p>
                   </div>
                 </div>
 

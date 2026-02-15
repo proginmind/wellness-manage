@@ -90,8 +90,8 @@ export function VisitCard({ visit, member }: VisitCardProps) {
                 <User className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">Service</p>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 capitalize truncate">
-                    {visit.type}
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">
+                    {visit.eventTypeName}
                   </p>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export function VisitCard({ visit, member }: VisitCardProps) {
                 <div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">Duration</p>
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    {visit.duration} min
+                    {visit.eventTypeDuration} min
                   </p>
                 </div>
               </div>

@@ -34,16 +34,16 @@ export default function NewVisitPage() {
 
       const result = await response.json();
 
-      // Invalidate members cache to refetch with new member
+      // Invalidate visits cache to refetch with new visit
       mutate("/api/visits");
       mutate((key) => typeof key === "string" && key.startsWith("/api/visits"));
 
       toast.success("Visit created successfully", {
-        description: `${result.member.firstName} ${result.member.lastName} has been added to the system.`,
+        description: "The visit has been scheduled.",
       });
 
-      // Redirect to members page
-      router.push("/visits");
+      // Redirect to visit details page
+      router.push(`/visits/${result.visit.id}`);
     } catch (error) {
       console.error("Error creating visit:", error);
       toast.error("Failed to create visit", {

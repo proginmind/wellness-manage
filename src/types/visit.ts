@@ -4,13 +4,17 @@ export interface Visit {
   id: string;
   organizationId: string;
   memberId: string;
+  eventTypeId: string;
+  // Snapshot fields - preserve event type data at booking time
+  eventTypeName: string;
+  eventTypeDuration: number;
+  eventTypePrice: number;
+  eventTypeCategory?: string;
   date: Date;
   time: Date;
-  duration: number;
-  type: string;
   status: VisitStatus;
   notes?: string;
-  staffId: string;
+  staffId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

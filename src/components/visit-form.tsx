@@ -2,7 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 
+import { EventTypesListResponse, MembersListResponse, StaffListResponse } from "@/types/api";
+import { fetcher } from "@/lib/fetcher";
 import { visitFormSchema, VisitFormValues } from "@/lib/validations/visit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,14 +38,36 @@ export function VisitForm({
   isSubmitting,
   onCancel,
 }: VisitFormProps) {
+  // Fetch members
+  const { data: membersResponse, isLoading: membersLoading } = useSWR<MembersListResponse>(
+    "/api/members",
+    fetcher
+  );
+
+  // Fetch event types (active only)
+  const { data: eventTypesResponse, isLoading: eventTypesLoading } = useSWR<EventTypesListResponse>(
+    "/api/event-types",
+    fetcher
+  );
+
+  // Fetch staff members
+  const { data: staffResponse, isLoading: staffLoading } = useSWR<StaffListResponse>(
+    "/api/staff",
+    fetcher
+  );
+
+  const members = membersResponse?.members;
+  const eventTypes = eventTypesResponse?.eventTypes;
+  const staff = staffResponse?.staff;
+
   const form = useForm<VisitFormValues>({
     resolver: zodResolver(visitFormSchema),
     defaultValues: defaultValues || {
       memberId: "",
+      eventTypeId: "",
+      staffId: undefined,
       date: new Date().toISOString().split("T")[0],
-      time: new Date().toISOString().split("T")[1],
-      duration: 0,
-      type: "",
+      time: "09:00",
       notes: "",
     },
   });
@@ -73,14 +98,20 @@ export function VisitForm({
                 <FormItem>
                   <FormLabel>Member *</FormLabel>
                   <FormControl>
-                    <Select {...field}>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={membersLoading}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a member" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">John Doe</SelectItem>
-                        <SelectItem value="2">Jane Doe</SelectItem>
-                        <SelectItem value="3">Jim Doe</SelectItem>
+                        {members?.map((member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            {member.firstName} {member.lastName}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -119,53 +150,71 @@ export function VisitForm({
               )}
             />
 
-            {/* Visit Duration */}
+            {/* Event Type (Service) */}
             <FormField
               control={form.control}
-              name="duration"
+              name="eventTypeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Visit Duration *</FormLabel>
+                  <FormLabel>Service *</FormLabel>
                   <FormControl>
                     <Select
-                      {...field}
-                      value={field.value.toString()}
+                      value={field.value}
                       onValueChange={field.onChange}
+                      disabled={eventTypesLoading}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a duration" />
+                        <SelectValue placeholder="Select a service" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
+                        {eventTypes
+                          ?.filter((et) => et.isActive)
+                          .map((eventType) => (
+                            <SelectItem key={eventType.id} value={eventType.id}>
+                              {eventType.name} - {eventType.duration} min - $
+                              {eventType.price.toFixed(2)}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormDescription>Visit duration</FormDescription>
+                  <FormDescription>
+                    Service duration and price will be applied from the selected service
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Visit Type */}
+            {/* Staff Member */}
             <FormField
               control={form.control}
-              name="type"
+              name="staffId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Visit Type *</FormLabel>
+                  <FormLabel>Staff Member (Optional)</FormLabel>
                   <FormControl>
-                    <Select {...field}>
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={(value) => field.onChange(value || undefined)}
+                      disabled={staffLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a type" />
+                        <SelectValue placeholder="Not assigned - Select a staff member" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">Consultation</SelectItem>
-                        <SelectItem value="2">Treatment</SelectItem>
+                        {staff?.map((staffMember) => {
+                          const displayName = staffMember.email.split("@")[0];
+                          return (
+                            <SelectItem key={staffMember.id} value={staffMember.id}>
+                              {displayName} ({staffMember.role})
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormDescription>Visit type</FormDescription>
+                  <FormDescription>Assign a staff member to this visit</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -585,13 +585,16 @@ interface VisitRow {
   id: string;
   organization_id: string;
   member_id: string;
+  event_type_id: string;
+  event_type_name: string;
+  event_type_duration: number;
+  event_type_price: number;
+  event_type_category: string | null;
   date: string;
   time: string;
-  duration: number;
-  type: string;
   status: VisitStatus;
   notes: string | null;
-  staff_id: string;
+  staff_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -608,13 +611,16 @@ export function dbToVisit(row: VisitRow): Visit {
     id: row.id,
     organizationId: row.organization_id,
     memberId: row.member_id,
+    eventTypeId: row.event_type_id,
+    eventTypeName: row.event_type_name,
+    eventTypeDuration: row.event_type_duration,
+    eventTypePrice: row.event_type_price,
+    eventTypeCategory: row.event_type_category || undefined,
     date: new Date(row.date),
     time: new Date(dateTimeStr),
-    duration: row.duration,
-    type: row.type,
     status: row.status,
     notes: row.notes || undefined,
-    staffId: row.staff_id,
+    staffId: row.staff_id || undefined,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -731,16 +737,33 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
 
   const profile = await getCurrentUserProfile(user.id);
 
+  // Fetch event type to create snapshot
+  const { data: eventType, error: eventTypeError } = await supabase
+    .from("event_types")
+    .select("name, duration, price, category")
+    .eq("id", formData.eventTypeId)
+    .eq("organization_id", profile.organizationId)
+    .single();
+
+  if (eventTypeError || !eventType) {
+    console.error("Error fetching event type:", eventTypeError);
+    throw new Error("Event type not found");
+  }
+
   const dbData = {
     organization_id: profile.organizationId,
     member_id: formData.memberId,
+    event_type_id: formData.eventTypeId,
+    // Snapshot event type data at booking time
+    event_type_name: eventType.name,
+    event_type_duration: eventType.duration,
+    event_type_price: eventType.price,
+    event_type_category: eventType.category,
     date: formData.date,
     time: formData.time,
-    duration: formData.duration,
-    type: formData.type,
     status: "pending" as VisitStatus,
     notes: formData.notes,
-    staff_id: userId,
+    staff_id: formData.staffId || null,
   };
 
   const { data, error } = await supabase.from("visits").insert(dbData).select().single();

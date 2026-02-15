@@ -13,7 +13,7 @@ interface VisitsListProps {
 }
 
 export function VisitsList({ visits, searchQuery }: VisitsListProps) {
-  // Display members list or empty state
+  // Display visits list or empty state
   if (visits.length > 0) {
     return (
       <div className="flex flex-col gap-4">

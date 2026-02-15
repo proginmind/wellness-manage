@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { EventTypesListResponse } from "@/types/api";
 import { requirePermission } from "@/lib/api-permissions";
 import { createEventType, getEventTypes } from "@/lib/supabase/queries";
 import { eventTypeFormSchema } from "@/lib/validations/event-type";
@@ -34,14 +35,16 @@ export async function GET(request: Request) {
       Object.keys(filters).length > 0 ? filters : undefined
     );
 
-    return NextResponse.json({
+    const response: EventTypesListResponse = {
       eventTypes,
       total: eventTypes.length,
       filters: {
         isActive: filters.isActive !== undefined ? filters.isActive : null,
         isBookable: filters.isBookable !== undefined ? filters.isBookable : null,
       },
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching event types:", error);
     const message = error instanceof Error ? error.message : "Failed to fetch event types";

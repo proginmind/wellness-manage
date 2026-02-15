@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { requireOwner } from "@/lib/api-permissions";
+import { StaffListResponse } from "@/types/api";
+import { requirePermission } from "@/lib/api-permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    // Check permission: owner only
-    const permissionResult = await requireOwner();
+    // Check permission: all authenticated users can view staff (for visit assignment)
+    const permissionResult = await requirePermission("staff", "view");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
     const { organizationId } = permissionResult;
@@ -75,10 +76,12 @@ export async function GET(request: Request) {
       createdAt: profile.created_at,
     }));
 
-    return NextResponse.json({
+    const response: StaffListResponse = {
       staff,
       total: staff.length,
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching staff:", error);
     return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
