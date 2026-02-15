@@ -105,6 +105,78 @@ pnpm dev
 - ✅ Path aliases (@/_ for src/_)
 - ✅ Node.js version pinned with .nvmrc
 
+## Database Schema
+
+The application uses Supabase (PostgreSQL) with the following entity relationships:
+
+```mermaid
+erDiagram
+  AUTH_USERS {
+    uuid id PK
+  }
+  ORGANIZATIONS {
+    uuid id PK
+    uuid owner_id FK
+  }
+  EVENT_CATEGORIES {
+    uuid id PK
+    uuid organization_id FK
+  }
+  EVENT_TYPES {
+    uuid id PK
+    uuid organization_id FK
+    uuid category_id FK
+  }
+  INVITATIONS {
+    uuid id PK
+    uuid organization_id FK
+    uuid invited_by FK
+  }
+  MEMBERS {
+    uuid id PK
+    uuid user_id FK
+    uuid organization_id FK
+  }
+  PROFILES {
+    uuid id PK
+    uuid user_id FK
+    uuid organization_id FK
+  }
+  VISITS {
+    uuid id PK
+    uuid member_id FK
+    uuid staff_id FK
+    uuid organization_id FK
+    uuid event_type_id FK
+  }
+
+  AUTH_USERS o|--|| ORGANIZATIONS : owns
+  ORGANIZATIONS ||--o{ EVENT_CATEGORIES : contains
+  ORGANIZATIONS ||--o{ EVENT_TYPES : contains
+  EVENT_CATEGORIES ||--o{ EVENT_TYPES : categorizes
+  ORGANIZATIONS ||--o{ INVITATIONS : has
+  AUTH_USERS ||--o{ INVITATIONS : sends
+  AUTH_USERS ||--o{ MEMBERS : links_to
+  ORGANIZATIONS ||--o{ MEMBERS : contains
+  AUTH_USERS o|--|| PROFILES : has
+  ORGANIZATIONS ||--o{ PROFILES : contains
+  MEMBERS ||--o{ VISITS : has
+  PROFILES ||--o{ VISITS : staffs
+  ORGANIZATIONS ||--o{ VISITS : contains
+  EVENT_TYPES ||--o{ VISITS : types
+```
+
+### Key Entities
+
+- **AUTH_USERS**: Supabase authentication users
+- **ORGANIZATIONS**: Wellness center organizations
+- **PROFILES**: User profiles linked to organizations (staff members)
+- **MEMBERS**: Clients/members of the wellness center
+- **EVENT_CATEGORIES**: Service categories (e.g., Massage, Yoga, Therapy)
+- **EVENT_TYPES**: Specific services/treatments offered
+- **VISITS**: Appointments/visits scheduled for members
+- **INVITATIONS**: Pending staff invitations to join organizations
+
 ## Development Guidelines
 
 ### Import Aliases
