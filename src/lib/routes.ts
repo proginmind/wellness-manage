@@ -98,12 +98,10 @@ export const buildApiRoute = {
   invitationProcess: (token: string) => `/api/invitations/process/${token}` as const,
   invitationAccept: (token: string) => `/api/invitations/process/${token}/accept` as const,
 
-  // Staff
-  staff: () => "/api/staff" as const,
-
-  // Team
-  teamMemberApi: (id: string) => `/api/team/${id}` as const,
-  teamMemberEventTypes: (id: string) => `/api/team/${id}/event-types` as const,
+  // Profiles (staff/team members)
+  profiles: () => "/api/profiles" as const,
+  profile: (id: string) => `/api/profiles/${id}` as const,
+  profileEventTypes: (id: string) => `/api/profiles/${id}/event-types` as const,
 
   // Stats
   stats: () => "/api/stats" as const,

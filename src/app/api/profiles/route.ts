@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    // Check permission: all authenticated users can view staff (for visit assignment)
+    // Check permission: all authenticated users can view profiles (for visit assignment)
     const permissionResult = await requirePermission("staff", "view");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
@@ -61,8 +61,8 @@ export async function GET(request: Request) {
     const { data: profiles, error } = await profileQuery;
 
     if (error) {
-      console.error("Error fetching staff:", error);
-      return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
+      console.error("Error fetching profiles:", error);
+      return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
     }
 
     // Step 4: Create email map and transform results
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching staff:", error);
-    return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
+    console.error("Error fetching profiles:", error);
+    return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
   }
 }

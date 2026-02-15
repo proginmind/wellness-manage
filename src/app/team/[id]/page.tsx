@@ -22,7 +22,7 @@ export default function TeamMemberDetailPage() {
   const profileId = params.id as string;
 
   const { data, error, isLoading } = useSWR<{ profile: ProfileWithEventTypes }>(
-    buildApiRoute.teamMemberApi(profileId),
+    buildApiRoute.profile(profileId),
     fetcher
   );
 

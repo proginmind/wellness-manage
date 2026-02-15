@@ -56,7 +56,7 @@ export default function TeamMemberEditPage() {
 
   const { data: profileData, isLoading: profileLoading } = useSWR<{
     profile: ProfileWithEventTypes;
-  }>(buildApiRoute.teamMemberApi(profileId), fetcher);
+  }>(buildApiRoute.profile(profileId), fetcher);
 
   const { data: eventTypesData, isLoading: eventTypesLoading } = useSWR<EventTypesListResponse>(
     buildApiRoute.eventTypes() + "?is_active=true",
@@ -64,12 +64,12 @@ export default function TeamMemberEditPage() {
   );
 
   const { trigger: triggerAssign, isMutating: isAssigning } = useSWRMutation(
-    buildApiRoute.teamMemberEventTypes(profileId),
+    buildApiRoute.profileEventTypes(profileId),
     assignEventTypeMutation,
     {
       onSuccess: () => {
         toast.success("Service assigned successfully");
-        mutate(buildApiRoute.teamMemberApi(profileId));
+        mutate(buildApiRoute.profile(profileId));
       },
       onError: (error) => {
         toast.error("Failed to assign service", {
@@ -80,12 +80,12 @@ export default function TeamMemberEditPage() {
   );
 
   const { trigger: triggerRemove, isMutating: isRemoving } = useSWRMutation(
-    buildApiRoute.teamMemberEventTypes(profileId),
+    buildApiRoute.profileEventTypes(profileId),
     removeEventTypeMutation,
     {
       onSuccess: () => {
         toast.success("Service removed successfully");
-        mutate(buildApiRoute.teamMemberApi(profileId));
+        mutate(buildApiRoute.profile(profileId));
       },
       onError: (error) => {
         toast.error("Failed to remove service", {

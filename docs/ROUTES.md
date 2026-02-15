@@ -141,7 +141,7 @@ const isSettingsActive = isRouteActive("/settings", pathname);
 | `API_ROUTES.VISITS`              | `/api/visits`              | Visits CRUD          |
 | `API_ROUTES.EVENT_TYPES`         | `/api/event-types`         | Event types CRUD     |
 | `API_ROUTES.INVITATIONS`         | `/api/invitations`         | Invitations CRUD     |
-| `API_ROUTES.STAFF`               | `/api/staff`               | Staff members        |
+| `buildApiRoute.profiles()`       | `/api/profiles`            | Profiles/staff list  |
 | `API_ROUTES.STATS`               | `/api/stats`               | Dashboard statistics |
 | `API_ROUTES.HEALTH`              | `/api/health`              | Health check         |
 | `API_ROUTES.UPLOAD_MEMBER_IMAGE` | `/api/upload/member-image` | Upload member image  |
@@ -155,6 +155,8 @@ const isSettingsActive = isRouteActive("/settings", pathname);
 | `buildApiRoute.invitation(id)`           | `id: string`    | `buildApiRoute.invitation("789")` → `/api/invitations/789`                      |
 | `buildApiRoute.invitationProcess(token)` | `token: string` | `buildApiRoute.invitationProcess("abc")` → `/api/invitations/process/abc`       |
 | `buildApiRoute.invitationAccept(token)`  | `token: string` | `buildApiRoute.invitationAccept("abc")` → `/api/invitations/process/abc/accept` |
+| `buildApiRoute.profile(id)`              | `id: string`    | `buildApiRoute.profile("123")` → `/api/profiles/123`                            |
+| `buildApiRoute.profileEventTypes(id)`    | `id: string`    | `buildApiRoute.profileEventTypes("123")` → `/api/profiles/123/event-types`      |
 
 ## Adding New Routes
 

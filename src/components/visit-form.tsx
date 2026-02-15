@@ -6,6 +6,7 @@ import useSWR from "swr";
 
 import { EventTypesListResponse, MembersListResponse, StaffListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
+import { buildApiRoute } from "@/lib/routes";
 import { visitFormSchema, VisitFormValues } from "@/lib/validations/visit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +53,7 @@ export function VisitForm({
 
   // Fetch staff members
   const { data: staffResponse, isLoading: staffLoading } = useSWR<StaffListResponse>(
-    "/api/staff",
+    buildApiRoute.profiles(),
     fetcher
   );
 

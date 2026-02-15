@@ -8,7 +8,7 @@ import useSWR from "swr";
 
 import { fetcher } from "@/lib/fetcher";
 import { UserRole } from "@/lib/permissions";
-import { buildRoute } from "@/lib/routes";
+import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,8 @@ export function TeamList() {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const { data, error, isLoading } = useSWR<{ staff: StaffMember[]; total: number }>(
-    `/api/staff${debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : ""}`,
+    buildApiRoute.profiles() +
+      (debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : ""),
     fetcher
   );
 
