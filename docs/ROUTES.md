@@ -103,22 +103,23 @@ const isSettingsActive = isRouteActive("/settings", pathname);
 
 ### Page Routes
 
-| Constant                          | Path                        | Description           |
-| --------------------------------- | --------------------------- | --------------------- |
-| `ROUTES.HOME`                     | `/`                         | Landing page          |
-| `ROUTES.LOGIN`                    | `/login`                    | Login page            |
-| `ROUTES.FORGOT_PASSWORD`          | `/forgot-password`          | Forgot password page  |
-| `ROUTES.RESET_PASSWORD`           | `/reset-password`           | Reset password page   |
-| `ROUTES.DASHBOARD`                | `/dashboard`                | Dashboard page        |
-| `ROUTES.MEMBERS`                  | `/members`                  | Members list          |
-| `ROUTES.MEMBERS_NEW`              | `/members/new`              | Add new member        |
-| `ROUTES.VISITS`                   | `/visits`                   | Visits list           |
-| `ROUTES.VISITS_NEW`               | `/visits/new`               | Add new visit         |
-| `ROUTES.SETTINGS_PROFILE`         | `/settings/profile`         | User profile settings |
-| `ROUTES.SETTINGS_ORGANIZATION`    | `/settings/organization`    | Organization settings |
-| `ROUTES.SETTINGS_TEAM`            | `/settings/team`            | Team management       |
-| `ROUTES.SETTINGS_INVITATIONS`     | `/settings/invitations`     | Staff invitations     |
-| `ROUTES.SETTINGS_INVITATIONS_NEW` | `/settings/invitations/new` | Create new invitation |
+| Constant                                 | Path                        | Description           |
+| ---------------------------------------- | --------------------------- | --------------------- |
+| `ROUTES.HOME`                            | `/`                         | Landing page          |
+| `ROUTES.LOGIN`                           | `/login`                    | Login page            |
+| `ROUTES.FORGOT_PASSWORD`                 | `/forgot-password`          | Forgot password page  |
+| `ROUTES.RESET_PASSWORD`                  | `/reset-password`           | Reset password page   |
+| `ROUTES.DASHBOARD`                       | `/dashboard`                | Dashboard page        |
+| `buildRoute.team()`                      | `/team`                     | Team management       |
+| `ROUTES.MEMBERS`                         | `/members`                  | Members list          |
+| `ROUTES.MEMBERS_NEW`                     | `/members/new`              | Add new member        |
+| `ROUTES.VISITS`                          | `/visits`                   | Visits list           |
+| `ROUTES.VISITS_NEW`                      | `/visits/new`               | Add new visit         |
+| `ROUTES.SETTINGS_PROFILE`                | `/settings/profile`         | User profile settings |
+| `ROUTES.SETTINGS_ORGANIZATION`           | `/settings/organization`    | Organization settings |
+| `buildRoute.settingsTeam()` (deprecated) | `/settings/team`            | Use `team()` instead  |
+| `ROUTES.SETTINGS_INVITATIONS`            | `/settings/invitations`     | Staff invitations     |
+| `ROUTES.SETTINGS_INVITATIONS_NEW`        | `/settings/invitations/new` | Create new invitation |
 
 ### Dynamic Page Route Builders
 

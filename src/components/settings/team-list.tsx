@@ -49,14 +49,6 @@ export function TeamList() {
             className="pl-9"
           />
         </div>
-        <PermissionGate resource="invitations" action="create">
-          <Button asChild>
-            <Link href="/settings/invitations/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Invite Staff
-            </Link>
-          </Button>
-        </PermissionGate>
       </div>
 
       {/* Loading State */}

@@ -31,6 +31,11 @@ const menuItems = [
     icon: Users,
   },
   {
+    title: "Team",
+    href: buildRoute.team(),
+    icon: Users,
+  },
+  {
     title: "Visits",
     href: buildRoute.visits(),
     icon: Calendar,

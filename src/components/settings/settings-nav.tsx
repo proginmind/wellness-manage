@@ -26,12 +26,6 @@ const navigationItems: NavItem[] = [
     icon: Building2,
   },
   {
-    href: "/settings/team",
-    label: "Team",
-    icon: Users,
-    ownerOnly: true,
-  },
-  {
     href: "/settings/invitations",
     label: "Invitations",
     icon: Mail,

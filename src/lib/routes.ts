@@ -19,6 +19,7 @@ export const buildRoute = {
 
   // Main app routes
   dashboard: () => "/dashboard" as const,
+  team: () => "/team" as const,
 
   // Members
   members: () => "/members" as const,
