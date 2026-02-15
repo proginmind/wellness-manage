@@ -7,6 +7,12 @@ export interface EventType {
   description?: string;
   color: string;
   categoryId?: string;
+  // Optional: populated when fetching with category join
+  category?: {
+    id: string;
+    name: string;
+    color: string;
+  };
 
   // Scheduling Configuration
   duration: number; // in minutes

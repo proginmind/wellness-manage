@@ -861,7 +861,7 @@ export async function getEventTypes(
 
   let query = supabase
     .from("event_types")
-    .select("*")
+    .select("*, event_categories:category_id(id, name, color)")
     .eq("organization_id", organizationId)
     .order("name", { ascending: true });
 
@@ -881,7 +881,19 @@ export async function getEventTypes(
     throw new Error("Failed to fetch event types");
   }
 
-  return (data || []).map(dbToEventType);
+  return (data || []).map((row) => {
+    const eventType = dbToEventType(row);
+    // Add category data if available
+    if (row.event_categories) {
+      const cat = row.event_categories as { id: string; name: string; color: string };
+      eventType.category = {
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+      };
+    }
+    return eventType;
+  });
 }
 
 /**
@@ -934,7 +946,7 @@ export async function getEventType(id: string, organizationId: string): Promise<
 
   const { data, error } = await supabase
     .from("event_types")
-    .select("*")
+    .select("*, event_categories:category_id(id, name, color)")
     .eq("id", id)
     .eq("organization_id", organizationId)
     .single();
@@ -947,7 +959,19 @@ export async function getEventType(id: string, organizationId: string): Promise<
     throw new Error("Failed to fetch event type");
   }
 
-  return dbToEventType(data);
+  const eventType = dbToEventType(data);
+
+  // Add category data if available
+  if (data.event_categories) {
+    const cat = data.event_categories as { id: string; name: string; color: string };
+    eventType.category = {
+      id: cat.id,
+      name: cat.name,
+      color: cat.color,
+    };
+  }
+
+  return eventType;
 }
 
 /**

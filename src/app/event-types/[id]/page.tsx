@@ -66,6 +66,15 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   {eventType.name}
                 </h1>
+                {eventType.category && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ backgroundColor: eventType.category.color }}
+                    />
+                    <p className="text-gray-600 dark:text-gray-400">{eventType.category.name}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -286,6 +295,26 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
                     <p className="font-mono text-xs">{eventType.color}</p>
                   </div>
                 </div>
+                {eventType.category && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-zinc-500 dark:text-zinc-400">Category</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div
+                          className="w-6 h-6 rounded border border-zinc-200 dark:border-zinc-700"
+                          style={{ backgroundColor: eventType.category.color }}
+                        />
+                        <Link
+                          href={buildRoute.eventCategory(eventType.category.id)}
+                          className="font-medium hover:underline"
+                        >
+                          {eventType.category.name}
+                        </Link>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

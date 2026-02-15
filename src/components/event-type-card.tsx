@@ -30,6 +30,17 @@ export function EventTypeCard({ eventType }: EventTypeCardProps) {
                   <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 truncate">
                     {eventType.name}
                   </h3>
+                  {eventType.category && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <div
+                        className="w-3 h-3 rounded"
+                        style={{ backgroundColor: eventType.category.color }}
+                      />
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {eventType.category.name}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Status badges */}
