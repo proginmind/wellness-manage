@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { differenceInYears, format } from "date-fns";
-import { Archive, ArrowLeft, Calendar, Clock, Edit, Mail, User } from "lucide-react";
+import { Archive, ArrowLeft, Calendar, Edit, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 import { Member } from "@/types/member";
 import { fetcher } from "@/lib/fetcher";
+import { buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
 import { MemberStatusBadge } from "@/components/member-status-badge";
 import {
@@ -25,7 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 async function archiveMember(url: string) {
   const response = await fetch(url, {
@@ -69,7 +71,6 @@ export default function MemberDetailPage() {
           description: error instanceof Error ? error.message : "Please try again later",
         });
       },
-      // Automatically revalidate related endpoints
       populateCache: false,
       revalidate: true,
     }
@@ -89,11 +90,9 @@ export default function MemberDetailPage() {
     return (
       <AppLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-8"></div>
-              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            </div>
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-8"></div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </div>
       </AppLayout>
@@ -104,22 +103,20 @@ export default function MemberDetailPage() {
     return (
       <AppLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <Link
-              href="/members"
-              className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Members
-            </Link>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-gray-500 dark:text-gray-400">
-                  {error ? "Failed to load member" : "Member not found"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <Link
+            href={buildRoute.members()}
+            className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Members
+          </Link>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-gray-500 dark:text-gray-400">
+                {error ? "Failed to load member" : "Member not found"}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </AppLayout>
     );
@@ -132,76 +129,80 @@ export default function MemberDetailPage() {
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <Link
-              href="/members"
-              className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Members
-            </Link>
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Member Details</h1>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link href={`/members/${memberId}/edit`}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Link>
-                </Button>
-                {member.status === "active" && (
-                  <Button variant="destructive" onClick={() => setIsArchiveDialogOpen(true)}>
-                    <Archive className="h-4 w-4 mr-2" />
-                    Archive
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* Header */}
+        <div className="mb-6">
+          <Link
+            href={buildRoute.members()}
+            className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Members
+          </Link>
 
-          {/* Member Profile Card */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center gap-6">
-                <Avatar className="h-24 w-24">
-                  {member.image && (
-                    <AvatarImage
-                      src={member.image}
-                      alt={`${member.firstName} ${member.lastName}`}
-                    />
-                  )}
-                  <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <CardTitle className="text-2xl mb-2">
-                    {member.firstName} {member.lastName}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <MemberStatusBadge status={member.status} />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Member ID: {member.id}
-                    </span>
-                  </div>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4">
+              {/* Avatar */}
+              <Avatar className="h-16 w-16">
+                {member.image && (
+                  <AvatarImage src={member.image} alt={`${member.firstName} ${member.lastName}`} />
+                )}
+                <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+              </Avatar>
+
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {member.firstName} {member.lastName}
+                </h1>
+                <div className="flex items-center gap-2 mt-2">
+                  <MemberStatusBadge status={member.status} />
                 </div>
               </div>
-            </CardHeader>
-          </Card>
+            </div>
 
-          {/* Contact Information */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href={buildRoute.memberEdit(member.id)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Link>
+              </Button>
+
+              {member.status === "active" && (
+                <Button
+                  variant="outline"
+                  className="text-red-600 hover:text-red-700"
+                  onClick={() => setIsArchiveDialogOpen(true)}
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Left Column - Main Details */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Personal Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>Member profile and contact details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">First Name</p>
+                    <p className="font-medium">{member.firstName}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Last Name</p>
+                    <p className="font-medium">{member.lastName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Email</p>
                     <a
                       href={`mailto:${member.email}`}
                       className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
@@ -209,70 +210,61 @@ export default function MemberDetailPage() {
                       {member.email}
                     </a>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Personal Information */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 shrink-0">
-                    <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {member.firstName} {member.lastName}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 shrink-0">
-                    <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Date of Birth</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Date of Birth</p>
+                    <p className="font-medium">
                       {format(new Date(member.dateOfBirth), "MMMM d, yyyy")}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                       Age: {age} years
                     </p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Membership Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Membership Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 shrink-0">
-                  <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                </div>
+          {/* Right Column - Sidebar */}
+          <div className="space-y-6">
+            {/* Metadata Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Date Joined</p>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {format(new Date(member.dateJoined), "MMMM d, yyyy")}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Member for {differenceInYears(new Date(), new Date(member.dateJoined))} years
+                  <p className="text-zinc-500 dark:text-zinc-400">Joined</p>
+                  <p className="font-medium">
+                    {new Date(member.dateJoined).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <Separator />
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400">Member ID</p>
+                  <p className="font-mono text-xs">{member.id}</p>
+                </div>
+                {member.archivedAt && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-zinc-500 dark:text-zinc-400">Archived</p>
+                      <p className="font-medium">
+                        {new Date(member.archivedAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
