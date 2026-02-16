@@ -21,11 +21,11 @@ The owner has full administrative access to all features.
 
 Staff members have limited access focused on service delivery.
 
-| Email                              | Password      | Role  | Specialization      |
-| ---------------------------------- | ------------- | ----- | ------------------- |
-| `sarah.johnson@wellnessdemo.com`   | `password123` | Staff | Massage Therapist   |
-| `michael.chen@wellnessdemo.com`    | `password123` | Staff | Yoga Instructor     |
-| `emily.rodriguez@wellnessdemo.com` | `password123` | Staff | Wellness Consultant |
+| Email                              | Password      | Role  | Assigned Services                      |
+| ---------------------------------- | ------------- | ----- | -------------------------------------- |
+| `sarah.johnson@wellnessdemo.com`   | `password123` | Staff | Swedish Massage, Deep Tissue Massage   |
+| `michael.chen@wellnessdemo.com`    | `password123` | Staff | Vinyasa Yoga                           |
+| `emily.rodriguez@wellnessdemo.com` | `password123` | Staff | Wellness Consultation, Swedish Massage |
 
 **Permissions:**
 

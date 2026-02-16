@@ -18,12 +18,19 @@ import { Input } from "@/components/ui/input";
 
 import { PermissionGate } from "../PermissionGate";
 
+interface EventType {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface StaffMember {
   id: string;
   userId: string;
   email: string;
   role: UserRole;
   createdAt: string;
+  eventTypes?: EventType[];
 }
 
 export function TeamList() {
@@ -32,7 +39,8 @@ export function TeamList() {
 
   const { data, error, isLoading } = useSWR<{ staff: StaffMember[]; total: number }>(
     buildApiRoute.profiles() +
-      (debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : ""),
+      `?include=eventTypes` +
+      (debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : ""),
     fetcher
   );
 
@@ -124,7 +132,7 @@ export function TeamList() {
                         </div>
 
                         {/* Role Badge & Date */}
-                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 mb-2">
                           <Badge
                             variant={member.role === "owner" ? "default" : "secondary"}
                             className="capitalize text-xs"
@@ -136,6 +144,31 @@ export function TeamList() {
                             <span>Joined {format(new Date(member.createdAt), "MMM d, yyyy")}</span>
                           </div>
                         </div>
+
+                        {/* Event Types / Services */}
+                        {member.eventTypes && member.eventTypes.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {member.eventTypes.map((eventType) => (
+                              <Badge
+                                key={eventType.id}
+                                variant="outline"
+                                className="text-xs"
+                                style={{
+                                  borderColor: eventType.color,
+                                  color: eventType.color,
+                                }}
+                              >
+                                {eventType.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        {member.role === "staff" &&
+                          (!member.eventTypes || member.eventTypes.length === 0) && (
+                            <div className="text-xs text-zinc-400 dark:text-zinc-500 italic mt-2">
+                              No services assigned
+                            </div>
+                          )}
                       </div>
                     </div>
                   </CardContent>

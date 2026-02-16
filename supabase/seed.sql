@@ -321,7 +321,78 @@ BEGIN
   RAISE NOTICE 'Created 10 members';
 
   -- =====================================================
-  -- 7. SUMMARY
+  -- 7. ASSIGN EVENT TYPES TO STAFF MEMBERS
+  -- =====================================================
+  
+  -- Delete existing assignments for clean slate
+  DELETE FROM public.profiles_event_types WHERE organization_id = v_org_id;
+
+  DECLARE
+    v_staff1_profile_id uuid;
+    v_staff2_profile_id uuid;
+    v_staff3_profile_id uuid;
+    v_event_swedish_id uuid;
+    v_event_deep_tissue_id uuid;
+    v_event_yoga_id uuid;
+    v_event_consultation_id uuid;
+  BEGIN
+    -- Get staff profile IDs
+    SELECT id INTO v_staff1_profile_id FROM public.profiles 
+    WHERE email = 'sarah.johnson@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
+    
+    SELECT id INTO v_staff2_profile_id FROM public.profiles 
+    WHERE email = 'michael.chen@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
+    
+    SELECT id INTO v_staff3_profile_id FROM public.profiles 
+    WHERE email = 'emily.rodriguez@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
+
+    -- Get event type IDs
+    SELECT id INTO v_event_swedish_id FROM public.event_types 
+    WHERE name = 'Swedish Massage' AND organization_id = v_org_id LIMIT 1;
+    
+    SELECT id INTO v_event_deep_tissue_id FROM public.event_types 
+    WHERE name = 'Deep Tissue Massage' AND organization_id = v_org_id LIMIT 1;
+    
+    SELECT id INTO v_event_yoga_id FROM public.event_types 
+    WHERE name = 'Vinyasa Yoga' AND organization_id = v_org_id LIMIT 1;
+    
+    SELECT id INTO v_event_consultation_id FROM public.event_types 
+    WHERE name = 'Wellness Consultation' AND organization_id = v_org_id LIMIT 1;
+
+    -- Assign event types to staff members
+    -- Sarah Johnson: Massage Therapist (Swedish + Deep Tissue)
+    IF v_staff1_profile_id IS NOT NULL AND v_event_swedish_id IS NOT NULL THEN
+      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
+      VALUES (v_staff1_profile_id, v_event_swedish_id, v_org_id);
+    END IF;
+    
+    IF v_staff1_profile_id IS NOT NULL AND v_event_deep_tissue_id IS NOT NULL THEN
+      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
+      VALUES (v_staff1_profile_id, v_event_deep_tissue_id, v_org_id);
+    END IF;
+
+    -- Michael Chen: Yoga Instructor (Vinyasa Yoga)
+    IF v_staff2_profile_id IS NOT NULL AND v_event_yoga_id IS NOT NULL THEN
+      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
+      VALUES (v_staff2_profile_id, v_event_yoga_id, v_org_id);
+    END IF;
+
+    -- Emily Rodriguez: Wellness Consultant (Consultation + Swedish for cross-training)
+    IF v_staff3_profile_id IS NOT NULL AND v_event_consultation_id IS NOT NULL THEN
+      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
+      VALUES (v_staff3_profile_id, v_event_consultation_id, v_org_id);
+    END IF;
+    
+    IF v_staff3_profile_id IS NOT NULL AND v_event_swedish_id IS NOT NULL THEN
+      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
+      VALUES (v_staff3_profile_id, v_event_swedish_id, v_org_id);
+    END IF;
+
+    RAISE NOTICE 'Assigned event types to staff members';
+  END;
+
+  -- =====================================================
+  -- 8. SUMMARY
   -- =====================================================
   
   RAISE NOTICE '';
@@ -336,9 +407,9 @@ BEGIN
   END IF;
   RAISE NOTICE '';
   RAISE NOTICE '👥 Staff Members: 3';
-  RAISE NOTICE '   • sarah.johnson@wellnessdemo.com / password123';
-  RAISE NOTICE '   • michael.chen@wellnessdemo.com / password123';
-  RAISE NOTICE '   • emily.rodriguez@wellnessdemo.com / password123';
+  RAISE NOTICE '   • sarah.johnson@wellnessdemo.com / password123 (Swedish, Deep Tissue)';
+  RAISE NOTICE '   • michael.chen@wellnessdemo.com / password123 (Vinyasa Yoga)';
+  RAISE NOTICE '   • emily.rodriguez@wellnessdemo.com / password123 (Consultation, Swedish)';
   RAISE NOTICE '';
   RAISE NOTICE '👥 Client Members: 10';
   RAISE NOTICE '📋 Event Categories: 3';

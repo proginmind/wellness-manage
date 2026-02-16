@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.toLowerCase().trim() || "";
     const role = searchParams.get("role"); // Optional role filter (e.g., "staff", "owner")
+    const includeEventTypes = searchParams.get("include") === "eventTypes"; // Optional include event types
 
     const supabase = await createClient();
 
@@ -43,13 +44,45 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
     }
 
-    const staff = (profiles || []).map((profile: any) => ({
+    // Fetch event types for each profile if requested
+    let staff = (profiles || []).map((profile: any) => ({
       id: profile.id,
       userId: profile.user_id,
       email: profile.email,
       role: profile.role,
       createdAt: profile.created_at,
+      eventTypes: [] as any[],
     }));
+
+    if (includeEventTypes && staff.length > 0) {
+      // Fetch event types for all profiles in a single query
+      const { data: assignments } = await supabase
+        .from("profiles_event_types")
+        .select("profile_id, event_types(id, name, color)")
+        .eq("organization_id", organizationId)
+        .in(
+          "profile_id",
+          staff.map((s) => s.id)
+        );
+
+      // Map event types to profiles
+      if (assignments) {
+        const eventTypesByProfile = new Map<string, any[]>();
+        assignments.forEach((assignment: any) => {
+          if (!eventTypesByProfile.has(assignment.profile_id)) {
+            eventTypesByProfile.set(assignment.profile_id, []);
+          }
+          if (assignment.event_types) {
+            eventTypesByProfile.get(assignment.profile_id)!.push(assignment.event_types);
+          }
+        });
+
+        staff = staff.map((member) => ({
+          ...member,
+          eventTypes: eventTypesByProfile.get(member.id) || [],
+        }));
+      }
+    }
 
     const response: StaffListResponse = {
       staff,
