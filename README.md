@@ -60,7 +60,8 @@ Create a `.env.local` file in the root directory:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+SUPABASE_SECRET_KEY=your_supabase_secret_key
 ```
 
 See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for detailed instructions.
@@ -287,7 +288,8 @@ Ensure these are set in Vercel:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_production_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_production_publishable_key
+SUPABASE_SECRET_KEY=your_production_secret_key
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 ```
 

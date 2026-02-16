@@ -13,7 +13,8 @@ Add the following environment variables to your `.env.local` file:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+SUPABASE_SECRET_KEY=your_supabase_secret_key
 ```
 
 ### Getting Your Supabase Credentials
@@ -22,7 +23,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 2. Navigate to **Settings** → **API**
 3. Copy the following:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon/public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **Publishable key** (or **anon/public key** for legacy) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - **Secret key** (or **service_role key** for legacy) → `SUPABASE_SECRET_KEY` (⚠️ Keep this secret!)
 
 ## Project Structure
 

@@ -10,7 +10,8 @@ This guide walks you through setting up Supabase database for the Wellness Cente
 - Supabase credentials in `.env.local`:
   ```
   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-  NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+  SUPABASE_SECRET_KEY=your-secret-key
   ```
 
 ---
@@ -210,10 +211,10 @@ Make sure your `.env.local` has all required variables:
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key-here
 
-# Optional: Service role key (for admin operations)
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Secret key for admin operations (keep this secret!)
+SUPABASE_SECRET_KEY=your-secret-key-here
 ```
 
 **Security Note:** Never commit `.env.local` to git!
