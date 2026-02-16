@@ -1,40 +1,47 @@
 # Test Accounts
 
-This document lists all test accounts created by the seed script for local development.
+This document describes test data and accounts for development and testing.
 
-## Owner Account
+## For Local Development
 
-The owner has full administrative access to all features.
+When using `supabase db reset` locally, the seed script will attempt to use existing users or prompt you to create one.
 
-| Email              | Password      | Role  | Access Level      |
-| ------------------ | ------------- | ----- | ----------------- |
-| `test@example.com` | `password123` | Owner | Full admin access |
+### Local Setup Steps
 
-**Permissions:**
+1. Start Supabase: `supabase start`
+2. Reset database: `supabase db reset`
+3. If no users exist, sign up at http://localhost:3000
+4. Run seed again: `supabase db seed`
 
-- ✅ Manage organization settings
-- ✅ Invite and manage staff members
-- ✅ Create/edit/delete all resources
-- ✅ View all data and reports
+## For Remote/Production Testing
 
-## Staff Accounts
+The seed script **does not auto-create users** on remote databases for security reasons.
 
-Staff members have limited access focused on service delivery.
+### Remote Setup Steps
 
-| Email                              | Password      | Role  | Assigned Services                      |
-| ---------------------------------- | ------------- | ----- | -------------------------------------- |
-| `sarah.johnson@wellnessdemo.com`   | `password123` | Staff | Swedish Massage, Deep Tissue Massage   |
-| `michael.chen@wellnessdemo.com`    | `password123` | Staff | Vinyasa Yoga                           |
-| `emily.rodriguez@wellnessdemo.com` | `password123` | Staff | Wellness Consultation, Swedish Massage |
+1. Create a user via:
+   - Sign up through your application
+   - Or Supabase Dashboard > Authentication > Add User
+2. Push migrations: `supabase db push`
+3. The seed script will use your existing user account
 
-**Permissions:**
+## What the Seed Script Creates
 
-- ✅ View members and visits
-- ✅ View event types/services
-- ✅ View their assigned visits
-- ❌ Cannot manage organization settings
-- ❌ Cannot invite other staff members
-- ❌ Cannot delete resources
+- 🏢 **1 Organization:** "Wellness Center Demo" (owned by the first available user)
+- 👥 **10 Client Members:** Sample members with names, emails, and dates
+- 📋 **3 Event Categories:** Massage Therapy, Yoga & Fitness, Wellness Consultation
+- 🎯 **4 Event Types:** Swedish Massage, Deep Tissue, Vinyasa Yoga, Wellness Consultation
+
+## Adding Staff Members
+
+Staff members should be added through the application:
+
+1. Log in as the owner
+2. Go to **Settings > Team**
+3. Click **Invite Staff Member**
+4. Enter their email
+5. They'll receive an invitation link
+6. After they accept, assign services via **Team > [Member] > Edit**
 
 ## Usage
 
@@ -51,27 +58,20 @@ supabase db seed
 ### Testing Different Roles
 
 1. **Test as Owner:**
-   - Login with `test@example.com` / `password123`
+   - The user you created becomes the owner automatically
    - Access all features including Team management and Settings
 
 2. **Test as Staff:**
-   - Login with any staff account (e.g., `sarah.johnson@wellnessdemo.com` / `password123`)
-   - Verify limited access to team management features
+   - Invite a second user via Settings > Team > Invite
+   - Accept the invitation (check email or use test email service)
+   - Log in with that account to test staff permissions
 
-### Assigning Staff to Visits
+## Seeded Sample Data
 
-When creating a visit, you can now select from the 3 staff members:
-
-- Sarah Johnson (Massage Therapist)
-- Michael Chen (Yoga Instructor)
-- Emily Rodriguez (Wellness Consultant)
-
-## Sample Data Created
-
-The seed script also creates:
+After running the seed script, your database will have:
 
 - 🏢 1 Organization: "Wellness Center Demo"
-- 👤 User profiles with personal information (name, description, contact details) for owner and staff
+- 👤 1 Owner profile (linked to your user account)
 - 👥 10 Client Members (Emma, Liam, Olivia, etc.)
 - 📋 3 Event Categories (Massage Therapy, Yoga & Fitness, Wellness Consultation)
 - 🎯 4 Event Types/Services (Swedish Massage, Deep Tissue, Vinyasa Yoga, etc.)

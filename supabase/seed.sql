@@ -3,8 +3,11 @@
 -- This creates a complete organization with owner, members, and sample data
 -- =====================================================
 --
--- IMPORTANT: This seed script will only work if you have at least one user
--- in auth.users (created through sign-up). If not, create a user first.
+-- IMPORTANT: For REMOTE databases, manually create a user via Supabase Dashboard
+-- or sign-up first. User auto-creation only works on LOCAL databases.
+--
+-- For LOCAL: This script will auto-create test users
+-- For REMOTE: This script will use existing users only
 --
 -- =====================================================
 
@@ -39,69 +42,13 @@ BEGIN
     LIMIT 1;
     
     IF v_user_id IS NULL THEN
-      -- No users at all, create test user for local development
-      RAISE NOTICE '📝 Creating test user for local development...';
-      
-      INSERT INTO auth.users (
-        instance_id,
-        id,
-        aud,
-        role,
-        email,
-        encrypted_password,
-        email_confirmed_at,
-        recovery_sent_at,
-        last_sign_in_at,
-        raw_app_meta_data,
-        raw_user_meta_data,
-        created_at,
-        updated_at,
-        confirmation_token,
-        email_change,
-        email_change_token_new,
-        recovery_token
-      ) VALUES (
-        '00000000-0000-0000-0000-000000000000',
-        gen_random_uuid(),
-        'authenticated',
-        'authenticated',
-        'test@example.com',
-        crypt('password123', gen_salt('bf')),
-        NOW(),
-        NOW(),
-        NOW(),
-        '{"provider":"email","providers":["email"]}',
-        '{}',
-        NOW(),
-        NOW(),
-        '',
-        '',
-        '',
-        ''
-      ) RETURNING id, email INTO v_user_id, v_user_email;
-
-      -- Also insert into auth.identities for email provider
-      INSERT INTO auth.identities (
-        id,
-        user_id,
-        provider_id,
-        identity_data,
-        provider,
-        last_sign_in_at,
-        created_at,
-        updated_at
-      ) VALUES (
-        gen_random_uuid(),
-        v_user_id,
-        v_user_id::text,
-        format('{"sub":"%s","email":"%s"}', v_user_id::text, 'test@example.com')::jsonb,
-        'email',
-        NOW(),
-        NOW(),
-        NOW()
-      );
-
-      RAISE NOTICE '✅ Test user created: test@example.com / password123';
+      -- No users found - exit gracefully
+      RAISE NOTICE '⚠️  No users found in database.';
+      RAISE NOTICE '📝 Please create a user first:';
+      RAISE NOTICE '   - Sign up at your app URL';
+      RAISE NOTICE '   - Or use Supabase Dashboard > Authentication > Add User';
+      RAISE NOTICE '   Then run this seed script again';
+      RETURN;
     ELSE
       RAISE NOTICE '📌 Using existing user: % (ID: %)', v_user_email, v_user_id;
     END IF;
@@ -150,106 +97,11 @@ BEGIN
   END IF;
 
   -- =====================================================
-  -- 3.5. CREATE STAFF TEST USERS (for local development)
+  -- 3.5. STAFF TEST USERS (Use app invitation feature instead)
   -- =====================================================
-  
-  -- Delete existing staff profiles for clean slate
-  DELETE FROM public.profiles 
-  WHERE organization_id = v_org_id 
-  AND role = 'staff';
-
-  -- Create staff test users with auth accounts
-  DECLARE
-    v_staff1_id uuid;
-    v_staff2_id uuid;
-    v_staff3_id uuid;
-  BEGIN
-    -- Staff 1: Sarah Johnson (Massage Therapist)
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, recovery_sent_at, last_sign_in_at,
-      raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at, confirmation_token,
-      email_change, email_change_token_new, recovery_token
-    ) VALUES (
-      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
-      'authenticated', 'authenticated', 'sarah.johnson@wellnessdemo.com',
-      crypt('password123', gen_salt('bf')),
-      NOW(), NOW(), NOW(),
-      '{"provider":"email","providers":["email"]}', '{}',
-      NOW(), NOW(), '', '', '', ''
-    ) RETURNING id INTO v_staff1_id;
-
-    INSERT INTO auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) VALUES (
-      gen_random_uuid(), v_staff1_id, v_staff1_id::text,
-      format('{"sub":"%s","email":"%s"}', v_staff1_id::text, 'sarah.johnson@wellnessdemo.com')::jsonb,
-      'email', NOW(), NOW(), NOW()
-    );
-
-    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
-    VALUES (v_staff1_id, v_org_id, 'staff', 'sarah.johnson@wellnessdemo.com', 'Sarah', 'Johnson', 'Certified massage therapist specializing in Swedish and deep tissue massage', '1988-05-15', '+1555123001');
-
-    -- Staff 2: Michael Chen (Yoga Instructor)
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, recovery_sent_at, last_sign_in_at,
-      raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at, confirmation_token,
-      email_change, email_change_token_new, recovery_token
-    ) VALUES (
-      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
-      'authenticated', 'authenticated', 'michael.chen@wellnessdemo.com',
-      crypt('password123', gen_salt('bf')),
-      NOW(), NOW(), NOW(),
-      '{"provider":"email","providers":["email"]}', '{}',
-      NOW(), NOW(), '', '', '', ''
-    ) RETURNING id INTO v_staff2_id;
-
-    INSERT INTO auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) VALUES (
-      gen_random_uuid(), v_staff2_id, v_staff2_id::text,
-      format('{"sub":"%s","email":"%s"}', v_staff2_id::text, 'michael.chen@wellnessdemo.com')::jsonb,
-      'email', NOW(), NOW(), NOW()
-    );
-
-    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
-    VALUES (v_staff2_id, v_org_id, 'staff', 'michael.chen@wellnessdemo.com', 'Michael', 'Chen', 'Experienced yoga instructor with focus on Vinyasa flow', '1985-09-22', '+1555123002');
-
-    -- Staff 3: Emily Rodriguez (Wellness Consultant)
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, recovery_sent_at, last_sign_in_at,
-      raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at, confirmation_token,
-      email_change, email_change_token_new, recovery_token
-    ) VALUES (
-      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
-      'authenticated', 'authenticated', 'emily.rodriguez@wellnessdemo.com',
-      crypt('password123', gen_salt('bf')),
-      NOW(), NOW(), NOW(),
-      '{"provider":"email","providers":["email"]}', '{}',
-      NOW(), NOW(), '', '', '', ''
-    ) RETURNING id INTO v_staff3_id;
-
-    INSERT INTO auth.identities (
-      id, user_id, provider_id, identity_data, provider,
-      last_sign_in_at, created_at, updated_at
-    ) VALUES (
-      gen_random_uuid(), v_staff3_id, v_staff3_id::text,
-      format('{"sub":"%s","email":"%s"}', v_staff3_id::text, 'emily.rodriguez@wellnessdemo.com')::jsonb,
-      'email', NOW(), NOW(), NOW()
-    );
-
-    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
-    VALUES (v_staff3_id, v_org_id, 'staff', 'emily.rodriguez@wellnessdemo.com', 'Emily', 'Rodriguez', 'Holistic wellness consultant focused on mind-body connection', '1992-03-10', '+1555123003');
-
-    RAISE NOTICE 'Created 3 staff test users';
-  END;
+  -- For remote databases, staff should be added via:
+  -- Settings > Team > Invite Staff Member
+  RAISE NOTICE 'ℹ️  To add staff: Use Settings > Team > Invite in the app';
 
   -- =====================================================
   -- 4. CREATE EVENT CATEGORIES (if not exist)
@@ -321,75 +173,10 @@ BEGIN
   RAISE NOTICE 'Created 10 members';
 
   -- =====================================================
-  -- 7. ASSIGN EVENT TYPES TO STAFF MEMBERS
+  -- 7. STAFF EVENT TYPE ASSIGNMENTS (Skipped - no staff in seed)
   -- =====================================================
-  
-  -- Delete existing assignments for clean slate
-  DELETE FROM public.profiles_event_types WHERE organization_id = v_org_id;
-
-  DECLARE
-    v_staff1_profile_id uuid;
-    v_staff2_profile_id uuid;
-    v_staff3_profile_id uuid;
-    v_event_swedish_id uuid;
-    v_event_deep_tissue_id uuid;
-    v_event_yoga_id uuid;
-    v_event_consultation_id uuid;
-  BEGIN
-    -- Get staff profile IDs
-    SELECT id INTO v_staff1_profile_id FROM public.profiles 
-    WHERE email = 'sarah.johnson@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
-    
-    SELECT id INTO v_staff2_profile_id FROM public.profiles 
-    WHERE email = 'michael.chen@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
-    
-    SELECT id INTO v_staff3_profile_id FROM public.profiles 
-    WHERE email = 'emily.rodriguez@wellnessdemo.com' AND organization_id = v_org_id LIMIT 1;
-
-    -- Get event type IDs
-    SELECT id INTO v_event_swedish_id FROM public.event_types 
-    WHERE name = 'Swedish Massage' AND organization_id = v_org_id LIMIT 1;
-    
-    SELECT id INTO v_event_deep_tissue_id FROM public.event_types 
-    WHERE name = 'Deep Tissue Massage' AND organization_id = v_org_id LIMIT 1;
-    
-    SELECT id INTO v_event_yoga_id FROM public.event_types 
-    WHERE name = 'Vinyasa Yoga' AND organization_id = v_org_id LIMIT 1;
-    
-    SELECT id INTO v_event_consultation_id FROM public.event_types 
-    WHERE name = 'Wellness Consultation' AND organization_id = v_org_id LIMIT 1;
-
-    -- Assign event types to staff members
-    -- Sarah Johnson: Massage Therapist (Swedish + Deep Tissue)
-    IF v_staff1_profile_id IS NOT NULL AND v_event_swedish_id IS NOT NULL THEN
-      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
-      VALUES (v_staff1_profile_id, v_event_swedish_id, v_org_id);
-    END IF;
-    
-    IF v_staff1_profile_id IS NOT NULL AND v_event_deep_tissue_id IS NOT NULL THEN
-      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
-      VALUES (v_staff1_profile_id, v_event_deep_tissue_id, v_org_id);
-    END IF;
-
-    -- Michael Chen: Yoga Instructor (Vinyasa Yoga)
-    IF v_staff2_profile_id IS NOT NULL AND v_event_yoga_id IS NOT NULL THEN
-      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
-      VALUES (v_staff2_profile_id, v_event_yoga_id, v_org_id);
-    END IF;
-
-    -- Emily Rodriguez: Wellness Consultant (Consultation + Swedish for cross-training)
-    IF v_staff3_profile_id IS NOT NULL AND v_event_consultation_id IS NOT NULL THEN
-      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
-      VALUES (v_staff3_profile_id, v_event_consultation_id, v_org_id);
-    END IF;
-    
-    IF v_staff3_profile_id IS NOT NULL AND v_event_swedish_id IS NOT NULL THEN
-      INSERT INTO public.profiles_event_types (profile_id, event_type_id, organization_id)
-      VALUES (v_staff3_profile_id, v_event_swedish_id, v_org_id);
-    END IF;
-
-    RAISE NOTICE 'Assigned event types to staff members';
-  END;
+  -- Staff members and their service assignments should be managed via the app
+  RAISE NOTICE 'ℹ️  To assign services to staff: Edit team member in app';
 
   -- =====================================================
   -- 8. SUMMARY
@@ -402,18 +189,16 @@ BEGIN
   RAISE NOTICE '🏢 Organization: Wellness Center Demo';
   RAISE NOTICE '';
   RAISE NOTICE '👤 Owner: %', v_user_email;
-  IF v_user_email = 'test@example.com' THEN
-    RAISE NOTICE '   🔑 Login: test@example.com / password123';
-  END IF;
   RAISE NOTICE '';
-  RAISE NOTICE '👥 Staff Members: 3';
-  RAISE NOTICE '   • sarah.johnson@wellnessdemo.com / password123 (Swedish, Deep Tissue)';
-  RAISE NOTICE '   • michael.chen@wellnessdemo.com / password123 (Vinyasa Yoga)';
-  RAISE NOTICE '   • emily.rodriguez@wellnessdemo.com / password123 (Consultation, Swedish)';
+  RAISE NOTICE '📊 Data Created:';
+  RAISE NOTICE '   • 10 Client Members';
+  RAISE NOTICE '   • 3 Event Categories (Massage, Yoga, Wellness)';
+  RAISE NOTICE '   • 4 Event Types/Services';
   RAISE NOTICE '';
-  RAISE NOTICE '👥 Client Members: 10';
-  RAISE NOTICE '📋 Event Categories: 3';
-  RAISE NOTICE '🎯 Event Types: 4';
+  RAISE NOTICE '💡 Next Steps:';
+  RAISE NOTICE '   1. Add staff: Settings > Team > Invite Staff Member';
+  RAISE NOTICE '   2. Assign services: Team > [Member] > Edit';
+  RAISE NOTICE '   3. Create visits: Visits > Add New Visit';
   RAISE NOTICE '========================================';
   RAISE NOTICE '';
 
