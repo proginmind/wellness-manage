@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Clock, Edit, Layers, Mail } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Edit, Layers, Mail, Phone, User } from "lucide-react";
 import useSWR from "swr";
 
 import { ProfileWithEventTypes } from "@/types/profile-event-type";
@@ -11,7 +11,7 @@ import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
 import { PermissionGate } from "@/components/PermissionGate";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,8 +63,14 @@ export default function TeamMemberDetailPage() {
   }
 
   const { profile } = data;
-  const displayName = profile.email.split("@")[0];
-  const initials = displayName.slice(0, 2).toUpperCase();
+  const fullName =
+    profile.firstName && profile.lastName
+      ? `${profile.firstName} ${profile.lastName}`
+      : profile.firstName || profile.lastName || profile.email.split("@")[0];
+  const initials =
+    profile.firstName && profile.lastName
+      ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
+      : fullName.slice(0, 2).toUpperCase();
 
   return (
     <AppLayout>
@@ -82,14 +88,15 @@ export default function TeamMemberDetailPage() {
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400">
+              <Avatar className="h-20 w-20 ring-4 ring-zinc-100 dark:ring-zinc-800">
+                {profile.avatarImage && <AvatarImage src={profile.avatarImage} alt={fullName} />}
+                <AvatarFallback className="text-2xl bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400">
                   {initials}
                 </AvatarFallback>
               </Avatar>
 
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{displayName}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{fullName}</h1>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge
                     variant={profile.role === "owner" ? "default" : "secondary"}
@@ -98,6 +105,11 @@ export default function TeamMemberDetailPage() {
                     {profile.role}
                   </Badge>
                 </div>
+                {profile.description && (
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2 max-w-2xl">
+                    {profile.description}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -132,6 +144,17 @@ export default function TeamMemberDetailPage() {
                     {profile.email}
                   </a>
                 </div>
+                {profile.phoneNumber && (
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Phone</p>
+                    <a
+                      href={`tel:${profile.phoneNumber}`}
+                      className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                    >
+                      {profile.phoneNumber}
+                    </a>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -199,6 +222,15 @@ export default function TeamMemberDetailPage() {
                   <p className="font-medium capitalize">{profile.role}</p>
                 </div>
                 <Separator />
+                {profile.dateOfBirth && (
+                  <>
+                    <div>
+                      <p className="text-zinc-500 dark:text-zinc-400">Date of Birth</p>
+                      <p className="font-medium">{format(new Date(profile.dateOfBirth), "PPP")}</p>
+                    </div>
+                    <Separator />
+                  </>
+                )}
                 <div>
                   <p className="text-zinc-500 dark:text-zinc-400">Joined</p>
                   <p className="font-medium">

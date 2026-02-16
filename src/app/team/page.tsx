@@ -1,11 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
 
 import { buildRoute } from "@/lib/routes";
-import { useIsOwner } from "@/hooks/usePermissions";
 import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
 import { Loader } from "@/components/loader";
@@ -16,12 +13,6 @@ import { Button } from "@/components/ui/button";
 
 export default function TeamPage() {
   const { isLoading } = useUser();
-  const isOwner = useIsOwner();
-
-  // Redirect staff to dashboard
-  if (!isLoading && !isOwner) {
-    redirect(buildRoute.dashboard());
-  }
 
   if (isLoading) {
     return (

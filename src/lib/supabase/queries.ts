@@ -1344,10 +1344,12 @@ export async function getProfileWithEventTypes(
 ): Promise<any | null> {
   const supabase = await createClient();
 
-  // Get profile with email
+  // Get profile with all fields
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, user_id, role, email, created_at")
+    .select(
+      "id, user_id, role, email, first_name, last_name, description, date_of_birth, phone_number, avatar_image, created_at"
+    )
     .eq("id", profileId)
     .eq("organization_id", organizationId)
     .single();
@@ -1374,6 +1376,12 @@ export async function getProfileWithEventTypes(
     userId: profile.user_id,
     email: profile.email,
     role: profile.role,
+    firstName: profile.first_name,
+    lastName: profile.last_name,
+    description: profile.description,
+    dateOfBirth: profile.date_of_birth,
+    phoneNumber: profile.phone_number,
+    avatarImage: profile.avatar_image,
     createdAt: profile.created_at,
     eventTypes,
   };

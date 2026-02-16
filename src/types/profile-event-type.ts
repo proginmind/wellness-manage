@@ -12,6 +12,12 @@ export interface ProfileWithEventTypes {
   userId: string;
   email: string;
   role: string;
+  firstName?: string;
+  lastName?: string;
+  description?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  avatarImage?: string;
   createdAt: string;
   eventTypes: Array<{
     id: string;

@@ -23,7 +23,9 @@ export async function GET(request: Request) {
     // Query profiles with email filtering
     let profileQuery = supabase
       .from("profiles")
-      .select("id, user_id, role, email, created_at")
+      .select(
+        "id, user_id, role, email, first_name, last_name, description, date_of_birth, phone_number, avatar_image, created_at"
+      )
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false });
 
@@ -50,6 +52,12 @@ export async function GET(request: Request) {
       userId: profile.user_id,
       email: profile.email,
       role: profile.role,
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      description: profile.description,
+      dateOfBirth: profile.date_of_birth,
+      phoneNumber: profile.phone_number,
+      avatarImage: profile.avatar_image,
       createdAt: profile.created_at,
       eventTypes: [] as any[],
     }));

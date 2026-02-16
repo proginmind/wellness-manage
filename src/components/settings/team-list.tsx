@@ -10,7 +10,7 @@ import { fetcher } from "@/lib/fetcher";
 import { UserRole } from "@/lib/permissions";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,12 @@ interface StaffMember {
   userId: string;
   email: string;
   role: UserRole;
+  firstName?: string;
+  lastName?: string;
+  description?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  avatarImage?: string;
   createdAt: string;
   eventTypes?: EventType[];
 }
@@ -102,9 +108,15 @@ export function TeamList() {
       {!isLoading && !error && staff.length > 0 && (
         <div className="flex flex-col gap-4">
           {staff.map((member) => {
-            // Extract name from email (before @)
-            const displayName = member.email.split("@")[0];
-            const initials = displayName.slice(0, 2).toUpperCase();
+            // Determine display name
+            const fullName =
+              member.firstName && member.lastName
+                ? `${member.firstName} ${member.lastName}`
+                : member.firstName || member.lastName || member.email.split("@")[0];
+            const initials =
+              member.firstName && member.lastName
+                ? `${member.firstName[0]}${member.lastName[0]}`.toUpperCase()
+                : fullName.slice(0, 2).toUpperCase();
 
             return (
               <Link href={buildRoute.teamMember(member.id)} key={member.id}>
@@ -113,6 +125,9 @@ export function TeamList() {
                     <div className="flex items-center gap-4">
                       {/* Avatar */}
                       <Avatar className="h-12 w-12">
+                        {member.avatarImage && (
+                          <AvatarImage src={member.avatarImage} alt={fullName} />
+                        )}
                         <AvatarFallback className="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-semibold">
                           {initials}
                         </AvatarFallback>
@@ -122,7 +137,7 @@ export function TeamList() {
                       <div className="flex-1 min-w-0">
                         {/* Name */}
                         <div className="font-medium text-zinc-900 dark:text-white truncate mb-1">
-                          {displayName}
+                          {fullName}
                         </div>
 
                         {/* Email & Role */}
