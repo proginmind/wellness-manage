@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 
 import { buildRoute } from "@/lib/routes";
 import { ProfileContent } from "@/components/profile-content";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "My Profile",
+};
 
 export default function ProfileSettingsPage() {
   return (

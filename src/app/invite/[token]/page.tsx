@@ -1,7 +1,12 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 
 import { InviteContent } from "@/components/invite-content";
+
+export const metadata: Metadata = {
+  title: "Team Invitation",
+};
 
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

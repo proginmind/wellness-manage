@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { requireAuth } from "@/lib/auth";
@@ -7,6 +8,10 @@ import { EventCategoryListContainer } from "@/components/event-category-list-con
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Event Categories",
+};
 
 export default async function EventCategoriesPage() {
   // Auth is handled by middleware - no need for manual checks!

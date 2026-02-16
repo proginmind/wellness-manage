@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
+
 import { getUser, requireAuth } from "@/lib/auth";
 import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function DashboardPage() {
   // Get user (middleware already ensured auth)

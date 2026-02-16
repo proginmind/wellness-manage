@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
@@ -6,6 +7,10 @@ import { EventTypesListContainer } from "@/components/event-types-list-container
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Event Types",
+};
 
 export default async function EventTypesPage() {
   // Auth handled by middleware - no manual checks needed

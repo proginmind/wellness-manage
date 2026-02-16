@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
@@ -6,6 +7,10 @@ import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
 import { VisitsListContainer } from "@/components/visits-list-container";
+
+export const metadata: Metadata = {
+  title: "Visits",
+};
 
 export default async function VisitsPage() {
   // Auth is handled by middleware - no need for manual checks!
