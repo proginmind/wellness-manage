@@ -51,9 +51,9 @@ export function VisitForm({
     fetcher
   );
 
-  // Fetch staff members
+  // Fetch staff members (only "staff" role, not "owner")
   const { data: staffResponse, isLoading: staffLoading } = useSWR<StaffListResponse>(
-    buildApiRoute.profiles(),
+    `${buildApiRoute.profiles()}?role=staff`,
     fetcher
   );
 
@@ -201,7 +201,15 @@ export function VisitForm({
                       disabled={staffLoading}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Not assigned - Select a staff member" />
+                        <SelectValue
+                          placeholder={
+                            staffLoading
+                              ? "Loading staff..."
+                              : !staff || staff.length === 0
+                                ? "No staff members available"
+                                : "Not assigned - Select a staff member"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {staff?.map((staffMember) => {
@@ -215,7 +223,11 @@ export function VisitForm({
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormDescription>Assign a staff member to this visit</FormDescription>
+                  <FormDescription>
+                    {!staff || staff.length === 0
+                      ? "No staff members found. Add staff members in Team settings to assign them to visits."
+                      : "Assign a staff member to this visit"}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -12,9 +12,10 @@ export async function GET(request: Request) {
 
     const { organizationId } = permissionResult;
 
-    // Get search query from URL params
+    // Get query params from URL
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.toLowerCase().trim() || "";
+    const role = searchParams.get("role"); // Optional role filter (e.g., "staff", "owner")
 
     const supabase = await createClient();
 
@@ -24,6 +25,11 @@ export async function GET(request: Request) {
       .select("id, user_id, role, email, created_at")
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false });
+
+    // Apply role filter if provided
+    if (role) {
+      profileQuery = profileQuery.eq("role", role);
+    }
 
     // Apply email search filter
     if (search) {
