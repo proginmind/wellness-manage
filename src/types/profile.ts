@@ -6,6 +6,12 @@ export interface Profile {
   organizationId: string;
   email: string;
   role: UserRole;
+  firstName?: string;
+  lastName?: string;
+  description?: string;
+  dateOfBirth?: Date;
+  phoneNumber?: string;
+  avatarImage?: string;
   createdAt: Date;
   updatedAt: Date;
 }

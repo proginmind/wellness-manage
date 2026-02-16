@@ -30,6 +30,12 @@ interface ProfileRow {
   organization_id: string;
   email: string;
   role: UserRole;
+  first_name?: string | null;
+  last_name?: string | null;
+  description?: string | null;
+  date_of_birth?: string | null;
+  phone_number?: string | null;
+  avatar_image?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +88,12 @@ export function dbToProfile(row: ProfileRow): Profile {
     organizationId: row.organization_id,
     email: row.email,
     role: row.role,
+    firstName: row.first_name || undefined,
+    lastName: row.last_name || undefined,
+    description: row.description || undefined,
+    dateOfBirth: row.date_of_birth ? new Date(row.date_of_birth) : undefined,
+    phoneNumber: row.phone_number || undefined,
+    avatarImage: row.avatar_image || undefined,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -160,6 +172,48 @@ export async function getCurrentUserProfile(userId: string): Promise<Profile> {
   if (error || !data) {
     console.error("Error fetching user profile:", error);
     throw new Error("User profile not found");
+  }
+
+  return dbToProfile(data);
+}
+
+/**
+ * Update current user's profile
+ * @param userId - User ID
+ * @param updates - Partial profile updates
+ * @returns Updated profile
+ */
+export async function updateProfile(
+  userId: string,
+  updates: {
+    firstName?: string;
+    lastName?: string;
+    description?: string;
+    dateOfBirth?: string;
+    phoneNumber?: string;
+    avatarImage?: string;
+  }
+): Promise<Profile> {
+  const supabase = await createClient();
+
+  const dbUpdates: Partial<ProfileRow> = {};
+  if (updates.firstName !== undefined) dbUpdates.first_name = updates.firstName;
+  if (updates.lastName !== undefined) dbUpdates.last_name = updates.lastName;
+  if (updates.description !== undefined) dbUpdates.description = updates.description;
+  if (updates.dateOfBirth !== undefined) dbUpdates.date_of_birth = updates.dateOfBirth;
+  if (updates.phoneNumber !== undefined) dbUpdates.phone_number = updates.phoneNumber;
+  if (updates.avatarImage !== undefined) dbUpdates.avatar_image = updates.avatarImage;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(dbUpdates)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    console.error("Error updating profile:", error);
+    throw new Error("Failed to update profile");
   }
 
   return dbToProfile(data);

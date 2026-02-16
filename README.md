@@ -142,6 +142,13 @@ erDiagram
     uuid id PK
     uuid user_id FK
     uuid organization_id FK
+    text email
+    text first_name
+    text last_name
+    text description
+    date date_of_birth
+    text phone_number
+    text avatar_image
   }
   PROFILES_EVENT_TYPES {
     uuid id PK
@@ -180,7 +187,7 @@ erDiagram
 
 - **AUTH_USERS**: Supabase authentication users
 - **ORGANIZATIONS**: Wellness center organizations
-- **PROFILES**: User profiles linked to organizations (staff members)
+- **PROFILES**: User profiles linked to organizations (staff members and owners) with personal information (name, description, contact details, avatar)
 - **MEMBERS**: Clients/members of the wellness center
 - **EVENT_CATEGORIES**: Service categories (e.g., Massage, Yoga, Therapy)
 - **EVENT_TYPES**: Specific services/treatments offered

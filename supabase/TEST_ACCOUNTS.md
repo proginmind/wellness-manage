@@ -71,6 +71,7 @@ When creating a visit, you can now select from the 3 staff members:
 The seed script also creates:
 
 - 🏢 1 Organization: "Wellness Center Demo"
+- 👤 User profiles with personal information (name, description, contact details) for owner and staff
 - 👥 10 Client Members (Emma, Liam, Olivia, etc.)
 - 📋 3 Event Categories (Massage Therapy, Yoga & Fitness, Wellness Consultation)
 - 🎯 4 Event Types/Services (Swedish Massage, Deep Tissue, Vinyasa Yoga, etc.)

@@ -140,8 +140,8 @@ BEGIN
   WHERE user_id = v_user_id AND organization_id = v_org_id;
 
   IF v_owner_profile_id IS NULL THEN
-    INSERT INTO public.profiles (user_id, organization_id, role, email)
-    VALUES (v_user_id, v_org_id, 'owner', v_user_email)
+    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
+    VALUES (v_user_id, v_org_id, 'owner', v_user_email, 'Test', 'User', 'Test owner account for local development', '1990-01-01', '+1234567890')
     RETURNING id INTO v_owner_profile_id;
 
     RAISE NOTICE 'Created owner profile for: %', v_user_email;
@@ -189,8 +189,8 @@ BEGIN
       'email', NOW(), NOW(), NOW()
     );
 
-    INSERT INTO public.profiles (user_id, organization_id, role, email)
-    VALUES (v_staff1_id, v_org_id, 'staff', 'sarah.johnson@wellnessdemo.com');
+    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
+    VALUES (v_staff1_id, v_org_id, 'staff', 'sarah.johnson@wellnessdemo.com', 'Sarah', 'Johnson', 'Certified massage therapist specializing in Swedish and deep tissue massage', '1988-05-15', '+1555123001');
 
     -- Staff 2: Michael Chen (Yoga Instructor)
     INSERT INTO auth.users (
@@ -217,8 +217,8 @@ BEGIN
       'email', NOW(), NOW(), NOW()
     );
 
-    INSERT INTO public.profiles (user_id, organization_id, role, email)
-    VALUES (v_staff2_id, v_org_id, 'staff', 'michael.chen@wellnessdemo.com');
+    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
+    VALUES (v_staff2_id, v_org_id, 'staff', 'michael.chen@wellnessdemo.com', 'Michael', 'Chen', 'Experienced yoga instructor with focus on Vinyasa flow', '1985-09-22', '+1555123002');
 
     -- Staff 3: Emily Rodriguez (Wellness Consultant)
     INSERT INTO auth.users (
@@ -245,8 +245,8 @@ BEGIN
       'email', NOW(), NOW(), NOW()
     );
 
-    INSERT INTO public.profiles (user_id, organization_id, role, email)
-    VALUES (v_staff3_id, v_org_id, 'staff', 'emily.rodriguez@wellnessdemo.com');
+    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
+    VALUES (v_staff3_id, v_org_id, 'staff', 'emily.rodriguez@wellnessdemo.com', 'Emily', 'Rodriguez', 'Holistic wellness consultant focused on mind-body connection', '1992-03-10', '+1555123003');
 
     RAISE NOTICE 'Created 3 staff test users';
   END;

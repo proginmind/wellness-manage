@@ -42,10 +42,7 @@ export default function TeamPage() {
         action={
           <PermissionGate resource="invitations" action="create">
             <Button asChild>
-              <Link href={buildRoute.settingsInvitationsNew()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Invite Staff Member
-              </Link>
+              <Link href={buildRoute.settingsInvitationsNew()}>Invite Staff Member</Link>
             </Button>
           </PermissionGate>
         }

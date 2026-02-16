@@ -54,6 +54,7 @@ export const buildRoute = {
 
   // Settings
   settingsProfile: () => "/settings/profile" as const,
+  settingsProfileEdit: () => "/settings/profile/edit" as const,
   settingsOrganization: () => "/settings/organization" as const,
   settingsTeam: () => "/settings/team" as const,
   settingsInvitations: () => "/settings/invitations" as const,
