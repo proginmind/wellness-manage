@@ -150,6 +150,108 @@ BEGIN
   END IF;
 
   -- =====================================================
+  -- 3.5. CREATE STAFF TEST USERS (for local development)
+  -- =====================================================
+  
+  -- Delete existing staff profiles for clean slate
+  DELETE FROM public.profiles 
+  WHERE organization_id = v_org_id 
+  AND role = 'staff';
+
+  -- Create staff test users with auth accounts
+  DECLARE
+    v_staff1_id uuid;
+    v_staff2_id uuid;
+    v_staff3_id uuid;
+  BEGIN
+    -- Staff 1: Sarah Johnson (Massage Therapist)
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, recovery_sent_at, last_sign_in_at,
+      raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token,
+      email_change, email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
+      'authenticated', 'authenticated', 'sarah.johnson@wellnessdemo.com',
+      crypt('password123', gen_salt('bf')),
+      NOW(), NOW(), NOW(),
+      '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), NOW(), '', '', '', ''
+    ) RETURNING id INTO v_staff1_id;
+
+    INSERT INTO auth.identities (
+      id, user_id, provider_id, identity_data, provider,
+      last_sign_in_at, created_at, updated_at
+    ) VALUES (
+      gen_random_uuid(), v_staff1_id, v_staff1_id::text,
+      format('{"sub":"%s","email":"%s"}', v_staff1_id::text, 'sarah.johnson@wellnessdemo.com')::jsonb,
+      'email', NOW(), NOW(), NOW()
+    );
+
+    INSERT INTO public.profiles (user_id, organization_id, role, email)
+    VALUES (v_staff1_id, v_org_id, 'staff', 'sarah.johnson@wellnessdemo.com');
+
+    -- Staff 2: Michael Chen (Yoga Instructor)
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, recovery_sent_at, last_sign_in_at,
+      raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token,
+      email_change, email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
+      'authenticated', 'authenticated', 'michael.chen@wellnessdemo.com',
+      crypt('password123', gen_salt('bf')),
+      NOW(), NOW(), NOW(),
+      '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), NOW(), '', '', '', ''
+    ) RETURNING id INTO v_staff2_id;
+
+    INSERT INTO auth.identities (
+      id, user_id, provider_id, identity_data, provider,
+      last_sign_in_at, created_at, updated_at
+    ) VALUES (
+      gen_random_uuid(), v_staff2_id, v_staff2_id::text,
+      format('{"sub":"%s","email":"%s"}', v_staff2_id::text, 'michael.chen@wellnessdemo.com')::jsonb,
+      'email', NOW(), NOW(), NOW()
+    );
+
+    INSERT INTO public.profiles (user_id, organization_id, role, email)
+    VALUES (v_staff2_id, v_org_id, 'staff', 'michael.chen@wellnessdemo.com');
+
+    -- Staff 3: Emily Rodriguez (Wellness Consultant)
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, recovery_sent_at, last_sign_in_at,
+      raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token,
+      email_change, email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
+      'authenticated', 'authenticated', 'emily.rodriguez@wellnessdemo.com',
+      crypt('password123', gen_salt('bf')),
+      NOW(), NOW(), NOW(),
+      '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), NOW(), '', '', '', ''
+    ) RETURNING id INTO v_staff3_id;
+
+    INSERT INTO auth.identities (
+      id, user_id, provider_id, identity_data, provider,
+      last_sign_in_at, created_at, updated_at
+    ) VALUES (
+      gen_random_uuid(), v_staff3_id, v_staff3_id::text,
+      format('{"sub":"%s","email":"%s"}', v_staff3_id::text, 'emily.rodriguez@wellnessdemo.com')::jsonb,
+      'email', NOW(), NOW(), NOW()
+    );
+
+    INSERT INTO public.profiles (user_id, organization_id, role, email)
+    VALUES (v_staff3_id, v_org_id, 'staff', 'emily.rodriguez@wellnessdemo.com');
+
+    RAISE NOTICE 'Created 3 staff test users';
+  END;
+
+  -- =====================================================
   -- 4. CREATE EVENT CATEGORIES (if not exist)
   -- =====================================================
   
@@ -227,11 +329,18 @@ BEGIN
   RAISE NOTICE '✅ Seed completed successfully!';
   RAISE NOTICE '========================================';
   RAISE NOTICE '🏢 Organization: Wellness Center Demo';
+  RAISE NOTICE '';
   RAISE NOTICE '👤 Owner: %', v_user_email;
   IF v_user_email = 'test@example.com' THEN
-    RAISE NOTICE '🔑 Login: test@example.com / password123';
+    RAISE NOTICE '   🔑 Login: test@example.com / password123';
   END IF;
-  RAISE NOTICE '👥 Members: 10';
+  RAISE NOTICE '';
+  RAISE NOTICE '👥 Staff Members: 3';
+  RAISE NOTICE '   • sarah.johnson@wellnessdemo.com / password123';
+  RAISE NOTICE '   • michael.chen@wellnessdemo.com / password123';
+  RAISE NOTICE '   • emily.rodriguez@wellnessdemo.com / password123';
+  RAISE NOTICE '';
+  RAISE NOTICE '👥 Client Members: 10';
   RAISE NOTICE '📋 Event Categories: 3';
   RAISE NOTICE '🎯 Event Types: 4';
   RAISE NOTICE '========================================';
