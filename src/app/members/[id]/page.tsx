@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { differenceInYears, format } from "date-fns";
-import { Archive, ArrowLeft, Calendar, Edit, Mail, User } from "lucide-react";
+import { Archive, ArrowLeft, Calendar, Edit, Mail, Phone, User } from "lucide-react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -209,6 +209,19 @@ export default function MemberDetailPage() {
                     >
                       {member.email}
                     </a>
+                  </div>
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Phone</p>
+                    {member.phoneNumber ? (
+                      <a
+                        href={`tel:${member.phoneNumber}`}
+                        className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                      >
+                        {member.phoneNumber}
+                      </a>
+                    ) : (
+                      <p className="font-medium">Not provided</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Date of Birth</p>

@@ -34,6 +34,16 @@ export const memberFormSchema = z.object({
       return joinDate <= today;
     }, "Date joined cannot be in the future"),
 
+  phoneNumber: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Basic phone validation: allow digits, spaces, parentheses, dashes, and plus
+      return /^[\d\s()\-+]+$/.test(val) && val.length >= 10 && val.length <= 20;
+    }, "Please enter a valid phone number (10-20 characters)"),
+
   image: z
     .string()
     .optional()

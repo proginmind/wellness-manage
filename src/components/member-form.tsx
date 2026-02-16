@@ -39,6 +39,7 @@ export function MemberForm({
       firstName: "",
       lastName: "",
       email: "",
+      phoneNumber: "",
       dateOfBirth: "",
       dateJoined: new Date().toISOString().split("T")[0],
       image: "",
@@ -103,6 +104,22 @@ export function MemberForm({
                   <FormControl>
                     <Input type="email" placeholder="john.doe@example.com" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Phone Number */}
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
+                  </FormControl>
+                  <FormDescription>Member's contact phone number</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -71,6 +71,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         firstName: validated.firstName,
         lastName: validated.lastName,
         email: validated.email,
+        phoneNumber: validated.phoneNumber || undefined,
         dateOfBirth: new Date(validated.dateOfBirth),
         dateJoined: new Date(validated.dateJoined),
         image: validated.image || undefined,

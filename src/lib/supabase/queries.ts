@@ -58,6 +58,7 @@ interface MemberRow {
   first_name: string;
   last_name: string;
   email: string;
+  phone_number: string | null;
   image: string | null;
   date_of_birth: string;
   date_joined: string;
@@ -118,6 +119,7 @@ export function dbToMember(row: MemberRow): Member {
     firstName: row.first_name,
     lastName: row.last_name,
     email: row.email,
+    phoneNumber: row.phone_number || undefined,
     image: row.image || undefined,
     dateOfBirth: new Date(row.date_of_birth),
     dateJoined: new Date(row.date_joined),
@@ -136,6 +138,7 @@ export function memberToDb(
   if (member.firstName !== undefined) db.first_name = member.firstName;
   if (member.lastName !== undefined) db.last_name = member.lastName;
   if (member.email !== undefined) db.email = member.email;
+  if (member.phoneNumber !== undefined) db.phone_number = member.phoneNumber || null;
   if (member.image !== undefined) db.image = member.image || null;
   if (member.dateOfBirth !== undefined)
     db.date_of_birth = member.dateOfBirth.toISOString().split("T")[0];
@@ -353,6 +356,7 @@ export async function createMember(formData: MemberFormValues, userId: string): 
     first_name: formData.firstName,
     last_name: formData.lastName,
     email: formData.email,
+    phone_number: formData.phoneNumber || null,
     image: formData.image || null,
     date_of_birth: formData.dateOfBirth,
     date_joined: formData.dateJoined,

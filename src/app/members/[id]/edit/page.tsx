@@ -21,6 +21,7 @@ function memberToFormValues(member: Member): MemberFormValues {
     firstName: member.firstName,
     lastName: member.lastName,
     email: member.email,
+    phoneNumber: member.phoneNumber || "",
     dateOfBirth: dateToInputValue(new Date(member.dateOfBirth)),
     dateJoined: dateToInputValue(new Date(member.dateJoined)),
     image: member.image || "",
