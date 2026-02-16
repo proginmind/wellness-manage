@@ -1,5 +1,7 @@
 -- Migration 007: Update Visits Table with Organization Support
--- This migration adds organization_id to members and updates RLS policies
+-- This migration adds organization_id to visits and updates RLS policies
+-- Note: Uses public.user_organization_id() and public.is_owner() helper functions
+--       created in migration 003_create_organizations.sql
 
 -- ============================================================================
 -- 1. ADD ORGANIZATION_ID TO VISITS
@@ -18,23 +20,23 @@ CREATE INDEX idx_visits_organization_id ON public.visits(organization_id);
 
 -- IMPORTANT: Before making organization_id NOT NULL, you must:
 --
--- Option A: If you have existing members and want to keep them:
+-- Option A: If you have existing visits and want to keep them:
 --   1. Create an organization in Supabase Dashboard (organizations table)
 --   2. Create a profile linking your user to that organization
---   3. Run: UPDATE public.members SET organization_id = 'YOUR_ORG_ID' WHERE organization_id IS NULL;
+--   3. Run: UPDATE public.visits SET organization_id = 'YOUR_ORG_ID' WHERE organization_id IS NULL;
 --
 -- Option B: If you want a clean start:
---   1. Run: TRUNCATE public.members CASCADE;
+--   1. Run: TRUNCATE public.visits CASCADE;
 --   2. Create organization and profile as above
---   3. Add new members through the app
+--   3. Add new visits through the app
 --
 -- After data migration, uncomment and run the following lines:
 
 -- Make organization_id required (uncomment after data migration)
--- ALTER TABLE public.members ALTER COLUMN organization_id SET NOT NULL;
+-- ALTER TABLE public.visits ALTER COLUMN organization_id SET NOT NULL;
 
 -- ============================================================================
--- 3. UPDATE RLS POLICIES FOR MEMBERS
+-- 3. UPDATE RLS POLICIES FOR VISITS
 -- ============================================================================
 
 -- Drop old policies that don't check organization
@@ -45,61 +47,48 @@ DROP POLICY IF EXISTS "Authenticated users can delete visits" ON public.visits;
 
 -- New organization-scoped policies
 
--- SELECT: Users can view members in their organization
+-- SELECT: Users can view visits in their organization
 CREATE POLICY "Users can view visits in their organization"
   ON public.visits FOR SELECT
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
--- INSERT: Users can create members in their organization
+-- INSERT: Users can create visits in their organization
 CREATE POLICY "Users can create visits in their organization"
   ON public.visits FOR INSERT
   TO authenticated
   WITH CHECK (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
--- UPDATE: Users can update members in their organization
+-- UPDATE: Users can update visits in their organization
 CREATE POLICY "Users can update visits in their organization"
   ON public.visits FOR UPDATE
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   )
   WITH CHECK (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
--- DELETE: Only owners can delete members
+-- DELETE: Only owners can delete visits
 CREATE POLICY "Owners can delete visits in their organization"
   ON public.visits FOR DELETE
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
     AND
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE user_id = auth.uid() AND role = 'owner'
-    )
+    public.is_owner(auth.uid())
   );
 
 -- ============================================================================
 -- 4. UPDATE TRIGGER FOR AUTOMATIC USER_ID REMOVAL (optional cleanup)
 -- ============================================================================
 
--- Note: We keep user_id in members table for audit trail, but organization_id
+-- Note: We keep user_id in visits table for audit trail, but organization_id
 -- is now the primary association. Consider removing user_id in future migrations
 -- if it's no longer needed.
 

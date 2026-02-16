@@ -88,7 +88,45 @@ CREATE INDEX idx_invitations_token ON public.invitations(token);
 CREATE INDEX idx_invitations_status ON public.invitations(status);
 
 -- ============================================================================
--- 5. ENABLE ROW LEVEL SECURITY
+-- 5. CREATE HELPER FUNCTIONS (Prevent RLS Recursion)
+-- ============================================================================
+
+-- This function runs with elevated privileges and bypasses RLS
+-- It's safe because it only returns the current user's organization_id
+CREATE OR REPLACE FUNCTION public.user_organization_id()
+RETURNS uuid
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT organization_id 
+  FROM public.profiles 
+  WHERE user_id = auth.uid()
+  LIMIT 1;
+$$;
+
+-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION public.user_organization_id() TO authenticated;
+
+-- Helper function to check if user is an owner
+CREATE OR REPLACE FUNCTION public.is_owner(user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE profiles.user_id = is_owner.user_id
+    AND role = 'owner'
+  );
+$$;
+
+-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION public.is_owner(uuid) TO authenticated;
+
+-- ============================================================================
+-- 6. ENABLE ROW LEVEL SECURITY
 -- ============================================================================
 
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
@@ -96,7 +134,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
--- 6. RLS POLICIES - ORGANIZATIONS
+-- 7. RLS POLICIES - ORGANIZATIONS
 -- ============================================================================
 
 -- Users can view their own organization
@@ -104,7 +142,7 @@ CREATE POLICY "Users can view their own organization"
   ON public.organizations FOR SELECT
   TO authenticated
   USING (
-    id = (SELECT organization_id FROM public.profiles WHERE user_id = auth.uid())
+    id = public.user_organization_id()
   );
 
 -- No one can update organizations via app (only via Dashboard/SQL)
@@ -121,7 +159,7 @@ CREATE POLICY "Organizations cannot be deleted via app"
   USING (false);
 
 -- ============================================================================
--- 7. RLS POLICIES - PROFILES
+-- 8. RLS POLICIES - PROFILES
 -- ============================================================================
 
 -- Users can view all profiles in their organization
@@ -129,9 +167,7 @@ CREATE POLICY "Users can view profiles in their organization"
   ON public.profiles FOR SELECT
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
 -- Users can view their own profile
@@ -153,7 +189,7 @@ CREATE POLICY "Profiles cannot be deleted via app"
   USING (false);
 
 -- ============================================================================
--- 8. RLS POLICIES - INVITATIONS
+-- 9. RLS POLICIES - INVITATIONS
 -- ============================================================================
 
 -- Users can view invitations in their organization
@@ -161,9 +197,7 @@ CREATE POLICY "Users can view invitations in their organization"
   ON public.invitations FOR SELECT
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
 -- Only owners can create invitations
@@ -171,12 +205,8 @@ CREATE POLICY "Owners can create invitations"
   ON public.invitations FOR INSERT
   TO authenticated
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE user_id = auth.uid()
-      AND role = 'owner'
-      AND organization_id = invitations.organization_id
-    )
+    public.is_owner(auth.uid())
+    AND organization_id = public.user_organization_id()
   );
 
 -- Only owners can update invitations (e.g., expire them)
@@ -184,38 +214,23 @@ CREATE POLICY "Owners can update invitations"
   ON public.invitations FOR UPDATE
   TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE user_id = auth.uid()
-      AND role = 'owner'
-      AND organization_id = invitations.organization_id
-    )
+    public.is_owner(auth.uid())
+    AND organization_id = public.user_organization_id()
   );
 
 -- ============================================================================
--- 9. HELPER FUNCTIONS
+-- 10. GRANT PERMISSIONS
 -- ============================================================================
 
--- Function to check if user is an owner
-CREATE OR REPLACE FUNCTION public.is_owner(user_uuid uuid)
-RETURNS boolean AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE user_id = user_uuid AND role = 'owner'
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Grant permissions to authenticated users
+GRANT ALL ON public.organizations TO authenticated;
+GRANT ALL ON public.profiles TO authenticated;
+GRANT ALL ON public.invitations TO authenticated;
 
--- Function to get user's organization ID
-CREATE OR REPLACE FUNCTION public.get_user_organization_id(user_uuid uuid)
-RETURNS uuid AS $$
-BEGIN
-  RETURN (
-    SELECT organization_id FROM public.profiles WHERE user_id = user_uuid
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Grant permissions to service role
+GRANT ALL ON public.organizations TO service_role;
+GRANT ALL ON public.profiles TO service_role;
+GRANT ALL ON public.invitations TO service_role;
 
 -- ============================================================================
 -- VERIFICATION QUERIES (commented out, run manually if needed)

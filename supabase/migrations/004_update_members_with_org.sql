@@ -1,5 +1,7 @@
 -- Migration 004: Update Members Table with Organization Support
 -- This migration adds organization_id to members and updates RLS policies
+-- Note: Uses public.user_organization_id() and public.is_owner() helper functions
+--       created in migration 003_create_organizations.sql
 
 -- ============================================================================
 -- 1. ADD ORGANIZATION_ID TO MEMBERS
@@ -50,9 +52,7 @@ CREATE POLICY "Users can view members in their organization"
   ON public.members FOR SELECT
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
 -- INSERT: Users can create members in their organization
@@ -60,9 +60,7 @@ CREATE POLICY "Users can create members in their organization"
   ON public.members FOR INSERT
   TO authenticated
   WITH CHECK (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
 -- UPDATE: Users can update members in their organization
@@ -70,14 +68,10 @@ CREATE POLICY "Users can update members in their organization"
   ON public.members FOR UPDATE
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   )
   WITH CHECK (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
   );
 
 -- DELETE: Only owners can delete members
@@ -85,14 +79,9 @@ CREATE POLICY "Owners can delete members in their organization"
   ON public.members FOR DELETE
   TO authenticated
   USING (
-    organization_id = (
-      SELECT organization_id FROM public.profiles WHERE user_id = auth.uid()
-    )
+    organization_id = public.user_organization_id()
     AND
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE user_id = auth.uid() AND role = 'owner'
-    )
+    public.is_owner(auth.uid())
   );
 
 -- ============================================================================
