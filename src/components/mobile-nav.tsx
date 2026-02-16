@@ -3,7 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Layers, LayoutDashboard, LogOut, Menu, Settings, Users, X } from "lucide-react";
+import {
+  Calendar,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  Users,
+  UsersRound,
+  X,
+} from "lucide-react";
 
 import { buildApiRoute, buildRoute, isRouteActive } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -19,6 +29,11 @@ const menuItems = [
   {
     title: "Members",
     href: buildRoute.members(),
+    icon: UsersRound,
+  },
+  {
+    title: "Team",
+    href: buildRoute.team(),
     icon: Users,
   },
   {

@@ -12,6 +12,7 @@ import {
   LogOut,
   Settings,
   Users,
+  UsersRound,
 } from "lucide-react";
 
 import { buildApiRoute, buildRoute, isRouteActive } from "@/lib/routes";
@@ -28,7 +29,7 @@ const menuItems = [
   {
     title: "Members",
     href: buildRoute.members(),
-    icon: Users,
+    icon: UsersRound,
   },
   {
     title: "Team",
