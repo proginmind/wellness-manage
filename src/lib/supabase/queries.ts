@@ -519,6 +519,276 @@ export async function getMemberStats() {
   };
 }
 
+/**
+ * Get upcoming visits for dashboard (next 7 days, pending status)
+ */
+export async function getUpcomingVisits(): Promise<{ visit: Visit; member: Member }[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  const today = new Date().toISOString().split("T")[0];
+  const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select(
+      "*, member:members(id, first_name, last_name, email, phone_number, image, date_of_birth, date_joined, status, organization_id, user_id, created_at, updated_at)"
+    )
+    .eq("organization_id", profile.organizationId)
+    .gte("date", today)
+    .lt("date", nextWeek)
+    .eq("status", "pending")
+    .order("date", { ascending: true })
+    .order("time", { ascending: true })
+    .limit(10);
+
+  if (error) {
+    console.error("Error fetching upcoming visits:", error);
+    throw new Error("Failed to fetch upcoming visits");
+  }
+
+  return (data || []).map((visit) => ({
+    visit: dbToVisit(visit),
+    member: dbToMember(visit.member),
+  }));
+}
+
+/**
+ * Get monthly revenue (last 30 days, completed visits)
+ */
+export async function getMonthlyRevenue(): Promise<number> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select("event_type_price")
+    .eq("organization_id", profile.organizationId)
+    .eq("status", "completed")
+    .gte("date", thirtyDaysAgo);
+
+  if (error) {
+    console.error("Error fetching revenue data:", error);
+    throw new Error("Failed to fetch revenue");
+  }
+
+  const revenue = (data || []).reduce((acc, visit) => acc + (visit.event_type_price || 0), 0);
+
+  return revenue;
+}
+
+/**
+ * Get active staff count for current organization
+ */
+export async function getActiveStaffCount(): Promise<number> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  const { count, error } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", profile.organizationId)
+    .eq("role", "staff");
+
+  if (error) {
+    console.error("Error fetching staff count:", error);
+    throw new Error("Failed to fetch staff count");
+  }
+
+  return count || 0;
+}
+
+/**
+ * Get revenue chart data (last 4 weeks, completed visits)
+ */
+export async function getRevenueChartData(): Promise<Array<{ name: string; revenue: number }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select("date, event_type_price")
+    .eq("organization_id", profile.organizationId)
+    .eq("status", "completed")
+    .gte("date", thirtyDaysAgo)
+    .order("date", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching chart data:", error);
+    throw new Error("Failed to fetch chart data");
+  }
+
+  // Group by week and sum revenue
+  const weeklyData: Record<string, number> = {};
+  const today = new Date();
+
+  (data || []).forEach((visit) => {
+    const visitDate = new Date(visit.date);
+    const daysDiff = Math.floor((today.getTime() - visitDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weekNum = Math.floor(daysDiff / 7);
+
+    let weekLabel;
+    if (weekNum === 0) {
+      weekLabel = "This Week";
+    } else if (weekNum === 1) {
+      weekLabel = "Last Week";
+    } else if (weekNum === 2) {
+      weekLabel = "2 Weeks Ago";
+    } else {
+      weekLabel = "3+ Weeks Ago";
+    }
+
+    weeklyData[weekLabel] = (weeklyData[weekLabel] || 0) + (visit.event_type_price || 0);
+  });
+
+  // Convert to array format for Recharts
+  const chartData = [
+    { name: "3+ Weeks Ago", revenue: weeklyData["3+ Weeks Ago"] || 0 },
+    { name: "2 Weeks Ago", revenue: weeklyData["2 Weeks Ago"] || 0 },
+    { name: "Last Week", revenue: weeklyData["Last Week"] || 0 },
+    { name: "This Week", revenue: weeklyData["This Week"] || 0 },
+  ];
+
+  return chartData;
+}
+
+/**
+ * Get visit status distribution for donut chart
+ */
+export async function getVisitStatusDistribution(): Promise<
+  Array<{ name: string; value: number; fill: string }>
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  // Get counts for each status
+  const { data, error } = await supabase
+    .from("visits")
+    .select("status")
+    .eq("organization_id", profile.organizationId);
+
+  if (error) {
+    console.error("Error fetching visit status distribution:", error);
+    throw new Error("Failed to fetch visit status distribution");
+  }
+
+  // Count visits by status
+  const statusCounts: Record<string, number> = {
+    pending: 0,
+    completed: 0,
+    cancelled: 0,
+  };
+
+  (data || []).forEach((visit) => {
+    if (visit.status in statusCounts) {
+      statusCounts[visit.status]++;
+    }
+  });
+
+  // Convert to chart format with colors
+  return [
+    { name: "Pending", value: statusCounts.pending, fill: "#f59e0b" },
+    { name: "Completed", value: statusCounts.completed, fill: "#10b981" },
+    { name: "Cancelled", value: statusCounts.cancelled, fill: "#ef4444" },
+  ];
+}
+
+/**
+ * Get revenue by event category for donut chart
+ */
+export async function getRevenueByCategoryDistribution(): Promise<
+  Array<{ name: string; value: number; fill: string }>
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  // Get completed visits with category snapshot data
+  const { data, error } = await supabase
+    .from("visits")
+    .select("event_type_category_name, event_type_category_color, event_type_price")
+    .eq("organization_id", profile.organizationId)
+    .eq("status", "completed")
+    .not("event_type_category_name", "is", null);
+
+  if (error) {
+    console.error("Error fetching revenue by category:", error);
+    throw new Error("Failed to fetch revenue by category");
+  }
+
+  // Group by category and sum revenue
+  const categoryRevenue: Record<string, { revenue: number; color: string }> = {};
+
+  (data || []).forEach((visit) => {
+    const categoryName = visit.event_type_category_name || "Uncategorized";
+    const categoryColor = visit.event_type_category_color || "#6b7280";
+
+    if (!categoryRevenue[categoryName]) {
+      categoryRevenue[categoryName] = { revenue: 0, color: categoryColor };
+    }
+
+    categoryRevenue[categoryName].revenue += visit.event_type_price || 0;
+  });
+
+  // Convert to chart format
+  return Object.entries(categoryRevenue).map(([name, data]) => ({
+    name,
+    value: data.revenue,
+    fill: data.color,
+  }));
+}
+
 // ============================================================================
 // INVITATION QUERIES
 // ============================================================================

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const permissionResult = await requireOwner();
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    const { organizationId } = permissionResult;
+    const { organizationId, userId } = permissionResult;
 
     const body = await request.json();
     const validation = inviteSchema.safeParse(body);
@@ -65,6 +65,7 @@ export async function POST(request: Request) {
       .insert({
         email: email.toLowerCase(),
         organization_id: organizationId,
+        invited_by: userId,
         status: "pending",
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
       })
