@@ -34,7 +34,26 @@ The seed script **does not auto-create users** on remote databases for security 
 
 ## Adding Staff Members
 
-Staff members should be added through the application:
+### Option 1: Manual Creation for Local Testing
+
+For local development, you can create staff users and profiles:
+
+1. **Create users in Supabase Dashboard:**
+   - Go to Supabase Dashboard > Authentication > Add User
+   - Create users with emails: `staff1@example.com`, `staff2@example.com`
+   - Set passwords (e.g., `password123`)
+
+2. **Run the seed script:**
+   ```bash
+   supabase db reset
+   ```
+   The seed script will automatically create profiles for these staff users with:
+   - **staff1@example.com**: Alice Johnson (Massage Therapist)
+   - **staff2@example.com**: Bob Martinez (Yoga Instructor)
+
+### Option 2: Using the Invitation System (Recommended)
+
+Staff members can be added through the application:
 
 1. Log in as the owner
 2. Go to **Settings > Team**
@@ -75,6 +94,7 @@ After running the seed script, your database will have:
 - 👥 10 Client Members (Emma, Liam, Olivia, etc.)
 - 📋 3 Event Categories (Massage Therapy, Yoga & Fitness, Wellness Consultation)
 - 🎯 4 Event Types/Services (Swedish Massage, Deep Tissue, Vinyasa Yoga, etc.)
+- 👨‍💼 2 Staff profiles (if users exist: staff1@example.com, staff2@example.com)
 
 ## Security Note
 
