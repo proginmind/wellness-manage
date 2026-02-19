@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const { createMember } = await import("@/lib/supabase/queries");
 
     // Create member in database
-    const newMember = await createMember(body, user.id);
+    const newMember = await createMember(body);
 
     return NextResponse.json(
       {

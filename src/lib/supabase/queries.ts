@@ -53,7 +53,6 @@ interface InvitationRow {
 
 interface MemberRow {
   id: string;
-  user_id: string;
   organization_id: string;
   first_name: string;
   last_name: string;
@@ -130,10 +129,8 @@ export function dbToMember(row: MemberRow): Member {
 
 export function memberToDb(
   member: Partial<Member>
-): Partial<Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">> {
-  const db: Partial<
-    Omit<MemberRow, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">
-  > = {};
+): Partial<Omit<MemberRow, "id" | "organization_id" | "created_at" | "updated_at">> {
+  const db: Partial<Omit<MemberRow, "id" | "organization_id" | "created_at" | "updated_at">> = {};
 
   if (member.firstName !== undefined) db.first_name = member.firstName;
   if (member.lastName !== undefined) db.last_name = member.lastName;
@@ -338,7 +335,7 @@ export async function getMemberById(id: string): Promise<Member | null> {
 /**
  * Create a new member (organization-scoped)
  */
-export async function createMember(formData: MemberFormValues, userId: string): Promise<Member> {
+export async function createMember(formData: MemberFormValues): Promise<Member> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -351,7 +348,6 @@ export async function createMember(formData: MemberFormValues, userId: string): 
   const profile = await getCurrentUserProfile(user.id);
 
   const dbData = {
-    user_id: userId,
     organization_id: profile.organizationId,
     first_name: formData.firstName,
     last_name: formData.lastName,
@@ -540,7 +536,7 @@ export async function getUpcomingVisits(): Promise<{ visit: Visit; member: Membe
   const { data, error } = await supabase
     .from("visits")
     .select(
-      "*, member:members(id, first_name, last_name, email, phone_number, image, date_of_birth, date_joined, status, organization_id, user_id, created_at, updated_at)"
+      "*, member:members(id, first_name, last_name, email, phone_number, image, date_of_birth, date_joined, status, organization_id, created_at, updated_at)"
     )
     .eq("organization_id", profile.organizationId)
     .gte("date", today)
