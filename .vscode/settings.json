@@ -29,5 +29,6 @@
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
-  "prettier.requireConfig": true
+  "prettier.requireConfig": true,
+  "deno.enable": true
 }
