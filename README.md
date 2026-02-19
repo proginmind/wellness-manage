@@ -164,16 +164,15 @@ erDiagram
     uuid event_type_id FK
   }
 
-  AUTH_USERS o|--|| ORGANIZATIONS : owns
+  AUTH_USERS o|--o| PROFILES : "links (optional)"
+  PROFILES o|--|| ORGANIZATIONS : owns
+  ORGANIZATIONS ||--o{ PROFILES : contains
   ORGANIZATIONS ||--o{ EVENT_CATEGORIES : contains
   ORGANIZATIONS ||--o{ EVENT_TYPES : contains
   EVENT_CATEGORIES ||--o{ EVENT_TYPES : categorizes
   ORGANIZATIONS ||--o{ INVITATIONS : has
-  AUTH_USERS ||--o{ INVITATIONS : sends
-  AUTH_USERS ||--o{ MEMBERS : links_to
+  PROFILES ||--o{ INVITATIONS : sends
   ORGANIZATIONS ||--o{ MEMBERS : contains
-  AUTH_USERS o|--|| PROFILES : has
-  ORGANIZATIONS ||--o{ PROFILES : contains
   PROFILES ||--o{ PROFILES_EVENT_TYPES : assigned_to
   EVENT_TYPES ||--o{ PROFILES_EVENT_TYPES : qualified_for
   ORGANIZATIONS ||--o{ PROFILES_EVENT_TYPES : scopes
@@ -185,15 +184,15 @@ erDiagram
 
 ### Key Entities
 
-- **AUTH_USERS**: Supabase authentication users
-- **ORGANIZATIONS**: Wellness center organizations
-- **PROFILES**: User profiles linked to organizations (staff members and owners) with personal information (name, description, contact details, avatar)
-- **MEMBERS**: Clients/members of the wellness center
+- **AUTH_USERS**: Supabase authentication (optional - profiles can exist without auth)
+- **PROFILES**: Organizational users (owners, staff) with personal information - can exist without auth account
+- **ORGANIZATIONS**: Wellness center organizations (owned by a profile)
+- **MEMBERS**: Clients/customers of the wellness center (no auth account required)
 - **EVENT_CATEGORIES**: Service categories (e.g., Massage, Yoga, Therapy)
 - **EVENT_TYPES**: Specific services/treatments offered
 - **PROFILES_EVENT_TYPES**: Junction table linking profiles to services they can perform (many-to-many)
 - **VISITS**: Appointments/visits scheduled for members
-- **INVITATIONS**: Pending staff invitations to join organizations
+- **INVITATIONS**: Pending staff invitations to join organizations (sent by profiles)
 
 ## Development Guidelines
 

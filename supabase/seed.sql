@@ -13,98 +13,141 @@
 
 DO $$
 DECLARE
-  v_user_id uuid;
-  v_user_email text;
   v_org_id uuid;
   v_owner_profile_id uuid;
+  v_staff1_profile_id uuid;
+  v_staff2_profile_id uuid;
   v_category_wellness_id uuid;
   v_category_therapy_id uuid;
   v_category_fitness_id uuid;
-  v_event_type_massage_id uuid;
-  v_event_type_yoga_id uuid;
-  v_test_user_exists boolean;
 BEGIN
+  RAISE NOTICE '========================================';
+  RAISE NOTICE '🌱 Seeding Wellness Management System';
+  RAISE NOTICE '========================================';
+
   -- =====================================================
-  -- 1. GET OR CREATE TEST USER FOR LOCAL DEVELOPMENT
+  -- 1. CREATE OWNER PROFILE (without organization first)
   -- =====================================================
   
-  -- Check if test user already exists
-  SELECT id, email INTO v_user_id, v_user_email
-  FROM auth.users
-  WHERE email = 'test@example.com'
-  LIMIT 1;
-
-  IF v_user_id IS NULL THEN
-    -- No test user exists, try to get any existing user
-    SELECT id, email INTO v_user_id, v_user_email 
-    FROM auth.users 
-    ORDER BY created_at 
-    LIMIT 1;
-    
-    IF v_user_id IS NULL THEN
-      -- No users found - exit gracefully
-      RAISE NOTICE '⚠️  No users found in database.';
-      RAISE NOTICE '📝 Please create a user first:';
-      RAISE NOTICE '   - Sign up at your app URL';
-      RAISE NOTICE '   - Or use Supabase Dashboard > Authentication > Add User';
-      RAISE NOTICE '   Then run this seed script again';
-      RETURN;
-    ELSE
-      RAISE NOTICE '📌 Using existing user: % (ID: %)', v_user_email, v_user_id;
-    END IF;
-  ELSE
-    RAISE NOTICE '📌 Using test user: test@example.com (ID: %)', v_user_id;
-  END IF;
-
-  -- =====================================================
-  -- 2. CREATE ORGANIZATION (if not exists)
-  -- =====================================================
-  
-  -- Check if organization already exists for this user
-  SELECT id INTO v_org_id 
-  FROM public.organizations 
-  WHERE owner_id = v_user_id
-  LIMIT 1;
-
-  IF v_org_id IS NULL THEN
-    -- Create organization
-    INSERT INTO public.organizations (name, owner_id)
-    VALUES ('Wellness Center Demo', v_user_id)
-    RETURNING id INTO v_org_id;
-
-    RAISE NOTICE 'Created organization: Wellness Center Demo (ID: %)', v_org_id;
-  ELSE
-    RAISE NOTICE 'Using existing organization (ID: %)', v_org_id;
-  END IF;
-
-  -- =====================================================
-  -- 3. CREATE OWNER PROFILE (if not exists)
-  -- =====================================================
-  
-  -- Check if profile exists
-  SELECT id INTO v_owner_profile_id
+  -- Check if owner profile exists
+  SELECT id, organization_id INTO v_owner_profile_id, v_org_id
   FROM public.profiles
-  WHERE user_id = v_user_id AND organization_id = v_org_id;
+  WHERE email = 'owner@example.com' AND role = 'owner'
+  LIMIT 1;
 
   IF v_owner_profile_id IS NULL THEN
-    INSERT INTO public.profiles (user_id, organization_id, role, email, first_name, last_name, description, date_of_birth, phone_number)
-    VALUES (v_user_id, v_org_id, 'owner', v_user_email, 'Test', 'User', 'Test owner account for local development', '1990-01-01', '+1234567890')
+    -- Create owner profile without organization_id
+    INSERT INTO public.profiles (
+      role, 
+      email, 
+      first_name, 
+      last_name, 
+      description, 
+      date_of_birth, 
+      phone_number
+    )
+    VALUES (
+      'owner', 
+      'owner@example.com',
+      'John',
+      'Smith',
+      'Wellness center owner and manager',
+      '1985-06-15',
+      '+1234567890'
+    )
     RETURNING id INTO v_owner_profile_id;
 
-    RAISE NOTICE 'Created owner profile for: %', v_user_email;
+    RAISE NOTICE '✅ Created owner profile: owner@example.com';
   ELSE
-    RAISE NOTICE 'Owner profile already exists';
+    RAISE NOTICE '📌 Owner profile already exists';
   END IF;
 
   -- =====================================================
-  -- 3.5. STAFF TEST USERS (Use app invitation feature instead)
+  -- 2. CREATE ORGANIZATION
   -- =====================================================
-  -- For remote databases, staff should be added via:
-  -- Settings > Team > Invite Staff Member
-  RAISE NOTICE 'ℹ️  To add staff: Use Settings > Team > Invite in the app';
+  
+  -- Check if organization already exists
+  IF v_org_id IS NULL THEN
+    SELECT id INTO v_org_id 
+    FROM public.organizations 
+    WHERE name = 'Wellness Center Demo'
+    LIMIT 1;
+  END IF;
+
+  IF v_org_id IS NULL THEN
+    -- Create organization with owner profile ID
+    INSERT INTO public.organizations (name, owner_id)
+    VALUES ('Wellness Center Demo', v_owner_profile_id)
+    RETURNING id INTO v_org_id;
+
+    -- Update owner profile with organization_id
+    UPDATE public.profiles
+    SET organization_id = v_org_id
+    WHERE id = v_owner_profile_id;
+
+    RAISE NOTICE '✅ Created organization: Wellness Center Demo';
+  ELSE
+    RAISE NOTICE '📌 Using existing organization: Wellness Center Demo';
+  END IF;
 
   -- =====================================================
-  -- 4. CREATE EVENT CATEGORIES (if not exist)
+  -- 3. CREATE STAFF PROFILES
+  -- =====================================================
+  
+  -- Delete existing staff profiles for clean slate
+  DELETE FROM public.profiles 
+  WHERE email IN ('staff1@example.com', 'staff2@example.com') AND role = 'staff';
+
+  -- Staff Member 1: Alice Johnson (Massage Therapist)
+  INSERT INTO public.profiles (
+    organization_id, 
+    role, 
+    email, 
+    first_name, 
+    last_name, 
+    description, 
+    date_of_birth, 
+    phone_number
+  )
+  VALUES (
+    v_org_id, 
+    'staff', 
+    'staff1@example.com',
+    'Alice',
+    'Johnson',
+    'Certified massage therapist with 5 years experience',
+    '1992-03-15',
+    '+1234567891'
+  )
+  RETURNING id INTO v_staff1_profile_id;
+  
+  -- Staff Member 2: Bob Martinez (Yoga Instructor)
+  INSERT INTO public.profiles (
+    organization_id, 
+    role, 
+    email, 
+    first_name, 
+    last_name, 
+    description, 
+    date_of_birth, 
+    phone_number
+  )
+  VALUES (
+    v_org_id, 
+    'staff', 
+    'staff2@example.com',
+    'Bob',
+    'Martinez',
+    'Experienced yoga instructor and wellness coach',
+    '1988-07-22',
+    '+1234567892'
+  )
+  RETURNING id INTO v_staff2_profile_id;
+
+  RAISE NOTICE '✅ Created 2 staff profiles (Alice Johnson, Bob Martinez)';
+
+  -- =====================================================
+  -- 4. CREATE EVENT CATEGORIES
   -- =====================================================
   
   -- Delete existing categories for clean slate
@@ -123,10 +166,10 @@ BEGIN
   VALUES (v_org_id, 'Wellness Consultation', 'Health and wellness consultations', '#2563EB')
   RETURNING id INTO v_category_wellness_id;
 
-  RAISE NOTICE 'Created 3 event categories';
+  RAISE NOTICE '✅ Created 3 event categories';
 
   -- =====================================================
-  -- 5. CREATE EVENT TYPES (if not exist)
+  -- 5. CREATE EVENT TYPES
   -- =====================================================
   
   -- Delete existing event types for clean slate
@@ -139,10 +182,10 @@ BEGIN
     (v_org_id, 'Vinyasa Yoga', 'Dynamic flowing yoga practice', 60, 25.00, '#059669', v_category_fitness_id),
     (v_org_id, 'Wellness Consultation', 'Personalized health assessment', 45, 60.00, '#2563EB', v_category_wellness_id);
 
-  RAISE NOTICE 'Created event types';
+  RAISE NOTICE '✅ Created 4 event types';
 
   -- =====================================================
-  -- 6. INSERT MEMBERS (if not exist)
+  -- 6. CREATE CLIENT MEMBERS
   -- =====================================================
   
   -- Delete existing members for clean slate
@@ -169,35 +212,31 @@ BEGIN
     (v_org_id, 'Isabella', 'Taylor', 'isabella.taylor@example.com', '1994-08-25', '2024-11-03', 'active'),
     (v_org_id, 'James', 'Thomas', 'james.thomas@example.com', '1989-06-12', '2025-01-08', 'active');
 
-  RAISE NOTICE 'Created 10 members';
+  RAISE NOTICE '✅ Created 10 client members';
 
   -- =====================================================
-  -- 7. STAFF EVENT TYPE ASSIGNMENTS (Skipped - no staff in seed)
-  -- =====================================================
-  -- Staff members and their service assignments should be managed via the app
-  RAISE NOTICE 'ℹ️  To assign services to staff: Edit team member in app';
-
-  -- =====================================================
-  -- 8. SUMMARY
+  -- 7. SUMMARY
   -- =====================================================
   
   RAISE NOTICE '';
   RAISE NOTICE '========================================';
-  RAISE NOTICE '✅ Seed completed successfully!';
+  RAISE NOTICE '✅ Seeding Complete!';
   RAISE NOTICE '========================================';
   RAISE NOTICE '🏢 Organization: Wellness Center Demo';
   RAISE NOTICE '';
-  RAISE NOTICE '👤 Owner: %', v_user_email;
-  RAISE NOTICE '';
   RAISE NOTICE '📊 Data Created:';
-  RAISE NOTICE '   • 10 Client Members';
-  RAISE NOTICE '   • 3 Event Categories (Massage, Yoga, Wellness)';
-  RAISE NOTICE '   • 4 Event Types/Services';
+  RAISE NOTICE '   • 1 Owner profile: owner@example.com';
+  RAISE NOTICE '   • 2 Staff profiles: staff1@example.com, staff2@example.com';
+  RAISE NOTICE '   • 10 Client members';
+  RAISE NOTICE '   • 3 Event Categories';
+  RAISE NOTICE '   • 4 Event Types';
   RAISE NOTICE '';
   RAISE NOTICE '💡 Next Steps:';
-  RAISE NOTICE '   1. Add staff: Settings > Team > Invite Staff Member';
-  RAISE NOTICE '   2. Assign services: Team > [Member] > Edit';
-  RAISE NOTICE '   3. Create visits: Visits > Add New Visit';
+  RAISE NOTICE '   1. Sign up with owner@example.com (any password)';
+  RAISE NOTICE '   2. Profile auto-links by email on signup';
+  RAISE NOTICE '   3. Staff can sign up with staff1@ or staff2@example.com';
+  RAISE NOTICE '   4. Assign services: Team > [Staff] > Edit';
+  RAISE NOTICE '   5. Create visits and enjoy!';
   RAISE NOTICE '========================================';
   RAISE NOTICE '';
 

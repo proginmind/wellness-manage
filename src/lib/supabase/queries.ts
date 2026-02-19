@@ -840,7 +840,7 @@ export async function createInvitation(email: string): Promise<Invitation> {
   const dbData = {
     organization_id: profile.organizationId,
     email: email.toLowerCase().trim(),
-    invited_by: user.id,
+    invited_by: profile.id,
   };
 
   const { data, error } = await supabase.from("invitations").insert(dbData).select().single();

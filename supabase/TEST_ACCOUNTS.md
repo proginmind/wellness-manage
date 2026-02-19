@@ -2,119 +2,114 @@
 
 This document describes test data and accounts for development and testing.
 
-## For Local Development
+## Quick Start (Works Everywhere!)
 
-When using `supabase db reset` locally, the seed script will attempt to use existing users or prompt you to create one.
+The seed script now works without requiring auth users to exist first!
 
-### Local Setup Steps
+### Setup Steps
 
-1. Start Supabase: `supabase start`
-2. Reset database: `supabase db reset`
-3. If no users exist, sign up at http://localhost:3000
-4. Run seed again: `supabase db seed`
+1. **Reset database:**
+   - **Local:** `pnpx supabase db reset`
+   - **Remote:** `supabase db push && supabase db seed`
 
-## For Remote/Production Testing
+2. **Create auth users** (choose one method):
 
-The seed script **does not auto-create users** on remote databases for security reasons.
+   **Option A: Use the helper script (recommended for local):**
 
-### Remote Setup Steps
-
-1. Create a user via:
-   - Sign up through your application
-   - Or Supabase Dashboard > Authentication > Add User
-2. Push migrations: `supabase db push`
-3. The seed script will use your existing user account
-
-## What the Seed Script Creates
-
-- 🏢 **1 Organization:** "Wellness Center Demo" (owned by the first available user)
-- 👥 **10 Client Members:** Sample members with names, emails, and dates
-- 📋 **3 Event Categories:** Massage Therapy, Yoga & Fitness, Wellness Consultation
-- 🎯 **4 Event Types:** Swedish Massage, Deep Tissue, Vinyasa Yoga, Wellness Consultation
-
-## Adding Staff Members
-
-### Option 1: Manual Creation for Local Testing
-
-For local development, you can create staff users and profiles:
-
-1. **Create users in Supabase Dashboard:**
-   - Go to Supabase Dashboard > Authentication > Add User
-   - Create users with emails: `staff1@example.com`, `staff2@example.com`
-   - Set passwords (e.g., `password123`)
-
-2. **Run the seed script:**
    ```bash
-   supabase db reset
+   ./scripts/create-test-users.sh
    ```
-   The seed script will automatically create profiles for these staff users with:
-   - **staff1@example.com**: Alice Johnson (Massage Therapist)
-   - **staff2@example.com**: Bob Martinez (Yoga Instructor)
 
-### Option 2: Using the Invitation System (Recommended)
+   Creates all test users with password `password123` and auto-links them to profiles.
 
-Staff members can be added through the application:
+   **Option B: Sign up manually at your app** with one of these emails:
+   - `owner@example.com` - Becomes the organization owner
+   - `staff1@example.com` - Alice Johnson (Massage Therapist)
+   - `staff2@example.com` - Bob Martinez (Yoga Instructor)
 
-1. Log in as the owner
-2. Go to **Settings > Team**
-3. Click **Invite Staff Member**
-4. Enter their email
-5. They'll receive an invitation link
-6. After they accept, assign services via **Team > [Member] > Edit**
+3. **That's it!** Your auth accounts automatically link to the pre-created profiles!
 
-## Usage
+## How Auto-Linking Works
 
-### Running the Seed Script
+1. Seed script creates profiles **without** auth accounts
+2. You sign up with a matching email (e.g., `owner@example.com`)
+3. The `handle_new_user()` trigger:
+   - Detects your email matches a profile
+   - Links your `auth.users.id` to that profile
+   - Your role and organization are already set!
 
-```bash
-# Reset database and run seed script
-supabase db reset
+## Test Accounts
 
-# Or run seed script only (after migrations)
-supabase db seed
-```
+| Email                | Role  | Name          | Password (via script) |
+| -------------------- | ----- | ------------- | --------------------- |
+| `owner@example.com`  | Owner | John Smith    | `password123`         |
+| `staff1@example.com` | Staff | Alice Johnson | `password123`         |
+| `staff2@example.com` | Staff | Bob Martinez  | `password123`         |
 
-### Testing Different Roles
-
-1. **Test as Owner:**
-   - The user you created becomes the owner automatically
-   - Access all features including Team management and Settings
-
-2. **Test as Staff:**
-   - Invite a second user via Settings > Team > Invite
-   - Accept the invitation (check email or use test email service)
-   - Log in with that account to test staff permissions
+_Note: If you sign up manually instead of using the script, you can choose any password._
 
 ## Seeded Sample Data
 
-After running the seed script, your database will have:
+After running the seed script:
 
-- 🏢 1 Organization: "Wellness Center Demo"
-- 👤 1 Owner profile (linked to your user account)
-- 👥 10 Client Members (Emma, Liam, Olivia, etc.)
-- 📋 3 Event Categories (Massage Therapy, Yoga & Fitness, Wellness Consultation)
-- 🎯 4 Event Types/Services (Swedish Massage, Deep Tissue, Vinyasa Yoga, etc.)
-- 👨‍💼 2 Staff profiles (if users exist: staff1@example.com, staff2@example.com)
+- 🏢 **Organization:** "Wellness Center Demo"
+- 👤 **1 Owner profile:** owner@example.com (John Smith)
+- 👨‍💼 **2 Staff profiles:**
+  - staff1@example.com (Alice Johnson - Massage Therapist)
+  - staff2@example.com (Bob Martinez - Yoga Instructor)
+- 👥 **10 Client Members:** Emma Johnson, Liam Smith, Olivia Brown, etc.
+- 📋 **3 Event Categories:** Massage Therapy, Yoga & Fitness, Wellness Consultation
+- 🎯 **4 Event Types:** Swedish Massage, Deep Tissue, Vinyasa Yoga, Wellness Consultation
+
+## Testing Different Roles
+
+### Owner Access
+
+1. Sign up with `owner@example.com`
+2. Full access to:
+   - Dashboard and analytics
+   - Team management (invite, edit roles)
+   - All settings
+   - Create/edit/archive all resources
+
+### Staff Access
+
+1. Sign up with `staff1@example.com` or `staff2@example.com`
+2. Limited access:
+   - View dashboard
+   - View team members (read-only)
+   - Create/view/edit visits
+   - View members and event types
+   - Cannot: manage team, change settings
+
+## Running the Seed Script
+
+```bash
+# Local: Complete reset + create auth users
+pnpx supabase db reset
+./scripts/create-test-users.sh
+
+# Remote: Push migrations and seed
+supabase db push
+supabase db seed
+# (then create users via UI or script)
+
+# Just run seed (after migrations already applied)
+supabase db seed
+```
+
+## Benefits of This Approach
+
+✅ **No manual user creation** - Just run seed and sign up  
+✅ **Works on remote databases** - No permission issues  
+✅ **Predictable roles** - Sign up with specific email = specific role  
+✅ **Easy testing** - Create/delete auth accounts without touching profiles  
+✅ **Flexible** - Profiles can exist before anyone logs in
 
 ## Security Note
 
 ⚠️ **These are test accounts for local development only!**
 
-- Never use these credentials in production
-- Change all default passwords before deploying
-- Use proper authentication and security measures in production
-
-## Resetting Test Data
-
-To start fresh:
-
-```bash
-# Complete reset (drops all data and re-runs migrations + seed)
-supabase db reset
-
-# This will:
-# 1. Drop all tables and data
-# 2. Run all migrations
-# 3. Run the seed script
-# 4. Create all test accounts again
-```
+- Never use these emails in production
+- Change the seed script emails before deploying
+- Use proper invitation flow for production users

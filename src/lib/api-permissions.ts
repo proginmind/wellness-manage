@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export interface PermissionContext {
   userId: string;
+  profileId: string;
   userEmail: string;
   role: UserRole;
   organizationId: string;
@@ -82,6 +83,7 @@ export async function requirePermission(
     // Return permission context for use in route handler
     return {
       userId: user.id,
+      profileId: profile.id,
       userEmail: user.email!,
       role: profile.role,
       organizationId: profile.organizationId,
@@ -140,6 +142,7 @@ export async function checkPermission(
       allowed: true,
       context: {
         userId: user.id,
+        profileId: profile.id,
         userEmail: user.email!,
         role: profile.role,
         organizationId: profile.organizationId,
@@ -181,6 +184,7 @@ export async function getPermissionContext(): Promise<PermissionContext | null> 
 
     return {
       userId: user.id,
+      profileId: profile.id,
       userEmail: user.email!,
       role: profile.role,
       organizationId: profile.organizationId,
