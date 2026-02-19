@@ -38,14 +38,14 @@ export function DonutChart({ data, title, description, valueFormat = "number" }:
               outerRadius={90}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name}: ${(percent ?? 0 * 100).toFixed(0)}%`}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number) => formatValue(value)}
+              formatter={(value: number | undefined) => formatValue(value ?? 0)}
               contentStyle={{
                 backgroundColor: "rgba(255, 255, 255, 0.95)",
                 border: "1px solid #e5e7eb",
