@@ -28,7 +28,7 @@ BEGIN
   -- =====================================================
   -- 1. CREATE OWNER PROFILE (without organization first)
   -- =====================================================
-  
+
   -- Check if owner profile exists
   SELECT id, organization_id INTO v_owner_profile_id, v_org_id
   FROM public.profiles
@@ -38,16 +38,16 @@ BEGIN
   IF v_owner_profile_id IS NULL THEN
     -- Create owner profile without organization_id
     INSERT INTO public.profiles (
-      role, 
-      email, 
-      first_name, 
-      last_name, 
-      description, 
-      date_of_birth, 
+      role,
+      email,
+      first_name,
+      last_name,
+      description,
+      date_of_birth,
       phone_number
     )
     VALUES (
-      'owner', 
+      'owner',
       'owner@example.com',
       'John',
       'Smith',
@@ -65,11 +65,11 @@ BEGIN
   -- =====================================================
   -- 2. CREATE ORGANIZATION
   -- =====================================================
-  
+
   -- Check if organization already exists
   IF v_org_id IS NULL THEN
-    SELECT id INTO v_org_id 
-    FROM public.organizations 
+    SELECT id INTO v_org_id
+    FROM public.organizations
     WHERE name = 'Wellness Center Demo'
     LIMIT 1;
   END IF;
@@ -93,25 +93,25 @@ BEGIN
   -- =====================================================
   -- 3. CREATE STAFF PROFILES
   -- =====================================================
-  
+
   -- Delete existing staff profiles for clean slate
-  DELETE FROM public.profiles 
+  DELETE FROM public.profiles
   WHERE email IN ('staff1@example.com', 'staff2@example.com') AND role = 'staff';
 
   -- Staff Member 1: Alice Johnson (Massage Therapist)
   INSERT INTO public.profiles (
-    organization_id, 
-    role, 
-    email, 
-    first_name, 
-    last_name, 
-    description, 
-    date_of_birth, 
+    organization_id,
+    role,
+    email,
+    first_name,
+    last_name,
+    description,
+    date_of_birth,
     phone_number
   )
   VALUES (
-    v_org_id, 
-    'staff', 
+    v_org_id,
+    'staff',
     'staff1@example.com',
     'Alice',
     'Johnson',
@@ -120,21 +120,21 @@ BEGIN
     '+1234567891'
   )
   RETURNING id INTO v_staff1_profile_id;
-  
+
   -- Staff Member 2: Bob Martinez (Yoga Instructor)
   INSERT INTO public.profiles (
-    organization_id, 
-    role, 
-    email, 
-    first_name, 
-    last_name, 
-    description, 
-    date_of_birth, 
+    organization_id,
+    role,
+    email,
+    first_name,
+    last_name,
+    description,
+    date_of_birth,
     phone_number
   )
   VALUES (
-    v_org_id, 
-    'staff', 
+    v_org_id,
+    'staff',
     'staff2@example.com',
     'Bob',
     'Martinez',
@@ -147,21 +147,38 @@ BEGIN
   RAISE NOTICE '✅ Created 2 staff profiles (Alice Johnson, Bob Martinez)';
 
   -- =====================================================
+  -- 3.1. CREATE STAFF AVAILABILITY
+  -- =====================================================
+
+  -- Delete existing staff availability for clean slate
+  DELETE FROM public.staff_availability WHERE organization_id = v_org_id;
+
+  -- Insert staff availability for Alice Johnson
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES (v_org_id, v_staff1_profile_id, 0, '09:00:00', '17:00:00');
+
+  -- Insert staff availability for Bob Martinez
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES (v_org_id, v_staff2_profile_id, 0, '09:00:00', '17:00:00');
+
+  RAISE NOTICE '✅ Created 2 staff availability records';
+
+  -- =====================================================
   -- 4. CREATE EVENT CATEGORIES
   -- =====================================================
-  
+
   -- Delete existing categories for clean slate
   DELETE FROM public.event_categories WHERE organization_id = v_org_id;
-  
+
   -- Insert categories one by one to get their IDs
   INSERT INTO public.event_categories (organization_id, name, description, color)
   VALUES (v_org_id, 'Massage Therapy', 'Therapeutic massage services', '#9333EA')
   RETURNING id INTO v_category_therapy_id;
-  
+
   INSERT INTO public.event_categories (organization_id, name, description, color)
   VALUES (v_org_id, 'Yoga & Fitness', 'Yoga classes and fitness programs', '#059669')
   RETURNING id INTO v_category_fitness_id;
-  
+
   INSERT INTO public.event_categories (organization_id, name, description, color)
   VALUES (v_org_id, 'Wellness Consultation', 'Health and wellness consultations', '#2563EB')
   RETURNING id INTO v_category_wellness_id;
@@ -171,12 +188,12 @@ BEGIN
   -- =====================================================
   -- 5. CREATE EVENT TYPES
   -- =====================================================
-  
+
   -- Delete existing event types for clean slate
   DELETE FROM public.event_types WHERE organization_id = v_org_id;
 
   INSERT INTO public.event_types (organization_id, name, description, duration, price, color, category_id)
-  VALUES 
+  VALUES
     (v_org_id, 'Swedish Massage', 'Relaxing full-body massage', 60, 80.00, '#9333EA', v_category_therapy_id),
     (v_org_id, 'Deep Tissue Massage', 'Therapeutic deep tissue work', 90, 120.00, '#7E22CE', v_category_therapy_id),
     (v_org_id, 'Vinyasa Yoga', 'Dynamic flowing yoga practice', 60, 25.00, '#059669', v_category_fitness_id),
@@ -187,17 +204,17 @@ BEGIN
   -- =====================================================
   -- 6. CREATE CLIENT MEMBERS
   -- =====================================================
-  
+
   -- Delete existing members for clean slate
   DELETE FROM public.members WHERE organization_id = v_org_id;
 
   INSERT INTO public.members (
-    organization_id, 
-    first_name, 
-    last_name, 
-    email, 
-    date_of_birth, 
-    date_joined, 
+    organization_id,
+    first_name,
+    last_name,
+    email,
+    date_of_birth,
+    date_joined,
     status
   )
   VALUES
@@ -217,7 +234,7 @@ BEGIN
   -- =====================================================
   -- 7. SUMMARY
   -- =====================================================
-  
+
   RAISE NOTICE '';
   RAISE NOTICE '========================================';
   RAISE NOTICE '✅ Seeding Complete!';
