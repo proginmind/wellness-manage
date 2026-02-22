@@ -1,6 +1,8 @@
 {
   "imports": {
     "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
-    "resend": "npm:resend@6.9.2"
+    "resend": "npm:resend@6.9.2",
+    "react": "npm:react@18.3.1",
+    "@react-email/components": "npm:@react-email/components@0.0.22"
   }
 }
