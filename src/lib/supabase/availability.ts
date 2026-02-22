@@ -275,3 +275,143 @@ export async function getAvailableSlots(
   }
   return slots;
 }
+
+const DEFAULT_SLOT_DURATION_MINS = 60;
+
+/** Get dates (ISO YYYY-MM-DD) when a specific staff has at least one available slot */
+export async function getAvailableDatesForStaff(
+  profileId: string,
+  startDate: string,
+  endDate: string,
+  durationMins: number = DEFAULT_SLOT_DURATION_MINS
+): Promise<string[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+
+  const profile = await getCurrentUserProfile(user.id);
+
+  const { data: availabilityRows } = await supabase
+    .from("staff_availability")
+    .select("day_of_week, start_time, end_time")
+    .eq("profile_id", profileId)
+    .eq("organization_id", profile.organizationId)
+    .eq("is_available", true);
+
+  const byDay = new Map<number, Array<{ start: number; end: number }>>();
+  for (const row of availabilityRows ?? []) {
+    const day = row.day_of_week as number;
+    const start = timeToMinutes(String(row.start_time).slice(0, 5));
+    const end = timeToMinutes(String(row.end_time).slice(0, 5));
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day)!.push({ start, end });
+  }
+
+  if (byDay.size === 0) return [];
+
+  const { data: visits } = await supabase
+    .from("visits")
+    .select("date, time, event_type_duration")
+    .eq("organization_id", profile.organizationId)
+    .eq("staff_id", profileId)
+    .neq("status", "cancelled")
+    .gte("date", startDate)
+    .lte("date", endDate);
+
+  const busyByDate = new Map<string, Array<{ start: number; end: number }>>();
+  for (const v of visits ?? []) {
+    const start = timeToMinutes(String(v.time).slice(0, 5));
+    const dur = Number(v.event_type_duration) || 60;
+    if (!busyByDate.has(v.date)) busyByDate.set(v.date, []);
+    busyByDate.get(v.date)!.push({ start, end: start + dur });
+  }
+
+  const results: string[] = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayOfWeek = d.getDay();
+    const windows = byDay.get(dayOfWeek) ?? [];
+    if (windows.length === 0) continue;
+    const busy = busyByDate.get(dateStr) ?? [];
+    let hasSlot = false;
+    for (const window of windows) {
+      for (
+        let slotStart = window.start;
+        slotStart + durationMins <= window.end;
+        slotStart += durationMins
+      ) {
+        const slotEnd = slotStart + durationMins;
+        const overlaps = busy.some((b) => slotStart < b.end && slotEnd > b.start);
+        if (!overlaps) {
+          hasSlot = true;
+          break;
+        }
+      }
+      if (hasSlot) break;
+    }
+    if (hasSlot) results.push(dateStr);
+  }
+  return results;
+}
+
+/** Get available time slots (HH:MM) for a specific staff on a date */
+export async function getAvailableSlotsForStaff(
+  profileId: string,
+  date: string,
+  durationMins: number = DEFAULT_SLOT_DURATION_MINS
+): Promise<string[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+
+  const profile = await getCurrentUserProfile(user.id);
+  const dayOfWeek = new Date(date + "T12:00:00").getDay();
+
+  const { data: availabilityRows } = await supabase
+    .from("staff_availability")
+    .select("start_time, end_time")
+    .eq("profile_id", profileId)
+    .eq("organization_id", profile.organizationId)
+    .eq("is_available", true)
+    .eq("day_of_week", dayOfWeek);
+
+  const windows: Array<{ start: number; end: number }> = (availabilityRows ?? []).map((row) => ({
+    start: timeToMinutes(String(row.start_time).slice(0, 5)),
+    end: timeToMinutes(String(row.end_time).slice(0, 5)),
+  }));
+
+  const { data: visits } = await supabase
+    .from("visits")
+    .select("time, event_type_duration")
+    .eq("organization_id", profile.organizationId)
+    .eq("staff_id", profileId)
+    .eq("date", date)
+    .neq("status", "cancelled");
+
+  const busy: Array<{ start: number; end: number }> = (visits ?? []).map((v) => {
+    const start = timeToMinutes(String(v.time).slice(0, 5));
+    const dur = Number(v.event_type_duration) || 60;
+    return { start, end: start + dur };
+  });
+
+  const slotStarts: number[] = [];
+  for (const window of windows) {
+    for (
+      let slotStart = window.start;
+      slotStart + durationMins <= window.end;
+      slotStart += durationMins
+    ) {
+      const slotEnd = slotStart + durationMins;
+      const overlaps = busy.some((b) => slotStart < b.end && slotEnd > b.start);
+      if (!overlaps) slotStarts.push(slotStart);
+    }
+  }
+  slotStarts.sort((a, b) => a - b);
+  return slotStarts.map((m) => minutesToTime(m));
+}

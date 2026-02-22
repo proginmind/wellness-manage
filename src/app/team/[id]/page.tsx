@@ -11,6 +11,7 @@ import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
 import { PermissionGate } from "@/components/PermissionGate";
+import { StaffAvailabilityCard } from "@/components/staff-availability-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -253,6 +254,9 @@ export default function TeamMemberDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Availability */}
+            <StaffAvailabilityCard profileId={profileId} />
           </div>
         </div>
       </div>
