@@ -43,6 +43,49 @@ export async function invokeNotify(
 }
 
 /**
+ * Log a notification attempt to the notification_logs table.
+ * Uses admin client; errors are swallowed so logging never interrupts the notification flow.
+ */
+export async function logNotification({
+  organizationId,
+  type,
+  template,
+  recipient,
+  status,
+  error,
+  visitId,
+  metadata,
+}: {
+  organizationId: string;
+  type: NotificationType;
+  template: string;
+  recipient: string;
+  status: "sent" | "failed";
+  error?: string;
+  visitId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { error: insertError } = await admin.from("notification_logs").insert({
+      organization_id: organizationId,
+      type,
+      template,
+      recipient,
+      status,
+      error: error ?? null,
+      visit_id: visitId ?? null,
+      metadata: metadata ?? null,
+    });
+    if (insertError) {
+      console.error("logNotification: insert failed", insertError);
+    }
+  } catch (err) {
+    console.error("logNotification: unexpected error", err);
+  }
+}
+
+/**
  * Build variables and payload shape used by the notify function for "visit created" templates.
  * The Edge Function resolves recipient emails from memberId/staffId.
  */
@@ -85,11 +128,23 @@ export async function sendVisitCreatedNotifications({
   staff: Profile | null | undefined;
 }): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
   const supabase = createAdminClient();
+  const templateVars = buildVisitNotificationVariables(visit, member, staff);
+
   const clientResult = await invokeNotify(supabase, {
     type: "email" as const,
     recipients: [member.email],
     template: "visit_created_client",
-    templateData: buildVisitNotificationVariables(visit, member, staff),
+    templateData: templateVars,
+  });
+
+  await logNotification({
+    organizationId: visit.organizationId,
+    visitId: visit.id,
+    type: "email",
+    template: "visit_created_client",
+    recipient: member.email,
+    status: clientResult.ok ? "sent" : "failed",
+    error: !clientResult.ok ? String(clientResult.error) : undefined,
   });
 
   let staffResult: InvokeNotifyResult | null = null;
@@ -98,7 +153,17 @@ export async function sendVisitCreatedNotifications({
       type: "email" as const,
       recipients: [staff.email],
       template: "visit_created_staff",
-      templateData: buildVisitNotificationVariables(visit, member, staff),
+      templateData: templateVars,
+    });
+
+    await logNotification({
+      organizationId: visit.organizationId,
+      visitId: visit.id,
+      type: "email",
+      template: "visit_created_staff",
+      recipient: staff.email,
+      status: staffResult.ok ? "sent" : "failed",
+      error: !staffResult.ok ? String(staffResult.error) : undefined,
     });
   }
 

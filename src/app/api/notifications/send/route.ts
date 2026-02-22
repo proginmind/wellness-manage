@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requirePermission } from "@/lib/api-permissions";
 import {
   invokeNotify,
+  logNotification,
   TEMPLATES_REQUIRING_RECIPIENTS,
   type NotificationType,
   type NotifyPayload,
@@ -27,17 +28,21 @@ export async function POST(request: Request) {
     const permissionResult = await requirePermission("visits", "update");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
+    const { organizationId } = permissionResult;
+
     const body = await request.json();
     const {
       type = "email",
       template,
       templateData = {},
       recipients = [],
+      visitId,
     } = body as {
       type?: NotificationType;
       template?: string;
       templateData?: Record<string, unknown>;
       recipients?: string[];
+      visitId?: string;
     };
 
     if (!template) {
@@ -54,6 +59,21 @@ export async function POST(request: Request) {
 
     const supabase = createAdminClient();
     const result = await invokeNotify(supabase, payload);
+
+    // Log one entry per recipient (or a single entry when recipients is empty,
+    // e.g. for templates that resolve recipients internally).
+    const logTargets = recipients.length > 0 ? recipients : ["(resolved by edge function)"];
+    for (const recipient of logTargets) {
+      await logNotification({
+        organizationId,
+        type,
+        template,
+        recipient,
+        status: result.ok ? "sent" : "failed",
+        error: !result.ok ? String(result.error) : undefined,
+        visitId,
+      });
+    }
 
     if (!result.ok) {
       console.error("Notify failed:", result.error);
