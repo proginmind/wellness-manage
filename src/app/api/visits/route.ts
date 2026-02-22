@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
-import { getVisits } from "@/lib/supabase/queries";
+import { sendVisitCreatedNotifications } from "@/lib/notify";
+import { getMemberById, getProfileWithEventTypes, getVisits } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
@@ -46,6 +48,32 @@ export async function POST(request: Request) {
 
     // Create visit in database
     const newVisit = await createVisit(body, userId);
+
+    const supabase = await createClient();
+    const member = await getMemberById(newVisit.memberId);
+    const { data: staff } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", newVisit.staffId)
+      .eq("organization_id", newVisit.organizationId)
+      .single();
+
+    if (!member?.email) {
+      return NextResponse.json({ error: "Member email not found" }, { status: 400 });
+    }
+
+    const { client: clientResult, staff: staffResult } = await sendVisitCreatedNotifications({
+      visit: newVisit,
+      member,
+      staff,
+    });
+
+    if (!clientResult.ok) {
+      console.error("Notify (visit_created_client) failed:", clientResult.error);
+    }
+    if (staffResult && !staffResult.ok) {
+      console.error("Notify (visit_created_staff) failed:", staffResult.error);
+    }
 
     return NextResponse.json(
       {

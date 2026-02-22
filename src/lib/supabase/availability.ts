@@ -138,6 +138,7 @@ export async function getAvailableDates(
 export interface SlotStaff {
   id: string;
   displayName: string;
+  email?: string;
   profileUrl?: string;
   avatarUrl?: string;
   hasServedClient: boolean;
@@ -216,15 +217,17 @@ export async function getAvailableSlots(
 
   const { data: profilesData } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, avatar_image")
+    .select("id, first_name, last_name, avatar_image, email")
     .in("id", qualifiedProfileIds);
 
   const profileNames = new Map<string, string>();
   const profileAvatars = new Map<string, string>();
+  const profileEmails = new Map<string, string>();
   for (const p of profilesData ?? []) {
     const name = [p.first_name, p.last_name].filter(Boolean).join(" ") || p.id.slice(0, 8);
     profileNames.set(p.id, name);
     if (p.avatar_image) profileAvatars.set(p.id, p.avatar_image as string);
+    if (p.email) profileEmails.set(p.id, p.email as string);
   }
 
   let hasServedByStaff: Set<string> = new Set();
@@ -244,6 +247,7 @@ export async function getAvailableSlots(
     const staffInfo: SlotStaff = {
       id: profileId,
       displayName: profileNames.get(profileId) ?? "Staff",
+      email: profileEmails.get(profileId),
       profileUrl: `/team/${profileId}`,
       avatarUrl: profileAvatars.get(profileId),
       hasServedClient: hasServedByStaff.has(profileId),

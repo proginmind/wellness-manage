@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export interface SlotStaff {
   id: string;
   displayName: string;
+  email?: string;
   profileUrl?: string;
   avatarUrl?: string;
   hasServedClient: boolean;
