@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Member } from "@/types/member";
 import { Profile } from "@/types/profile";
 import type { Visit } from "@/types/visit";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Supported notification channel (Edge Function supports "email" only for now). */
 export type NotificationType = "email";
@@ -19,47 +20,24 @@ export const TEMPLATES_REQUIRING_RECIPIENTS = ["visit_reminder"] as const;
 
 export type InvokeNotifyResult = { ok: true; data: unknown } | { ok: false; error: unknown };
 
-/** Read at request time and trim to avoid env truncation/newline issues in production. */
-function getNotifyEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY)?.trim();
-  return { url, key };
-}
-
 /**
- * Invoke the Supabase notify Edge Function via fetch.
- * Uses env at request time with trimmed keys to avoid 401s from newline/truncation in production.
+ * Invoke the Supabase notify Edge Function via Supabase SDK.
+ * Uses admin client; ensure notify function has verify_jwt = false in config or a valid service role key is set.
  */
-export async function invokeNotify(payload: NotifyPayload): Promise<InvokeNotifyResult> {
-  const { url, key } = getNotifyEnv();
-  if (!url || !key) {
-    return {
-      ok: false,
-      error: new Error(
-        "Missing Supabase env: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY"
-      ),
+export async function invokeNotify(
+  supabase: {
+    functions: {
+      invoke: (
+        name: string,
+        opts: { body: NotifyPayload }
+      ) => Promise<{ data: unknown; error: unknown }>;
     };
-  }
-  const res = await fetch(`${url}/functions/v1/notify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    return {
-      ok: false,
-      error: new Error(`notify failed: ${res.status} ${text}`),
-    };
-  }
-  let data: unknown = null;
-  try {
-    data = await res.json();
-  } catch {
-    // empty or non-JSON body is ok
+  },
+  payload: NotifyPayload
+): Promise<InvokeNotifyResult> {
+  const { data, error } = await supabase.functions.invoke("notify", { body: payload });
+  if (error) {
+    return { ok: false, error };
   }
   return { ok: true, data };
 }
@@ -99,7 +77,8 @@ export async function sendVisitCreatedNotifications({
   member: Member;
   staff: Profile | null | undefined;
 }): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
-  const clientResult = await invokeNotify({
+  const supabase = createAdminClient();
+  const clientResult = await invokeNotify(supabase, {
     type: "email" as const,
     recipients: [member.email],
     template: "visit_created_client",
@@ -108,7 +87,7 @@ export async function sendVisitCreatedNotifications({
 
   let staffResult: InvokeNotifyResult | null = null;
   if (staff) {
-    staffResult = await invokeNotify({
+    staffResult = await invokeNotify(supabase, {
       type: "email" as const,
       recipients: [staff.email],
       template: "visit_created_staff",

@@ -7,6 +7,7 @@ import {
   type NotificationType,
   type NotifyPayload,
 } from "@/lib/notify";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * POST /api/notifications/send
@@ -51,7 +52,8 @@ export async function POST(request: Request) {
       templateData,
     };
 
-    const result = await invokeNotify(payload);
+    const supabase = createAdminClient();
+    const result = await invokeNotify(supabase, payload);
 
     if (!result.ok) {
       console.error("Notify failed:", result.error);
