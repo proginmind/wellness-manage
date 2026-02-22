@@ -1604,6 +1604,35 @@ export async function updateEventCategory(
 // ============================================================================
 
 /**
+ * Get profile by ID
+ * @param profileId - Profile ID
+ * @param organizationId - Organization ID (required for organization scoping)
+ */
+export async function getProfileById(profileId: string): Promise<Profile | null> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const currentUserProfile = await getCurrentUserProfile(user.id);
+
+  // Get profile with all fields
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", profileId)
+    .eq("organization_id", currentUserProfile.organizationId)
+    .single();
+
+  if (error || !profile) return null;
+
+  return dbToProfile(profile);
+}
+
+/**
  * Get profile by ID with event types
  * @param profileId - Profile ID
  * @param organizationId - Organization ID (required for organization scoping)

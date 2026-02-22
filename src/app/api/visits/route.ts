@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
 import { sendVisitCreatedNotifications } from "@/lib/notify";
-import { getMemberById, getProfileWithEventTypes, getVisits } from "@/lib/supabase/queries";
+import {
+  getMemberById,
+  getProfileById,
+  getProfileWithEventTypes,
+  getVisits,
+} from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -49,14 +54,8 @@ export async function POST(request: Request) {
     // Create visit in database
     const newVisit = await createVisit(body, userId);
 
-    const supabase = await createClient();
     const member = await getMemberById(newVisit.memberId);
-    const { data: staff } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", newVisit.staffId)
-      .eq("organization_id", newVisit.organizationId)
-      .single();
+    const staff = newVisit.staffId ? await getProfileById(newVisit.staffId) : null;
 
     if (!member?.email) {
       return NextResponse.json({ error: "Member email not found" }, { status: 400 });
