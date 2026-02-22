@@ -26,6 +26,8 @@ The seed script now works without requiring auth users to exist first!
    - `owner@example.com` - Becomes the organization owner
    - `staff1@example.com` - Alice Johnson (Massage Therapist)
    - `staff2@example.com` - Bob Martinez (Yoga Instructor)
+   - `staff3@example.com` - Carol Lee (Wellness Consultant)
+   - `staff4@example.com` - David Chen (Massage & Yoga)
 
 3. **That's it!** Your auth accounts automatically link to the pre-created profiles!
 
@@ -45,6 +47,8 @@ The seed script now works without requiring auth users to exist first!
 | `owner@example.com`  | Owner | John Smith    | `password123`         |
 | `staff1@example.com` | Staff | Alice Johnson | `password123`         |
 | `staff2@example.com` | Staff | Bob Martinez  | `password123`         |
+| `staff3@example.com` | Staff | Carol Lee     | `password123`         |
+| `staff4@example.com` | Staff | David Chen    | `password123`         |
 
 _Note: If you sign up manually instead of using the script, you can choose any password._
 
@@ -54,9 +58,11 @@ After running the seed script:
 
 - 🏢 **Organization:** "Wellness Center Demo"
 - 👤 **1 Owner profile:** owner@example.com (John Smith)
-- 👨‍💼 **2 Staff profiles:**
-  - staff1@example.com (Alice Johnson - Massage Therapist)
-  - staff2@example.com (Bob Martinez - Yoga Instructor)
+- 👨‍💼 **4 Staff profiles** (with event types and availability):
+  - staff1@example.com (Alice Johnson - Massage: Swedish, Deep Tissue)
+  - staff2@example.com (Bob Martinez - Vinyasa Yoga)
+  - staff3@example.com (Carol Lee - Wellness Consultation)
+  - staff4@example.com (David Chen - Swedish, Yoga, Wellness)
 - 👥 **10 Client Members:** Emma Johnson, Liam Smith, Olivia Brown, etc.
 - 📋 **3 Event Categories:** Massage Therapy, Yoga & Fitness, Wellness Consultation
 - 🎯 **4 Event Types:** Swedish Massage, Deep Tissue, Vinyasa Yoga, Wellness Consultation
@@ -74,7 +80,7 @@ After running the seed script:
 
 ### Staff Access
 
-1. Sign up with `staff1@example.com` or `staff2@example.com`
+1. Sign up with `staff1@example.com` through `staff4@example.com`
 2. Limited access:
    - View dashboard
    - View team members (read-only)

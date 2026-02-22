@@ -17,9 +17,15 @@ DECLARE
   v_owner_profile_id uuid;
   v_staff1_profile_id uuid;
   v_staff2_profile_id uuid;
+  v_staff3_profile_id uuid;
+  v_staff4_profile_id uuid;
   v_category_wellness_id uuid;
   v_category_therapy_id uuid;
   v_category_fitness_id uuid;
+  v_et_swedish_id uuid;
+  v_et_deep_id uuid;
+  v_et_yoga_id uuid;
+  v_et_wellness_id uuid;
 BEGIN
   RAISE NOTICE '========================================';
   RAISE NOTICE '🌱 Seeding Wellness Management System';
@@ -96,7 +102,7 @@ BEGIN
 
   -- Delete existing staff profiles for clean slate
   DELETE FROM public.profiles
-  WHERE email IN ('staff1@example.com', 'staff2@example.com') AND role = 'staff';
+  WHERE email IN ('staff1@example.com', 'staff2@example.com', 'staff3@example.com', 'staff4@example.com') AND role = 'staff';
 
   -- Staff Member 1: Alice Johnson (Massage Therapist)
   INSERT INTO public.profiles (
@@ -144,24 +150,53 @@ BEGIN
   )
   RETURNING id INTO v_staff2_profile_id;
 
-  RAISE NOTICE '✅ Created 2 staff profiles (Alice Johnson, Bob Martinez)';
+  -- Staff Member 3: Carol Lee (Wellness Consultant)
+  INSERT INTO public.profiles (
+    organization_id,
+    role,
+    email,
+    first_name,
+    last_name,
+    description,
+    date_of_birth,
+    phone_number
+  )
+  VALUES (
+    v_org_id,
+    'staff',
+    'staff3@example.com',
+    'Carol',
+    'Lee',
+    'Wellness consultant and health coach',
+    '1990-11-08',
+    '+1234567893'
+  )
+  RETURNING id INTO v_staff3_profile_id;
 
-  -- =====================================================
-  -- 3.1. CREATE STAFF AVAILABILITY
-  -- =====================================================
+  -- Staff Member 4: David Chen (Massage & Yoga)
+  INSERT INTO public.profiles (
+    organization_id,
+    role,
+    email,
+    first_name,
+    last_name,
+    description,
+    date_of_birth,
+    phone_number
+  )
+  VALUES (
+    v_org_id,
+    'staff',
+    'staff4@example.com',
+    'David',
+    'Chen',
+    'Dual-certified in massage and yoga',
+    '1987-04-25',
+    '+1234567894'
+  )
+  RETURNING id INTO v_staff4_profile_id;
 
-  -- Delete existing staff availability for clean slate
-  DELETE FROM public.staff_availability WHERE organization_id = v_org_id;
-
-  -- Insert staff availability for Alice Johnson
-  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
-  VALUES (v_org_id, v_staff1_profile_id, 0, '09:00:00', '17:00:00');
-
-  -- Insert staff availability for Bob Martinez
-  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
-  VALUES (v_org_id, v_staff2_profile_id, 0, '09:00:00', '17:00:00');
-
-  RAISE NOTICE '✅ Created 2 staff availability records';
+  RAISE NOTICE '✅ Created 4 staff profiles (Alice, Bob, Carol, David)';
 
   -- =====================================================
   -- 4. CREATE EVENT CATEGORIES
@@ -193,13 +228,97 @@ BEGIN
   DELETE FROM public.event_types WHERE organization_id = v_org_id;
 
   INSERT INTO public.event_types (organization_id, name, description, duration, price, color, category_id)
-  VALUES
-    (v_org_id, 'Swedish Massage', 'Relaxing full-body massage', 60, 80.00, '#9333EA', v_category_therapy_id),
-    (v_org_id, 'Deep Tissue Massage', 'Therapeutic deep tissue work', 90, 120.00, '#7E22CE', v_category_therapy_id),
-    (v_org_id, 'Vinyasa Yoga', 'Dynamic flowing yoga practice', 60, 25.00, '#059669', v_category_fitness_id),
-    (v_org_id, 'Wellness Consultation', 'Personalized health assessment', 45, 60.00, '#2563EB', v_category_wellness_id);
+  VALUES (v_org_id, 'Swedish Massage', 'Relaxing full-body massage', 60, 80.00, '#9333EA', v_category_therapy_id)
+  RETURNING id INTO v_et_swedish_id;
+
+  INSERT INTO public.event_types (organization_id, name, description, duration, price, color, category_id)
+  VALUES (v_org_id, 'Deep Tissue Massage', 'Therapeutic deep tissue work', 90, 120.00, '#7E22CE', v_category_therapy_id)
+  RETURNING id INTO v_et_deep_id;
+
+  INSERT INTO public.event_types (organization_id, name, description, duration, price, color, category_id)
+  VALUES (v_org_id, 'Vinyasa Yoga', 'Dynamic flowing yoga practice', 60, 25.00, '#059669', v_category_fitness_id)
+  RETURNING id INTO v_et_yoga_id;
+
+  INSERT INTO public.event_types (organization_id, name, description, duration, price, color, category_id)
+  VALUES (v_org_id, 'Wellness Consultation', 'Personalized health assessment', 45, 60.00, '#2563EB', v_category_wellness_id)
+  RETURNING id INTO v_et_wellness_id;
 
   RAISE NOTICE '✅ Created 4 event types';
+
+  -- =====================================================
+  -- 5.1. ASSIGN EVENT TYPES TO STAFF (profiles_event_types)
+  -- =====================================================
+
+  DELETE FROM public.profiles_event_types WHERE organization_id = v_org_id;
+
+  -- Alice: Swedish Massage, Deep Tissue Massage
+  INSERT INTO public.profiles_event_types (organization_id, profile_id, event_type_id)
+  VALUES (v_org_id, v_staff1_profile_id, v_et_swedish_id),
+         (v_org_id, v_staff1_profile_id, v_et_deep_id);
+
+  -- Bob: Vinyasa Yoga
+  INSERT INTO public.profiles_event_types (organization_id, profile_id, event_type_id)
+  VALUES (v_org_id, v_staff2_profile_id, v_et_yoga_id);
+
+  -- Carol: Wellness Consultation
+  INSERT INTO public.profiles_event_types (organization_id, profile_id, event_type_id)
+  VALUES (v_org_id, v_staff3_profile_id, v_et_wellness_id);
+
+  -- David: Swedish Massage, Vinyasa Yoga, Wellness Consultation
+  INSERT INTO public.profiles_event_types (organization_id, profile_id, event_type_id)
+  VALUES (v_org_id, v_staff4_profile_id, v_et_swedish_id),
+         (v_org_id, v_staff4_profile_id, v_et_yoga_id),
+         (v_org_id, v_staff4_profile_id, v_et_wellness_id);
+
+  RAISE NOTICE '✅ Assigned event types to staff profiles';
+
+  -- =====================================================
+  -- 5.2. CREATE STAFF AVAILABILITY
+  -- =====================================================
+
+  DELETE FROM public.staff_availability WHERE organization_id = v_org_id;
+
+  -- Alice: Mon–Fri 09:00–17:00, Sat 09:00–13:00 (day 0=Sun, 1=Mon, ..., 6=Sat)
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES
+    (v_org_id, v_staff1_profile_id, 1, '09:00:00', '17:00:00'),
+    (v_org_id, v_staff1_profile_id, 2, '09:00:00', '17:00:00'),
+    (v_org_id, v_staff1_profile_id, 3, '09:00:00', '17:00:00'),
+    (v_org_id, v_staff1_profile_id, 4, '09:00:00', '17:00:00'),
+    (v_org_id, v_staff1_profile_id, 5, '09:00:00', '17:00:00'),
+    (v_org_id, v_staff1_profile_id, 6, '09:00:00', '13:00:00');
+
+  -- Bob: Tue–Sat 08:00–16:00
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES
+    (v_org_id, v_staff2_profile_id, 2, '08:00:00', '16:00:00'),
+    (v_org_id, v_staff2_profile_id, 3, '08:00:00', '16:00:00'),
+    (v_org_id, v_staff2_profile_id, 4, '08:00:00', '16:00:00'),
+    (v_org_id, v_staff2_profile_id, 5, '08:00:00', '16:00:00'),
+    (v_org_id, v_staff2_profile_id, 6, '08:00:00', '16:00:00');
+
+  -- Carol: Mon, Wed, Fri 10:00–18:00
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES
+    (v_org_id, v_staff3_profile_id, 1, '10:00:00', '18:00:00'),
+    (v_org_id, v_staff3_profile_id, 3, '10:00:00', '18:00:00'),
+    (v_org_id, v_staff3_profile_id, 5, '10:00:00', '18:00:00');
+
+  -- David: Mon–Fri 09:00–12:00 and 14:00–18:00 (split shift)
+  INSERT INTO public.staff_availability (organization_id, profile_id, day_of_week, start_time, end_time)
+  VALUES
+    (v_org_id, v_staff4_profile_id, 1, '09:00:00', '12:00:00'),
+    (v_org_id, v_staff4_profile_id, 1, '14:00:00', '18:00:00'),
+    (v_org_id, v_staff4_profile_id, 2, '09:00:00', '12:00:00'),
+    (v_org_id, v_staff4_profile_id, 2, '14:00:00', '18:00:00'),
+    (v_org_id, v_staff4_profile_id, 3, '09:00:00', '12:00:00'),
+    (v_org_id, v_staff4_profile_id, 3, '14:00:00', '18:00:00'),
+    (v_org_id, v_staff4_profile_id, 4, '09:00:00', '12:00:00'),
+    (v_org_id, v_staff4_profile_id, 4, '14:00:00', '18:00:00'),
+    (v_org_id, v_staff4_profile_id, 5, '09:00:00', '12:00:00'),
+    (v_org_id, v_staff4_profile_id, 5, '14:00:00', '18:00:00');
+
+  RAISE NOTICE '✅ Created staff availability records';
 
   -- =====================================================
   -- 6. CREATE CLIENT MEMBERS
@@ -243,17 +362,17 @@ BEGIN
   RAISE NOTICE '';
   RAISE NOTICE '📊 Data Created:';
   RAISE NOTICE '   • 1 Owner profile: owner@example.com';
-  RAISE NOTICE '   • 2 Staff profiles: staff1@example.com, staff2@example.com';
+  RAISE NOTICE '   • 4 Staff profiles: staff1–4@example.com (Alice, Bob, Carol, David)';
+  RAISE NOTICE '   • Event types assigned to staff';
+  RAISE NOTICE '   • Staff availability (multiple days/windows)';
   RAISE NOTICE '   • 10 Client members';
-  RAISE NOTICE '   • 3 Event Categories';
-  RAISE NOTICE '   • 4 Event Types';
+  RAISE NOTICE '   • 3 Event Categories, 4 Event Types';
   RAISE NOTICE '';
   RAISE NOTICE '💡 Next Steps:';
   RAISE NOTICE '   1. Sign up with owner@example.com (any password)';
   RAISE NOTICE '   2. Profile auto-links by email on signup';
-  RAISE NOTICE '   3. Staff can sign up with staff1@ or staff2@example.com';
-  RAISE NOTICE '   4. Assign services: Team > [Staff] > Edit';
-  RAISE NOTICE '   5. Create visits and enjoy!';
+  RAISE NOTICE '   3. Staff can sign up with staff1@–staff4@example.com';
+  RAISE NOTICE '   4. Create visits and enjoy!';
   RAISE NOTICE '========================================';
   RAISE NOTICE '';
 
