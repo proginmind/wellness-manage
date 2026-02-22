@@ -7,15 +7,6 @@ import {
   type NotificationType,
   type NotifyPayload,
 } from "@/lib/notify";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-function normalizeRecipients(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((item): item is string => typeof item === "string")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 
 /**
  * POST /api/notifications/send
@@ -60,8 +51,7 @@ export async function POST(request: Request) {
       templateData,
     };
 
-    const supabase = createAdminClient();
-    const result = await invokeNotify(supabase, payload);
+    const result = await invokeNotify(payload);
 
     if (!result.ok) {
       console.error("Notify failed:", result.error);
