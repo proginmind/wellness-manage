@@ -63,7 +63,6 @@ export async function POST(request: Request) {
     }
 
     const { client: clientResult, staff: staffResult } = await sendVisitCreatedNotifications({
-      request,
       visit: newVisit,
       member,
       staff,
