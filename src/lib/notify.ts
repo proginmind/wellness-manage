@@ -53,6 +53,12 @@ function buildVisitNotificationVariables(
 ): Record<string, unknown> {
   const formattedDate = format(new Date(visit.date), "EEEE, MMMM d, yyyy");
   const formattedTime = format(new Date(visit.time), "h:mm a");
+
+  // Combine date (calendar day) and time (clock time) into a single datetime for the ICS event.
+  const startDate = new Date(visit.date);
+  const timeDate = new Date(visit.time);
+  startDate.setHours(timeDate.getHours(), timeDate.getMinutes(), 0, 0);
+
   return {
     memberName: `${member.firstName} ${member.lastName}`,
     staffName: staff ? `${staff.firstName} ${staff.lastName}` : undefined,
@@ -61,6 +67,7 @@ function buildVisitNotificationVariables(
     time: formattedTime,
     durationMinutes: visit.eventTypeDuration ?? undefined,
     notes: visit.notes ?? undefined,
+    startIso: startDate.toISOString(),
   };
 }
 
