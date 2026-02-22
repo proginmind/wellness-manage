@@ -1,10 +1,9 @@
+import { createClient } from "@supabase/supabase-js";
 import { format } from "date-fns";
 
 import { Member } from "@/types/member";
 import { Profile } from "@/types/profile";
 import type { Visit } from "@/types/visit";
-
-import { createAdminClient } from "./supabase/admin";
 
 /** Supported notification channel (Edge Function supports "email" only for now). */
 export type NotificationType = "email";
@@ -70,15 +69,28 @@ function buildVisitNotificationVariables(
  * Uses the shared notify Edge Function; recipient emails are resolved inside the function from memberId/staffId.
  */
 export async function sendVisitCreatedNotifications({
+  request,
   visit,
   member,
   staff,
 }: {
+  request: Request;
   visit: Visit;
   member: Member;
   staff: Profile | null | undefined;
 }): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
-  const supabase = createAdminClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      global: {
+        headers: {
+          Authorization: request.headers.get("Authorization")!,
+        },
+      },
+    }
+  );
+
   const clientResult = await invokeNotify(supabase, {
     type: "email" as const,
     recipients: [member.email],
