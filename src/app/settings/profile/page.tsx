@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { buildRoute } from "@/lib/routes";
 import { ProfileContent } from "@/components/profile-content";
 import { ChangePasswordCard } from "@/components/settings/change-password-card";
+import { CloseAccountCard } from "@/components/settings/close-account-card";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default function ProfileSettingsPage() {
 
       <ProfileContent />
       <ChangePasswordCard />
+      <CloseAccountCard />
     </div>
   );
 }
