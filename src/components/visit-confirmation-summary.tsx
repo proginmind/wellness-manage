@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/currency-display";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -22,6 +23,8 @@ interface ConfirmationSummaryProps {
   memberImage?: string;
   serviceName: string;
   eventTypeId?: string;
+  price?: number;
+  currency?: string;
   date: string;
   time: string;
   staffName: string;
@@ -38,6 +41,8 @@ export function ConfirmationSummary({
   memberImage,
   serviceName,
   eventTypeId,
+  price,
+  currency,
   date,
   time,
   staffName,
@@ -98,6 +103,12 @@ export function ConfirmationSummary({
             <p className="font-medium">{serviceName}</p>
           )}
         </div>
+        {price !== undefined && currency && (
+          <div>
+            <p className="text-sm text-muted-foreground">Price</p>
+            <CurrencyDisplay value={price} currency={currency} className="font-medium" />
+          </div>
+        )}
         <div>
           <p className="text-sm text-muted-foreground">Date & time</p>
           <p className="font-medium">

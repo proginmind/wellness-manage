@@ -18,6 +18,7 @@ import { formatCurrency } from "@/lib/currency";
 import { buildRoute } from "@/lib/routes";
 import { getCurrentUserProfile, getVisitById } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
+import { CurrencyDisplay } from "@/components/currency-display";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -171,7 +172,11 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
                     </p>
                     <p className="font-medium">
                       {visit.eventTypeDuration} minutes •{" "}
-                      {formatCurrency(visit.eventTypePrice, visit.eventTypeCurrency ?? "USD")}
+                      <CurrencyDisplay
+                        className="inline-block"
+                        value={visit.eventTypePrice}
+                        currency={visit.eventTypeCurrency ?? "USD"}
+                      />
                     </p>
                   </div>
                 </div>

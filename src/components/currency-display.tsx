@@ -6,16 +6,22 @@ interface CurrencyDisplayProps {
   value: number;
   currency: string;
   className?: string;
+  hideSymbol?: boolean;
 }
 
 function getCurrencySymbol(currency: string): string | undefined {
   return currencies.find((c) => c.code === currency)?.symbol;
 }
 
-export function CurrencyDisplay({ value, currency, className }: CurrencyDisplayProps) {
+export function CurrencyDisplay({
+  value,
+  currency,
+  className,
+  hideSymbol = true,
+}: CurrencyDisplayProps) {
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      <span>{getCurrencySymbol(currency)}</span>
+      {!hideSymbol && <span>{getCurrencySymbol(currency)}</span>}
       <span>
         {value.toLocaleString(undefined, {
           minimumFractionDigits: 0,

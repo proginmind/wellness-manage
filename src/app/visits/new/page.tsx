@@ -16,6 +16,7 @@ import { fetcher } from "@/lib/fetcher";
 import { buildRoute } from "@/lib/routes";
 import type { VisitFormValues } from "@/lib/validations/visit";
 import { visitFormSchema } from "@/lib/validations/visit";
+import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { MemberCombobox } from "@/components/member-combobox";
@@ -53,6 +54,8 @@ export default function NewVisitPage() {
 
   const { data: membersData } = useSWR<MembersListResponse>("/api/members", fetcher);
   const { data: eventTypesData } = useSWR<EventTypesListResponse>("/api/event-types", fetcher);
+  const { user } = useUser();
+  const orgCurrency = user?.organization?.currency ?? "USD";
 
   const members = membersData?.members ?? [];
   const eventTypes = eventTypesData?.eventTypes?.filter((et) => et.isActive) ?? [];
@@ -262,7 +265,7 @@ export default function NewVisitPage() {
                         <SelectContent>
                           {eventTypes.map((et) => (
                             <SelectItem key={et.id} value={et.id}>
-                              {et.name} – {et.duration} min – $
+                              {et.name} – {et.duration} min – {orgCurrency}{" "}
                               {typeof et.price === "number" ? et.price.toFixed(2) : et.price}
                             </SelectItem>
                           ))}
@@ -352,6 +355,8 @@ export default function NewVisitPage() {
                 memberImage={selectedMember?.image}
                 serviceName={selectedEventType?.name ?? "—"}
                 eventTypeId={form.watch("eventTypeId") || undefined}
+                price={selectedEventType?.price}
+                currency={orgCurrency}
                 date={form.watch("date")}
                 time={form.watch("time")}
                 staffName={selectedStaff?.displayName ?? "—"}
