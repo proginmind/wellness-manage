@@ -50,12 +50,6 @@ export const eventTypeFormSchema = z.object({
       return /^\d+(\.\d{1,2})?$/.test(val.toString());
     }, "Price can have at most 2 decimal places"),
 
-  currency: z
-    .string()
-    .min(1, "Currency is required")
-    .length(3, "Currency must be a 3-letter code (e.g., USD, EUR)")
-    .regex(/^[A-Z]{3}$/, "Currency must be uppercase letters (e.g., USD)"),
-
   // Availability Settings
   isActive: z.boolean(),
 

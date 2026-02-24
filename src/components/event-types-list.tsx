@@ -5,15 +5,16 @@ import { EventTypeCard } from "@/components/event-type-card";
 
 interface EventTypesListProps {
   eventTypes: EventType[];
+  currency: string;
 }
 
-export function EventTypesList({ eventTypes }: EventTypesListProps) {
+export function EventTypesList({ eventTypes, currency }: EventTypesListProps) {
   // Display event types list or empty state
   if (eventTypes.length > 0) {
     return (
       <div className="flex flex-col gap-4">
         {eventTypes.map((eventType) => (
-          <EventTypeCard key={eventType.id} eventType={eventType} />
+          <EventTypeCard key={eventType.id} eventType={eventType} currency={currency} />
         ))}
       </div>
     );

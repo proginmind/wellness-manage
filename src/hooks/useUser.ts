@@ -1,4 +1,4 @@
-import useSWR from "swr";
+import useSWR, { SWRConfig, SWRConfiguration } from "swr";
 
 import { Organization } from "@/types/organization";
 import { Profile } from "@/types/profile";
@@ -16,10 +16,11 @@ interface UserResponse {
   user: User;
 }
 
-export function useUser() {
+export function useUser(options?: SWRConfiguration<UserResponse>) {
   const { data, error, isLoading, mutate } = useSWR<UserResponse>("/api/auth/me", fetcher, {
     dedupingInterval: 60000, // Don't refetch for 1 minute
     revalidateOnFocus: false, // Don't revalidate on window focus for auth
+    ...options,
   });
 
   return {

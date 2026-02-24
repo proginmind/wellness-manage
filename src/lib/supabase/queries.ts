@@ -6,11 +6,11 @@ import { Organization } from "@/types/organization";
 import { Profile } from "@/types/profile";
 import { Visit, VisitStatus } from "@/types/visit";
 import { UserRole } from "@/lib/permissions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { MemberFormValues } from "@/lib/validations/member";
 
 import { VisitFormValues } from "../validations/visit";
-import { createAdminClient } from "./admin";
 
 // ============================================================================
 // DATABASE ROW TYPES (snake_case from PostgreSQL)
@@ -20,6 +20,7 @@ interface OrganizationRow {
   id: string;
   name: string;
   owner_id: string;
+  currency: string;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +77,7 @@ export function dbToOrganization(row: OrganizationRow): Organization {
     id: row.id,
     name: row.name,
     ownerId: row.owner_id,
+    currency: row.currency ?? "USD",
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -233,6 +235,26 @@ export async function getOrganizationById(id: string): Promise<Organization | nu
   }
 
   return dbToOrganization(data);
+}
+
+/**
+ * Update the currency for an organization
+ */
+export async function updateOrganizationCurrency(
+  organizationId: string,
+  currency: string
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("organizations")
+    .update({ currency })
+    .eq("id", organizationId);
+
+  if (error) {
+    console.error("Error updating organization currency:", error);
+    throw new Error("Failed to update organization currency");
+  }
 }
 
 /**
@@ -917,6 +939,7 @@ interface VisitRow {
   event_type_name: string;
   event_type_duration: number;
   event_type_price: number;
+  event_type_currency: string | null;
   event_type_category_name: string | null;
   event_type_category_color: string | null;
   date: string;
@@ -944,6 +967,7 @@ export function dbToVisit(row: VisitRow): Visit {
     eventTypeName: row.event_type_name,
     eventTypeDuration: row.event_type_duration,
     eventTypePrice: row.event_type_price,
+    eventTypeCurrency: row.event_type_currency || undefined,
     eventTypeCategoryName: row.event_type_category_name || undefined,
     eventTypeCategoryColor: row.event_type_category_color || undefined,
     date: new Date(row.date),
@@ -1067,18 +1091,25 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
 
   const profile = await getCurrentUserProfile(user.id);
 
-  // Fetch event type to create snapshot
-  const { data: eventTypeData, error: eventTypeError } = await supabase
-    .from("event_types")
-    .select("name, duration, price, category_id")
-    .eq("id", formData.eventTypeId)
-    .eq("organization_id", profile.organizationId)
-    .single();
+  // Fetch event type and org currency in parallel for the snapshot
+  const [eventTypeResult, orgResult] = await Promise.all([
+    supabase
+      .from("event_types")
+      .select("name, duration, price, category_id")
+      .eq("id", formData.eventTypeId)
+      .eq("organization_id", profile.organizationId)
+      .single(),
+    supabase.from("organizations").select("currency").eq("id", profile.organizationId).single(),
+  ]);
+
+  const { data: eventTypeData, error: eventTypeError } = eventTypeResult;
 
   if (eventTypeError || !eventTypeData) {
     console.error("Error fetching event type:", eventTypeError);
     throw new Error("Event type not found");
   }
+
+  const orgCurrency = orgResult.data?.currency ?? "USD";
 
   // Fetch category if it exists
   let categoryName: string | null = null;
@@ -1105,6 +1136,7 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
     event_type_name: eventTypeData.name,
     event_type_duration: eventTypeData.duration,
     event_type_price: eventTypeData.price,
+    event_type_currency: orgCurrency,
     event_type_category_name: categoryName,
     event_type_category_color: categoryColor,
     date: formData.date,
@@ -1139,7 +1171,6 @@ interface EventTypeRow {
   buffer_before: number;
   buffer_after: number;
   price: number;
-  currency: string;
   is_active: boolean;
   is_bookable: boolean;
   requires_approval: boolean;
@@ -1161,7 +1192,6 @@ export function dbToEventType(row: EventTypeRow): EventType {
     bufferBefore: row.buffer_before,
     bufferAfter: row.buffer_after,
     price: Number(row.price),
-    currency: row.currency,
     isActive: row.is_active,
     isBookable: row.is_bookable,
     requiresApproval: row.requires_approval,
@@ -1245,7 +1275,6 @@ export async function createEventType(
     buffer_before: eventTypeData.bufferBefore,
     buffer_after: eventTypeData.bufferAfter,
     price: eventTypeData.price,
-    currency: eventTypeData.currency,
     is_active: eventTypeData.isActive,
     is_bookable: eventTypeData.isBookable,
     requires_approval: eventTypeData.requiresApproval,
@@ -1371,7 +1400,6 @@ export async function updateEventType(
   if (updates.bufferBefore !== undefined) dbUpdates.buffer_before = updates.bufferBefore;
   if (updates.bufferAfter !== undefined) dbUpdates.buffer_after = updates.bufferAfter;
   if (updates.price !== undefined) dbUpdates.price = updates.price;
-  if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
   if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
   if (updates.isBookable !== undefined) dbUpdates.is_bookable = updates.isBookable;
   if (updates.requiresApproval !== undefined)

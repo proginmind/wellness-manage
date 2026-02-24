@@ -168,9 +168,7 @@ export default function ArchiveEventTypePage() {
                 <h3 className="font-semibold text-lg">{eventType.name}</h3>
                 <div className="flex gap-2 mt-2">
                   <Badge variant="outline">{eventType.duration} minutes</Badge>
-                  <Badge variant="outline">
-                    ${eventType.price} {eventType.currency}
-                  </Badge>
+                  <Badge variant="outline">${eventType.price}</Badge>
                 </div>
               </div>
             </div>

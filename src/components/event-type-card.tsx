@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { Calendar, CheckCircle, Clock, DollarSign, XCircle } from "lucide-react";
+import { Calendar, CheckCircle, Clock, XCircle } from "lucide-react";
 
 import { EventType } from "@/types/event-type";
 import { buildRoute } from "@/lib/routes";
+import { CurrencyDisplay } from "@/components/currency-display";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface EventTypeCardProps {
   eventType: EventType;
+  currency: string;
 }
 
-export function EventTypeCard({ eventType }: EventTypeCardProps) {
+export function EventTypeCard({ eventType, currency }: EventTypeCardProps) {
   return (
     <Link href={buildRoute.eventType(eventType.id)}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -73,12 +75,7 @@ export function EventTypeCard({ eventType }: EventTypeCardProps) {
                   <span>{eventType.duration} min</span>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span>
-                    {eventType.price.toFixed(2)} {eventType.currency}
-                  </span>
-                </div>
+                <CurrencyDisplay value={eventType.price} currency={currency} />
 
                 {eventType.isBookable && (
                   <div className="flex items-center gap-1">

@@ -21,7 +21,6 @@ export interface EventType {
 
   // Pricing
   price: number;
-  currency: string;
 
   // Availability Settings
   isActive: boolean;

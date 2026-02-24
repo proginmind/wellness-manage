@@ -9,6 +9,7 @@ export interface Visit {
   eventTypeName: string;
   eventTypeDuration: number;
   eventTypePrice: number;
+  eventTypeCurrency?: string;
   eventTypeCategoryName?: string;
   eventTypeCategoryColor?: string;
   date: Date;

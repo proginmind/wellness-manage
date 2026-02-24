@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { EventType } from "@/types/event-type";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute } from "@/lib/routes";
+import { useUser } from "@/hooks/useUser";
 import { EventTypesList } from "@/components/event-types-list";
 
 interface EventTypesResponse {
@@ -17,6 +18,7 @@ export function EventTypesListContainer() {
     buildApiRoute.eventTypes(),
     fetcher
   );
+  const { user } = useUser();
 
   if (error) {
     return (
@@ -37,5 +39,10 @@ export function EventTypesListContainer() {
     );
   }
 
-  return <EventTypesList eventTypes={data?.eventTypes || []} />;
+  return (
+    <EventTypesList
+      eventTypes={data?.eventTypes || []}
+      currency={user?.organization?.currency ?? "USD"}
+    />
+  );
 }

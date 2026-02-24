@@ -63,7 +63,6 @@ export function EventTypeForm({
       bufferBefore: 0,
       bufferAfter: 0,
       price: 0,
-      currency: "USD",
       isActive: true,
       isBookable: true,
       requiresApproval: false,
@@ -299,54 +298,32 @@ export function EventTypeForm({
       <Card>
         <CardHeader>
           <CardTitle>Pricing</CardTitle>
-          <CardDescription>Set the price for this service</CardDescription>
+          <CardDescription>
+            Set the price for this service (currency is set at organization level)
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Price */}
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Currency */}
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Currency *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="USD"
-                          maxLength={3}
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormDescription>3-letter code (e.g., USD, EUR)</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </form>
           </Form>
         </CardContent>

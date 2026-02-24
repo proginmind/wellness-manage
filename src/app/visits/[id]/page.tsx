@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { requireAuth } from "@/lib/auth";
+import { formatCurrency } from "@/lib/currency";
 import { buildRoute } from "@/lib/routes";
 import { getCurrentUserProfile, getVisitById } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
@@ -169,7 +170,8 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
                       Duration & Price
                     </p>
                     <p className="font-medium">
-                      {visit.eventTypeDuration} minutes • ${visit.eventTypePrice.toFixed(2)}
+                      {visit.eventTypeDuration} minutes •{" "}
+                      {formatCurrency(visit.eventTypePrice, visit.eventTypeCurrency ?? "USD")}
                     </p>
                   </div>
                 </div>

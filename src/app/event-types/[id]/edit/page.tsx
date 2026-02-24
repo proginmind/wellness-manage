@@ -26,7 +26,6 @@ function eventTypeToFormValues(eventType: EventType): EventTypeFormValues {
     bufferBefore: eventType.bufferBefore,
     bufferAfter: eventType.bufferAfter,
     price: eventType.price,
-    currency: eventType.currency,
     isActive: eventType.isActive,
     isBookable: eventType.isBookable,
     requiresApproval: eventType.requiresApproval,

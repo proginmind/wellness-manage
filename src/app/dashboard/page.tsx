@@ -4,11 +4,14 @@ import { format } from "date-fns";
 import { Calendar, DollarSign, Users } from "lucide-react";
 
 import { requireAuth } from "@/lib/auth";
+import { formatCurrency } from "@/lib/currency";
 import { buildRoute } from "@/lib/routes";
 import {
   getActiveStaffCount,
+  getCurrentUserProfile,
   getMemberStats,
   getMonthlyRevenue,
+  getOrganizationById,
   getRevenueByCategoryDistribution,
   getRevenueChartData,
   getUpcomingVisits,
@@ -34,6 +37,9 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const user = await requireAuth();
+  const userProfile = await getCurrentUserProfile(user.id);
+  const org = await getOrganizationById(userProfile.organizationId);
+  const orgCurrency = org?.currency ?? "USD";
 
   // Fetch all dashboard data in parallel
   const [
@@ -95,7 +101,9 @@ export default async function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${monthlyRevenue.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(monthlyRevenue, orgCurrency)}
+              </div>
               <p className="text-xs text-muted-foreground">Last 30 days</p>
             </CardContent>
           </Card>

@@ -7,15 +7,15 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  DollarSign,
   Edit,
   XCircle,
 } from "lucide-react";
 
 import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
-import { getCurrentUserProfile, getEventType } from "@/lib/supabase/queries";
+import { getCurrentUserProfile, getEventType, getOrganizationById } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
+import { CurrencyDisplay } from "@/components/currency-display";
 import { PermissionGate } from "@/components/PermissionGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,8 +34,11 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
   // Get user's profile and organization
   const profile = await getCurrentUserProfile(user.id);
 
-  // Fetch event type
-  const eventType = await getEventType(id, profile.organizationId);
+  // Fetch event type and organization in parallel
+  const [eventType, organization] = await Promise.all([
+    getEventType(id, profile.organizationId),
+    getOrganizationById(profile.organizationId),
+  ]);
 
   if (!eventType) {
     notFound();
@@ -247,13 +250,11 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
                 <CardTitle>Pricing</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-baseline gap-1">
-                  <DollarSign className="h-5 w-5 text-zinc-400" />
-                  <span className="text-3xl font-bold">{eventType.price.toFixed(2)}</span>
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400 ml-1">
-                    {eventType.currency}
-                  </span>
-                </div>
+                <CurrencyDisplay
+                  className="text-3xl font-bold"
+                  value={eventType.price}
+                  currency={organization?.currency ?? "USD"}
+                />
               </CardContent>
             </Card>
 

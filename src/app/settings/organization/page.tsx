@@ -1,23 +1,91 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import currencies from "@/data/currencies.json";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { z } from "zod";
 
 import { useOrganizationPermissions } from "@/hooks/usePermissions";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const VALID_CURRENCY_CODES = new Set(currencies.map((c) => c.code));
+
+const currencySchema = z.object({
+  currency: z
+    .string()
+    .min(1, "Currency is required")
+    .refine((v) => VALID_CURRENCY_CODES.has(v), "Unsupported currency code"),
+});
+
+type CurrencyFormValues = z.infer<typeof currencySchema>;
+
+async function updateCurrency(url: string, { arg }: { arg: CurrencyFormValues }) {
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(arg),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error ?? "Failed to update currency");
+  }
+  return res.json();
+}
 
 export default function OrganizationSettingsPage() {
-  const { user, isLoading } = useUser();
+  const { user, isLoading, mutate } = useUser({
+    onSuccess: (data) => {
+      const currency = data.user.organization?.currency;
+      if (currency) {
+        currencyForm.reset({ currency });
+      }
+    },
+  });
   const { canUpdate } = useOrganizationPermissions();
   const [isEditing, setIsEditing] = useState(false);
   const [orgName, setOrgName] = useState("");
 
   const organization = user?.organization;
   const profile = user?.profile;
+  const isOwner = profile?.role === "owner";
+
+  const { trigger, isMutating } = useSWRMutation("/api/organization", updateCurrency);
+
+  const currencyForm = useForm<CurrencyFormValues>({
+    resolver: zodResolver(currencySchema),
+  });
+
+  useEffect(() => {
+    if (organization?.currency) {
+      currencyForm.setValue("currency", organization.currency);
+    }
+  }, [organization?.currency, currencyForm]);
+
+  console.log("cur: ", organization?.currency);
 
   // Initialize org name when data loads
   if (organization && !orgName && !isEditing) {
@@ -73,6 +141,19 @@ export default function OrganizationSettingsPage() {
     setOrgName(organization.name);
     setIsEditing(false);
   };
+
+  const handleCurrencySubmit = async (values: CurrencyFormValues) => {
+    try {
+      await trigger(values);
+      await mutate();
+      toast.success("Currency updated successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update currency");
+      currencyForm.reset({ currency: organization.currency ?? "USD" });
+    }
+  };
+
+  const currentCurrency = currencyForm.watch("currency");
 
   return (
     <div className="space-y-6">
@@ -141,6 +222,77 @@ export default function OrganizationSettingsPage() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Currency */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Currency</CardTitle>
+          <CardDescription>
+            {isOwner
+              ? "Set the currency used across your organization for pricing and reporting"
+              : "The currency used across your organization for pricing and reporting"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isOwner ? (
+            <Form {...currencyForm}>
+              <form
+                onSubmit={currencyForm.handleSubmit(handleCurrencySubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={currencyForm.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Organization Currency</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isMutating}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full sm:w-72">
+                            <SelectValue placeholder="Select a currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-72 overflow-y-auto">
+                          {currencies.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                              {c.code} · {c.name} ({c.symbol})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isMutating || currentCurrency === (organization.currency ?? "USD")}
+                >
+                  {isMutating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Save Currency
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <div className="flex justify-between">
+              <span className="text-sm font-medium">Currency:</span>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                {(() => {
+                  const c = currencies.find((x) => x.code === (organization.currency ?? "USD"));
+                  return c
+                    ? `${c.code} · ${c.name} (${c.symbol})`
+                    : (organization.currency ?? "USD");
+                })()}
+              </span>
             </div>
           )}
         </CardContent>
