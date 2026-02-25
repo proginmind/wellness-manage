@@ -12,12 +12,13 @@ export async function GET(request: Request) {
     const eventTypeId = searchParams.get("eventTypeId");
     const date = searchParams.get("date");
     const memberId = searchParams.get("memberId") ?? undefined;
+    const excludeVisitId = searchParams.get("excludeVisitId") ?? undefined;
 
     if (!eventTypeId || !date) {
       return NextResponse.json({ error: "eventTypeId and date are required" }, { status: 400 });
     }
 
-    const slots = await getAvailableSlots(eventTypeId, date, memberId);
+    const slots = await getAvailableSlots(eventTypeId, date, memberId, excludeVisitId);
     return NextResponse.json({ slots });
   } catch (error) {
     console.error("Error fetching available slots:", error);

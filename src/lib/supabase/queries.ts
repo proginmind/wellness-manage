@@ -1094,6 +1094,84 @@ export async function archiveVisit(id: string): Promise<Visit> {
 }
 
 /**
+ * Update an existing visit, refreshing event type snapshot fields if eventTypeId changes
+ */
+export async function updateVisit(
+  id: string,
+  organizationId: string,
+  formData: {
+    memberId: string;
+    eventTypeId: string;
+    staffId?: string;
+    date: string;
+    time: string;
+    notes?: string;
+  }
+): Promise<Visit> {
+  const supabase = await createClient();
+
+  // Fetch event type snapshot data and org currency in parallel
+  const [eventTypeResult, orgResult] = await Promise.all([
+    supabase
+      .from("event_types")
+      .select("name, duration, price, category_id")
+      .eq("id", formData.eventTypeId)
+      .eq("organization_id", organizationId)
+      .single(),
+    supabase.from("organizations").select("currency").eq("id", organizationId).single(),
+  ]);
+
+  const { data: eventTypeData, error: eventTypeError } = eventTypeResult;
+  if (eventTypeError || !eventTypeData) {
+    throw new Error("Event type not found");
+  }
+
+  const orgCurrency = orgResult.data?.currency ?? "USD";
+
+  let categoryName: string | null = null;
+  let categoryColor: string | null = null;
+  if (eventTypeData.category_id) {
+    const { data: categoryData } = await supabase
+      .from("event_categories")
+      .select("name, color")
+      .eq("id", eventTypeData.category_id)
+      .single();
+    if (categoryData) {
+      categoryName = categoryData.name;
+      categoryColor = categoryData.color;
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("visits")
+    .update({
+      member_id: formData.memberId,
+      event_type_id: formData.eventTypeId,
+      event_type_name: eventTypeData.name,
+      event_type_duration: eventTypeData.duration,
+      event_type_price: eventTypeData.price,
+      event_type_currency: orgCurrency,
+      event_type_category_name: categoryName,
+      event_type_category_color: categoryColor,
+      staff_id: formData.staffId ?? null,
+      date: formData.date,
+      time: formData.time,
+      notes: formData.notes ?? null,
+    })
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Error updating visit:", error);
+    throw new Error("Failed to update visit");
+  }
+
+  return dbToVisit(data);
+}
+
+/**
  * Create a new visit
  */
 export async function createVisit(formData: VisitFormValues, userId: string): Promise<Visit> {

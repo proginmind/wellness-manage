@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
-import { getVisitById } from "@/lib/supabase/queries";
+import { getVisitById, updateVisit } from "@/lib/supabase/queries";
+import { visitEditFormSchema } from "@/lib/validations/visit";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -34,28 +35,39 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const permissionResult = await requirePermission("visits", "update");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    // Get visit ID from params
+    const { organizationId } = permissionResult;
     const { id } = await params;
 
-    // Parse request body
     const body = await request.json();
 
-    // Import archive function dynamically
-    const { archiveVisit } = await import("@/lib/supabase/queries");
-
-    // Check if this is a status update (archive)
+    // Archive branch: status update to cancelled
     if ("status" in body && body.status === "cancelled") {
-      // Archive visit (set status to cancelled)
+      const { archiveVisit } = await import("@/lib/supabase/queries");
       const updatedVisit = await archiveVisit(id);
-
-      return NextResponse.json({
-        visit: updatedVisit,
-        message: "Visit archived successfully",
-      });
+      return NextResponse.json({ visit: updatedVisit, message: "Visit archived successfully" });
     }
 
-    // TODO: Add full visit update logic when needed
-    return NextResponse.json({ error: "Update not implemented yet" }, { status: 501 });
+    // Guard: cannot edit a cancelled visit
+    const existing = await getVisitById(id, organizationId);
+    if (!existing) {
+      return NextResponse.json({ error: "Visit not found" }, { status: 404 });
+    }
+    if (existing.visit.status === "cancelled") {
+      return NextResponse.json({ error: "Cannot edit a cancelled visit" }, { status: 409 });
+    }
+
+    // Validate body
+    const parsed = visitEditFormSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        { status: 422 }
+      );
+    }
+
+    const updatedVisit = await updateVisit(id, organizationId, parsed.data);
+
+    return NextResponse.json({ visit: updatedVisit });
   } catch (error) {
     console.error("Error updating visit:", error);
     const message = error instanceof Error ? error.message : "Failed to update visit";

@@ -153,7 +153,8 @@ export interface TimeSlot {
 export async function getAvailableSlots(
   eventTypeId: string,
   date: string,
-  memberId?: string
+  memberId?: string,
+  excludeVisitId?: string
 ): Promise<TimeSlot[]> {
   const supabase = await createClient();
   const {
@@ -199,12 +200,14 @@ export async function getAvailableSlots(
     windowsByProfile.get(pid)!.push({ start, end });
   }
 
-  const { data: visits } = await supabase
+  let visitsQuery = supabase
     .from("visits")
     .select("staff_id, time, event_type_duration")
     .eq("organization_id", profile.organizationId)
     .eq("date", date)
     .neq("status", "cancelled");
+  if (excludeVisitId) visitsQuery = visitsQuery.neq("id", excludeVisitId);
+  const { data: visits } = await visitsQuery;
 
   const busyByStaff = new Map<string, Array<{ start: number; end: number }>>();
   for (const v of visits ?? []) {

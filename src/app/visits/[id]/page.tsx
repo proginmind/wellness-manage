@@ -16,7 +16,7 @@ import {
 import { requireAuth } from "@/lib/auth";
 import { formatCurrency } from "@/lib/currency";
 import { buildRoute } from "@/lib/routes";
-import { getCurrentUserProfile, getVisitById } from "@/lib/supabase/queries";
+import { getCurrentUserProfile, getProfileById, getVisitById } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
 import { CurrencyDisplay } from "@/components/currency-display";
 import { PageHeader } from "@/components/page-header";
@@ -68,7 +68,7 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
   // Get user's profile and organization
   const profile = await getCurrentUserProfile(user.id);
 
-  // Fetch visit with member details
+  // Fetch visit with member details, and staff profile in parallel
   const result = await getVisitById(id, profile.organizationId);
 
   if (!result) {
@@ -77,6 +77,12 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
 
   const { visit, member } = result;
   const memberInitials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
+
+  const staffProfile = visit.staffId ? await getProfileById(visit.staffId) : null;
+  const staffName = staffProfile
+    ? [staffProfile.firstName, staffProfile.lastName].filter(Boolean).join(" ") ||
+      staffProfile.email
+    : null;
 
   return (
     <AppLayout>
@@ -170,14 +176,14 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                       Duration & Price
                     </p>
-                    <p className="font-medium">
+                    <div className="font-medium">
                       {visit.eventTypeDuration} minutes •{" "}
                       <CurrencyDisplay
                         className="inline-block"
                         value={visit.eventTypePrice}
                         currency={visit.eventTypeCurrency ?? "USD"}
                       />
-                    </p>
+                    </div>
                   </div>
                 </div>
 
@@ -232,6 +238,48 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
                 </div>
               </CardContent>
             </Card>
+            {/* Staff Information */}
+            {staffProfile && staffName && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Staff</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <Avatar className="h-16 w-16">
+                      {staffProfile.avatarImage && (
+                        <AvatarImage src={staffProfile.avatarImage} alt={staffName} />
+                      )}
+                      <AvatarFallback className="text-lg">
+                        {staffName
+                          .trim()
+                          .split(/\s+/)
+                          .map((p) => p[0])
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1">
+                      <Link
+                        href={buildRoute.teamMember(staffProfile.id)}
+                        className="text-lg font-semibold hover:underline"
+                      >
+                        {staffName}
+                      </Link>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">
+                        {staffProfile.role}
+                      </p>
+                    </div>
+
+                    <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                      <Link href={buildRoute.teamMember(staffProfile.id)}>View Profile</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right Column - Sidebar */}
