@@ -258,6 +258,23 @@ export async function updateOrganizationCurrency(
 }
 
 /**
+ * Update name and/or currency for an organization
+ */
+export async function updateOrganization(
+  organizationId: string,
+  fields: { name?: string; currency?: string }
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.from("organizations").update(fields).eq("id", organizationId);
+
+  if (error) {
+    console.error("Error updating organization:", error);
+    throw new Error("Failed to update organization");
+  }
+}
+
+/**
  * Check if current user is an owner
  */
 export async function isCurrentUserOwner(): Promise<boolean> {
