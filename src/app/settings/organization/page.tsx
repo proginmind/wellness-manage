@@ -4,7 +4,11 @@ import { Pencil } from "lucide-react";
 
 import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
-import { getCurrentUserProfile, getOrganizationById } from "@/lib/supabase/queries";
+import {
+  getCurrentUserProfile,
+  getOrganizationById,
+  getOrganizationContact,
+} from "@/lib/supabase/queries";
 import { OrganizationContent } from "@/components/settings/organization-content";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +19,10 @@ export const metadata: Metadata = {
 export default async function OrganizationSettingsPage() {
   const user = await requireAuth();
   const profile = await getCurrentUserProfile(user.id);
-  const organization = await getOrganizationById(profile.organizationId);
+  const [organization, contact] = await Promise.all([
+    getOrganizationById(profile.organizationId),
+    getOrganizationContact(profile.organizationId),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -35,7 +42,7 @@ export default async function OrganizationSettingsPage() {
       </div>
 
       {organization ? (
-        <OrganizationContent organization={organization} profile={profile} />
+        <OrganizationContent organization={organization} profile={profile} contact={contact} />
       ) : (
         <p className="text-center text-zinc-500 dark:text-zinc-400">Organization not found</p>
       )}

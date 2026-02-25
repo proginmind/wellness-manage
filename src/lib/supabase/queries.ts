@@ -275,6 +275,83 @@ export async function updateOrganization(
 }
 
 /**
+ * Get organization contact info (returns null if not yet created)
+ */
+export async function getOrganizationContact(
+  organizationId: string
+): Promise<import("@/types/organization").OrganizationContact | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("organization_contact")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching organization contact:", error);
+    throw new Error("Failed to fetch organization contact");
+  }
+
+  if (!data) return null;
+
+  return {
+    organizationId: data.organization_id,
+    phone: data.phone ?? undefined,
+    email: data.email ?? undefined,
+    address: data.address ?? undefined,
+    socialLinks: data.social_links ?? undefined,
+    createdAt: new Date(data.created_at),
+    updatedAt: new Date(data.updated_at),
+  };
+}
+
+/**
+ * Create or update organization contact info
+ */
+export async function upsertOrganizationContact(
+  organizationId: string,
+  fields: {
+    phone?: string;
+    email?: string;
+    address?: Record<string, unknown>;
+    socialLinks?: Record<string, unknown>;
+  }
+): Promise<import("@/types/organization").OrganizationContact> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("organization_contact")
+    .upsert(
+      {
+        organization_id: organizationId,
+        phone: fields.phone ?? null,
+        email: fields.email ?? null,
+        address: fields.address ?? null,
+        social_links: fields.socialLinks ?? null,
+      },
+      { onConflict: "organization_id" }
+    )
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Error upserting organization contact:", error);
+    throw new Error("Failed to save organization contact");
+  }
+
+  return {
+    organizationId: data.organization_id,
+    phone: data.phone ?? undefined,
+    email: data.email ?? undefined,
+    address: data.address ?? undefined,
+    socialLinks: data.social_links ?? undefined,
+    createdAt: new Date(data.created_at),
+    updatedAt: new Date(data.updated_at),
+  };
+}
+
+/**
  * Check if current user is an owner
  */
 export async function isCurrentUserOwner(): Promise<boolean> {

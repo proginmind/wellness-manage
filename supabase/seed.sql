@@ -97,6 +97,28 @@ BEGIN
   END IF;
 
   -- =====================================================
+  -- 2.1. SEED ORGANIZATION CONTACT INFO
+  -- =====================================================
+
+  INSERT INTO public.organization_contact (
+    organization_id,
+    phone,
+    email,
+    address,
+    social_links
+  )
+  VALUES (
+    v_org_id,
+    '+1 (555) 234-5678',
+    'hello@wellnesscenter.example.com',
+    '{"line1": "123 Serenity Lane", "line2": "Suite 200", "city": "San Francisco", "state": "CA", "postalCode": "94102", "country": "US"}',
+    '{"website": "https://wellnesscenter.example.com", "instagram": "https://instagram.com/wellnesscenter", "facebook": "https://facebook.com/wellnesscenter", "twitter": "https://twitter.com/wellnesscenter", "linkedin": "https://linkedin.com/company/wellnesscenter"}'
+  )
+  ON CONFLICT (organization_id) DO NOTHING;
+
+  RAISE NOTICE '✅ Seeded organization contact info';
+
+  -- =====================================================
   -- 3. CREATE STAFF PROFILES
   -- =====================================================
 
@@ -362,6 +384,7 @@ BEGIN
   RAISE NOTICE '';
   RAISE NOTICE '📊 Data Created:';
   RAISE NOTICE '   • 1 Owner profile: owner@example.com';
+  RAISE NOTICE '   • Organization contact info (phone, email, address, social links)';
   RAISE NOTICE '   • 4 Staff profiles: staff1–4@example.com (Alice, Bob, Carol, David)';
   RAISE NOTICE '   • Event types assigned to staff';
   RAISE NOTICE '   • Staff availability (multiple days/windows)';
