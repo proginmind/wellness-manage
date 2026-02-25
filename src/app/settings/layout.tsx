@@ -15,15 +15,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           </p>
         </div>
 
-        {/* Two-column layout: Nav + Content */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Settings Navigation */}
-          <aside className="w-full md:w-64 shrink-0">
-            <SettingsNav />
-          </aside>
-
-          {/* Content Area */}
-          <main className="flex-1 min-w-0">{children}</main>
+        {/* Tabs + Content */}
+        <div className="flex flex-col gap-8">
+          <SettingsNav />
+          <main>{children}</main>
         </div>
       </div>
     </AppLayout>

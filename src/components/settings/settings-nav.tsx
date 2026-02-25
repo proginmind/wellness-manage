@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Mail, UserCircle, Users } from "lucide-react";
+import { Building2, Mail, UserCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useIsOwner } from "@/hooks/usePermissions";
@@ -37,31 +37,32 @@ export function SettingsNav() {
   const pathname = usePathname();
   const isOwner = useIsOwner();
 
-  // Filter items based on permissions
   const visibleItems = navigationItems.filter((item) => !item.ownerOnly || isOwner);
 
   return (
-    <nav className="space-y-1">
-      {visibleItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = pathname === item.href;
+    <nav className="overflow-x-auto">
+      <div className="flex min-w-max border-b border-zinc-200 dark:border-zinc-800">
+        {visibleItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              isActive
-                ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-            )}
-          >
-            <Icon className="h-5 w-5 shrink-0" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors",
+                isActive
+                  ? "border-zinc-900 text-zinc-900 dark:border-zinc-50 dark:text-zinc-50"
+                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-50 dark:hover:border-zinc-600"
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
