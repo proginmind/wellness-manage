@@ -5,6 +5,7 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Section,
   Text,
@@ -19,6 +20,11 @@ export interface VisitCreatedClientProps {
   durationMinutes?: number;
   staffName?: string;
   notes?: string;
+  orgName?: string;
+  orgPhone?: string;
+  orgEmail?: string;
+  orgWebsite?: string;
+  orgAddress?: string;
 }
 
 export const VisitCreatedClient = ({
@@ -29,6 +35,11 @@ export const VisitCreatedClient = ({
   durationMinutes,
   staffName,
   notes,
+  orgName,
+  orgPhone,
+  orgEmail,
+  orgWebsite,
+  orgAddress,
 }: VisitCreatedClientProps) => (
   <Html>
     <Head />
@@ -67,6 +78,36 @@ export const VisitCreatedClient = ({
           )}
         </Section>
         <Hr style={hr} />
+        {(orgName || orgPhone || orgEmail || orgWebsite || orgAddress) && (
+          <Text style={footer}>
+            {orgName && <strong>{orgName}</strong>}
+            {orgPhone && <> &middot; {orgPhone}</>}
+            {orgEmail && (
+              <>
+                {" "}
+                &middot;{" "}
+                <Link href={`mailto:${orgEmail}`} style={footerLink}>
+                  {orgEmail}
+                </Link>
+              </>
+            )}
+            {orgWebsite && (
+              <>
+                {" "}
+                &middot;{" "}
+                <Link href={orgWebsite} style={footerLink}>
+                  {orgWebsite}
+                </Link>
+              </>
+            )}
+            {orgAddress && (
+              <>
+                <br />
+                {orgAddress}
+              </>
+            )}
+          </Text>
+        )}
         <Text style={footer}>
           If you need to change or cancel your appointment, please contact us.
         </Text>
@@ -139,4 +180,9 @@ const footer = {
   lineHeight: "20px",
   marginTop: "12px",
   marginBottom: "24px",
+};
+
+const footerLink = {
+  color: "#64748b",
+  textDecoration: "underline",
 };

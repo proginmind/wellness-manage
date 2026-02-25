@@ -5,6 +5,7 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Section,
   Text,
@@ -19,6 +20,11 @@ export interface VisitCreatedStaffProps {
   time: string;
   durationMinutes?: number;
   notes?: string;
+  orgName?: string;
+  orgPhone?: string;
+  orgEmail?: string;
+  orgWebsite?: string;
+  orgAddress?: string;
 }
 
 export const VisitCreatedStaff = ({
@@ -29,6 +35,11 @@ export const VisitCreatedStaff = ({
   time,
   durationMinutes,
   notes,
+  orgName,
+  orgPhone,
+  orgEmail,
+  orgWebsite,
+  orgAddress,
 }: VisitCreatedStaffProps) => (
   <Html>
     <Head />
@@ -61,6 +72,36 @@ export const VisitCreatedStaff = ({
           )}
         </Section>
         <Hr style={hr} />
+        {(orgName || orgPhone || orgEmail || orgWebsite || orgAddress) && (
+          <Text style={footer}>
+            {orgName && <strong>{orgName}</strong>}
+            {orgPhone && <> &middot; {orgPhone}</>}
+            {orgEmail && (
+              <>
+                {" "}
+                &middot;{" "}
+                <Link href={`mailto:${orgEmail}`} style={footerLink}>
+                  {orgEmail}
+                </Link>
+              </>
+            )}
+            {orgWebsite && (
+              <>
+                {" "}
+                &middot;{" "}
+                <Link href={orgWebsite} style={footerLink}>
+                  {orgWebsite}
+                </Link>
+              </>
+            )}
+            {orgAddress && (
+              <>
+                <br />
+                {orgAddress}
+              </>
+            )}
+          </Text>
+        )}
         <Text style={footer}>Please ensure you are available at the scheduled time.</Text>
       </Container>
     </Body>
@@ -131,4 +172,9 @@ const footer = {
   lineHeight: "20px",
   marginTop: "12px",
   marginBottom: "24px",
+};
+
+const footerLink = {
+  color: "#64748b",
+  textDecoration: "underline",
 };

@@ -85,6 +85,11 @@ async function sendEmail(
         durationMinutes,
         staffName: templateData.staffName,
         notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
       };
       const html = await renderAsync(React.createElement(VisitCreatedClient, props));
       const subject = "Your appointment has been confirmed";
@@ -124,6 +129,11 @@ async function sendEmail(
         time: templateData.time,
         durationMinutes,
         notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
       };
       const html = await renderAsync(React.createElement(VisitCreatedStaff, props));
       const subject = "New appointment assigned to you";

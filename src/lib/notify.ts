@@ -4,6 +4,7 @@ import { Member } from "@/types/member";
 import { Profile } from "@/types/profile";
 import type { Visit } from "@/types/visit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getOrganizationById, getOrganizationContact } from "@/lib/supabase/queries";
 
 /** Supported notification channel (Edge Function supports "email" only for now). */
 export type NotificationType = "email";
@@ -129,6 +130,32 @@ export async function sendVisitCreatedNotifications({
 }): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
   const supabase = createAdminClient();
   const templateVars = buildVisitNotificationVariables(visit, member, staff);
+
+  const [org, contact] = await Promise.all([
+    getOrganizationById(visit.organizationId),
+    getOrganizationContact(visit.organizationId),
+  ]);
+
+  const orgAddress = contact?.address
+    ? [
+        contact.address.line1,
+        contact.address.line2,
+        [contact.address.city, contact.address.state, contact.address.postalCode]
+          .filter(Boolean)
+          .join(", "),
+        contact.address.country,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : undefined;
+
+  Object.assign(templateVars, {
+    orgName: org?.name,
+    orgPhone: contact?.phone,
+    orgEmail: contact?.email,
+    orgWebsite: contact?.socialLinks?.website,
+    orgAddress,
+  });
 
   const clientResult = await invokeNotify(supabase, {
     type: "email" as const,
