@@ -11,8 +11,7 @@ create table public.staff_availability (
   end_time time not null,
   is_available boolean default true not null,
   created_at timestamptz default now() not null,
-  updated_at timestamptz default now() not null
-
+  updated_at timestamptz default now() not null,
   constraint valid_time_range check (start_time < end_time),
   constraint unique_availability unique (profile_id, day_of_week, start_time, end_time)
 );

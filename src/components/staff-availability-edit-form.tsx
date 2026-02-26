@@ -36,8 +36,8 @@ async function saveAvailabilityMutation(
   });
 
   if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.error || "Failed to save availability");
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to save availability");
   }
 
   return response.json();
@@ -67,6 +67,10 @@ export function StaffAvailabilityEditForm({ profileId }: StaffAvailabilityEditFo
 
   const [slots, setSlots] = React.useState<Slot[]>([]);
   const [isInitialized, setIsInitialized] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsInitialized(false);
+  }, [profileId]);
 
   React.useEffect(() => {
     if (data?.slots && !isInitialized) {
