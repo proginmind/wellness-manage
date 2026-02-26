@@ -13,6 +13,8 @@ import { ProfileWithEventTypes } from "@/types/profile-event-type";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
+import { OwnerGate } from "@/components/PermissionGate";
+import { StaffAvailabilityEditForm } from "@/components/staff-availability-edit-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -288,6 +290,13 @@ export default function TeamMemberEditPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Weekly Availability (owner only) */}
+          <OwnerGate>
+            <div className="mt-6">
+              <StaffAvailabilityEditForm profileId={profileId} />
+            </div>
+          </OwnerGate>
 
           {/* Actions */}
           <div className="mt-6 flex justify-end">

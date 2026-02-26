@@ -1933,3 +1933,84 @@ export async function removeEventTypeFromProfile(
     throw new Error("Failed to remove event type");
   }
 }
+
+// ============================================================================
+// STAFF AVAILABILITY
+// ============================================================================
+
+export interface StaffAvailabilitySlot {
+  id: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+}
+
+/**
+ * Get staff availability for a profile (scoped to organization)
+ */
+export async function getStaffAvailability(
+  profileId: string,
+  organizationId: string
+): Promise<StaffAvailabilitySlot[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("staff_availability")
+    .select("id, day_of_week, start_time, end_time")
+    .eq("profile_id", profileId)
+    .eq("organization_id", organizationId)
+    .eq("is_available", true)
+    .order("day_of_week")
+    .order("start_time");
+
+  if (error) {
+    throw new Error("Failed to fetch staff availability");
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    dayOfWeek: row.day_of_week as number,
+    startTime: String(row.start_time).slice(0, 5),
+    endTime: String(row.end_time).slice(0, 5),
+  }));
+}
+
+/**
+ * Replace all staff availability for a profile
+ */
+export async function upsertStaffAvailability(
+  profileId: string,
+  organizationId: string,
+  slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>
+): Promise<void> {
+  const supabase = await createClient();
+
+  // Delete existing
+  const { error: deleteError } = await supabase
+    .from("staff_availability")
+    .delete()
+    .eq("profile_id", profileId)
+    .eq("organization_id", organizationId);
+
+  if (deleteError) {
+    throw new Error("Failed to update staff availability");
+  }
+
+  if (slots.length === 0) return;
+
+  // Insert new slots
+  const rows = slots.map((slot) => ({
+    profile_id: profileId,
+    organization_id: organizationId,
+    day_of_week: slot.dayOfWeek,
+    start_time: slot.startTime,
+    end_time: slot.endTime,
+    is_available: true,
+  }));
+
+  const { error: insertError } = await supabase.from("staff_availability").insert(rows);
+
+  if (insertError) {
+    throw new Error("Failed to save staff availability");
+  }
+}
