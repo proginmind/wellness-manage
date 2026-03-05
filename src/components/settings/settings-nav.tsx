@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CreditCard, Mail, UserCircle } from "lucide-react";
+import { Building2, CreditCard, Mail, Receipt, UserCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useIsOwner } from "@/hooks/usePermissions";
@@ -29,6 +29,11 @@ const navigationItems: NavItem[] = [
     href: "/settings/plans",
     label: "Plans",
     icon: CreditCard,
+  },
+  {
+    href: "/settings/billing",
+    label: "Billing",
+    icon: Receipt,
   },
   {
     href: "/settings/invitations",

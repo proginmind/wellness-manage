@@ -37,7 +37,11 @@ export function PlanCard({ plan, isActive, onSelect }: PlanCardProps) {
           <CardTitle className="text-xl">{plan.title}</CardTitle>
           <CardDescription className="mt-1">{plan.description}</CardDescription>
         </div>
-        {isActive && <Badge className="bg-green-600 hover:bg-green-600 shrink-0">Active</Badge>}
+        {isActive && (
+          <Badge className="w-fit shrink-0 self-start bg-green-600 hover:bg-green-600">
+            Active
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-baseline gap-1">
