@@ -60,6 +60,7 @@ export const buildRoute = {
   settingsTeam: () => "/settings/team" as const,
   settingsInvitations: () => "/settings/invitations" as const,
   settingsInvitationsNew: () => "/settings/invitations/new" as const,
+  settingsPlans: () => "/settings/plans" as const,
 
   // Invitations
   invite: (token: string) => `/invite/${token}` as const,
@@ -105,6 +106,9 @@ export const buildApiRoute = {
   profile: (id: string) => `/api/profiles/${id}` as const,
   profileEventTypes: (id: string) => `/api/profiles/${id}/event-types` as const,
   profileAvailability: (id: string) => `/api/profiles/${id}/availability` as const,
+
+  // Plans
+  plans: () => "/api/plans" as const,
 
   // Stats
   stats: () => "/api/stats" as const,
