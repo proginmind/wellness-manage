@@ -29,11 +29,13 @@ const navigationItems: NavItem[] = [
     href: "/settings/plans",
     label: "Plans",
     icon: CreditCard,
+    ownerOnly: true,
   },
   {
     href: "/settings/billing",
     label: "Billing",
     icon: Receipt,
+    ownerOnly: true,
   },
   {
     href: "/settings/invitations",

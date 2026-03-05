@@ -200,7 +200,7 @@ export async function getPermissionContext(): Promise<PermissionContext | null> 
 // ============================================================================
 
 /**
- * Require owner role
+ * Require owner role (for API routes)
  *
  * @example
  * export async function POST(request: Request) {
@@ -226,6 +226,23 @@ export async function requireOwner(): Promise<PermissionContext | NextResponse> 
     );
   }
 
+  return context;
+}
+
+/**
+ * Require owner role (for server components)
+ * Returns context if owner, null otherwise. Use with redirect() for page guards.
+ *
+ * @example
+ * export default async function BillingPage() {
+ *   const context = await requireOwnerServer();
+ *   if (!context) redirect("/settings/profile");
+ *   // ... owner-only page content
+ * }
+ */
+export async function requireOwnerServer(): Promise<PermissionContext | null> {
+  const context = await getPermissionContext();
+  if (!context || context.role !== "owner") return null;
   return context;
 }
 

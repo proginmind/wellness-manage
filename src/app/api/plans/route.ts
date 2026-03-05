@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { requireAuth } from "@/lib/api-permissions";
+import { requireOwner } from "@/lib/api-permissions";
 import { getPlans } from "@/lib/plans";
 
 export async function GET() {
   try {
-    const result = await requireAuth();
+    const result = await requireOwner();
     if (result instanceof NextResponse) return result;
 
     const data = await getPlans();

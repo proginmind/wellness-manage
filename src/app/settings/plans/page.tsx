@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
+import { requireOwnerServer } from "@/lib/api-permissions";
 import { getPlans } from "@/lib/plans";
+import { buildRoute } from "@/lib/routes";
 import { PlansListContainer } from "@/components/plans/plans-list-container";
 
 export const metadata: Metadata = {
@@ -8,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function PlansPage() {
+  if (!(await requireOwnerServer())) redirect(buildRoute.settingsProfile());
+
   const data = await getPlans();
 
   return (

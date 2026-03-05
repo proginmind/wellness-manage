@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
+import { requireOwnerServer } from "@/lib/api-permissions";
 import { getBilling } from "@/lib/billing";
+import { buildRoute } from "@/lib/routes";
 import { BillingContent } from "@/components/billing/billing-content";
 
 export const metadata: Metadata = {
@@ -8,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function BillingPage() {
+  if (!(await requireOwnerServer())) redirect(buildRoute.settingsProfile());
+
   const data = await getBilling();
 
   return (

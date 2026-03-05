@@ -25,6 +25,8 @@ export type Resource =
   | "invitations"
   | "event_types"
   | "event_categories"
+  | "billing"
+  | "plans"
   | "profile";
 
 /**
@@ -79,6 +81,12 @@ export const PERMISSIONS = {
     // Event Categories: Full management (owner only)
     event_categories: ["view", "create", "update", "delete"] as Action[],
 
+    // Billing: Owner only
+    billing: ["view"] as Action[],
+
+    // Plans: Owner only
+    plans: ["view"] as Action[],
+
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
   },
@@ -104,6 +112,12 @@ export const PERMISSIONS = {
 
     // Event Categories: Read-only (needed for viewing event types)
     event_categories: ["view"] as Action[],
+
+    // Billing: No access (owner only)
+    billing: [] as Action[],
+
+    // Plans: No access (owner only)
+    plans: [] as Action[],
 
     // Profile: Own profile only
     profile: ["view", "update"] as Action[],
@@ -335,6 +349,12 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "event_categories.update": "Update event categories",
   "event_categories.delete": "Delete event categories",
 
+  // Billing
+  "billing.view": "View billing and subscription",
+
+  // Plans
+  "plans.view": "View subscription plans",
+
   // Profile
   "profile.view": "View own profile",
   "profile.update": "Update own profile",
@@ -372,6 +392,22 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "event_categories.invite": "N/A",
   "event_categories.remove": "N/A",
   "event_categories.manage": "N/A",
+  "billing.create": "N/A",
+  "billing.update": "N/A",
+  "billing.delete": "N/A",
+  "billing.archive": "N/A",
+  "billing.export": "N/A",
+  "billing.invite": "N/A",
+  "billing.remove": "N/A",
+  "billing.manage": "N/A",
+  "plans.create": "N/A",
+  "plans.update": "N/A",
+  "plans.delete": "N/A",
+  "plans.archive": "N/A",
+  "plans.export": "N/A",
+  "plans.invite": "N/A",
+  "plans.remove": "N/A",
+  "plans.manage": "N/A",
   "profile.create": "N/A",
   "profile.delete": "N/A",
   "profile.archive": "N/A",
