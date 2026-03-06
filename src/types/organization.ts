@@ -3,6 +3,7 @@ export interface Organization {
   name: string;
   ownerId: string;
   currency: string;
+  stripeCustomerId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -8,7 +8,7 @@ export async function GET() {
     const result = await requireOwner();
     if (result instanceof NextResponse) return result;
 
-    const data = await getPlans();
+    const data = await getPlans(result.organizationId);
     return NextResponse.json(data);
   } catch (error) {
     console.error("GET /api/plans error:", error);

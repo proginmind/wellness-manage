@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
 import type { Plan } from "@/types/plan";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 interface PlanCardProps {
   plan: Plan;
   isActive: boolean;
+  isLoading?: boolean;
   onSelect: (planId: string) => void;
 }
 
@@ -23,7 +24,7 @@ function formatPrice(price: number, currency: string): string {
   }).format(price);
 }
 
-export function PlanCard({ plan, isActive, onSelect }: PlanCardProps) {
+export function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
   return (
     <Card
       className={cn(
@@ -67,9 +68,18 @@ export function PlanCard({ plan, isActive, onSelect }: PlanCardProps) {
           variant={isActive ? "secondary" : "default"}
           className="w-full"
           onClick={() => onSelect(plan.id)}
-          disabled={isActive}
+          disabled={isActive || isLoading}
         >
-          {isActive ? "Current Plan" : "Select"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Redirecting...
+            </>
+          ) : isActive ? (
+            "Current Plan"
+          ) : (
+            "Select"
+          )}
         </Button>
       </CardContent>
     </Card>

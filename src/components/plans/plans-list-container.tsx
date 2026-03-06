@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
 
 import type { Plan } from "@/types/plan";
+import { buildApiRoute } from "@/lib/routes";
 import { PlanCard } from "@/components/plans/plan-card";
 
 interface PlansListContainerProps {
@@ -11,10 +13,34 @@ interface PlansListContainerProps {
 }
 
 export function PlansListContainer({ plans, activePlanId }: PlansListContainerProps) {
-  const handleSelect = (planId: string) => {
-    toast.success("Plan selected", {
-      description: "Upgrade flow will be implemented soon.",
-    });
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+
+  const handleSelect = async (planId: string) => {
+    setLoadingPlanId(planId);
+    try {
+      const res = await fetch(buildApiRoute.checkout(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId: planId }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast.error(data?.error ?? "Failed to start checkout");
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Invalid checkout response");
+      }
+    } catch {
+      toast.error("Failed to start checkout");
+    } finally {
+      setLoadingPlanId(null);
+    }
   };
 
   if (plans.length === 0) {
@@ -32,6 +58,7 @@ export function PlansListContainer({ plans, activePlanId }: PlansListContainerPr
           key={plan.id}
           plan={plan}
           isActive={activePlanId === plan.id}
+          isLoading={loadingPlanId === plan.id}
           onSelect={handleSelect}
         />
       ))}

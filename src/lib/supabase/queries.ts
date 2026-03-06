@@ -21,6 +21,21 @@ interface OrganizationRow {
   name: string;
   owner_id: string;
   currency: string;
+  stripe_customer_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionRow {
+  id: string;
+  organization_id: string;
+  stripe_subscription_id: string;
+  stripe_price_id: string;
+  status: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  canceled_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +93,7 @@ export function dbToOrganization(row: OrganizationRow): Organization {
     name: row.name,
     ownerId: row.owner_id,
     currency: row.currency ?? "USD",
+    stripeCustomerId: row.stripe_customer_id ?? undefined,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -222,6 +238,24 @@ export async function updateProfile(
 }
 
 /**
+ * Get organization by Stripe customer ID
+ */
+export async function getOrganizationByStripeCustomerId(
+  stripeCustomerId: string
+): Promise<Organization | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return dbToOrganization(data);
+}
+
+/**
  * Get organization by ID
  */
 export async function getOrganizationById(id: string): Promise<Organization | null> {
@@ -262,15 +296,79 @@ export async function updateOrganizationCurrency(
  */
 export async function updateOrganization(
   organizationId: string,
-  fields: { name?: string; currency?: string }
+  fields: { name?: string; currency?: string; stripeCustomerId?: string }
 ): Promise<void> {
   const supabase = createAdminClient();
 
-  const { error } = await supabase.from("organizations").update(fields).eq("id", organizationId);
+  const dbFields: Record<string, unknown> = { ...fields };
+  if ("stripeCustomerId" in dbFields) {
+    dbFields.stripe_customer_id = dbFields.stripeCustomerId;
+    delete dbFields.stripeCustomerId;
+  }
+
+  const { error } = await supabase.from("organizations").update(dbFields).eq("id", organizationId);
 
   if (error) {
     console.error("Error updating organization:", error);
     throw new Error("Failed to update organization");
+  }
+}
+
+/**
+ * Get latest subscription for an organization (by created_at DESC)
+ */
+export async function getLatestSubscriptionByOrganizationId(
+  organizationId: string
+): Promise<SubscriptionRow | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching subscription:", error);
+    return null;
+  }
+
+  return data as SubscriptionRow | null;
+}
+
+export interface InsertSubscriptionData {
+  organizationId: string;
+  stripeSubscriptionId: string;
+  stripePriceId: string;
+  status: string;
+  currentPeriodStart?: Date | null;
+  currentPeriodEnd?: Date | null;
+  cancelAtPeriodEnd?: boolean;
+  canceledAt?: Date | null;
+}
+
+/**
+ * Insert a new subscription row (used by Stripe webhooks)
+ */
+export async function insertSubscription(data: InsertSubscriptionData): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.from("subscriptions").insert({
+    organization_id: data.organizationId,
+    stripe_subscription_id: data.stripeSubscriptionId,
+    stripe_price_id: data.stripePriceId,
+    status: data.status,
+    current_period_start: data.currentPeriodStart?.toISOString() ?? null,
+    current_period_end: data.currentPeriodEnd?.toISOString() ?? null,
+    cancel_at_period_end: data.cancelAtPeriodEnd ?? false,
+    canceled_at: data.canceledAt?.toISOString() ?? null,
+  });
+
+  if (error) {
+    console.error("Error inserting subscription:", error);
+    throw new Error("Failed to insert subscription");
   }
 }
 
@@ -554,6 +652,26 @@ export async function unarchiveMember(id: string): Promise<Member> {
   }
 
   return dbToMember(data);
+}
+
+/**
+ * Get active members count for an organization
+ */
+export async function getMembersCount(organizationId: string): Promise<number> {
+  const supabase = await createClient();
+
+  const { count, error } = await supabase
+    .from("members")
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .eq("status", "active");
+
+  if (error) {
+    console.error("Error fetching members count:", error);
+    return 0;
+  }
+
+  return count ?? 0;
 }
 
 /**

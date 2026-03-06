@@ -58,16 +58,24 @@ function mapPriceToPlan(product: Stripe.Product, price: Stripe.Price): Plan {
  * Fetch subscription plans from Stripe
  *
  * When STRIPE_SECRET_KEY is not set, returns mock data for development.
- * Active plan detection (activePlanId) requires org subscription data - not yet implemented.
+ * activePlanId is resolved from the org's latest subscription when status is active/trialing.
  */
-export async function getPlans(): Promise<SubscriptionPlansResponse> {
+export async function getPlans(organizationId: string): Promise<SubscriptionPlansResponse> {
   const stripe = getStripe();
 
   if (!stripe) {
-    return MOCK_PLANS_RESPONSE;
+    return { ...MOCK_PLANS_RESPONSE, activePlanId: null };
   }
 
   try {
+    const { getLatestSubscriptionByOrganizationId } = await import("@/lib/supabase/queries");
+    const subscription = await getLatestSubscriptionByOrganizationId(organizationId);
+
+    const activePlanId =
+      subscription && ["active", "trialing"].includes(subscription.status)
+        ? subscription.stripe_price_id
+        : null;
+
     const products = await stripe.products.list({
       active: true,
       limit: 100,
@@ -94,10 +102,13 @@ export async function getPlans(): Promise<SubscriptionPlansResponse> {
 
     return {
       plans,
-      activePlanId: null, // TODO: resolve from org subscription when DB/webhooks are in place
+      activePlanId,
     };
   } catch (error) {
     console.error("Stripe plans fetch error:", error);
-    return MOCK_PLANS_RESPONSE;
+    return {
+      ...MOCK_PLANS_RESPONSE,
+      activePlanId: null,
+    };
   }
 }
