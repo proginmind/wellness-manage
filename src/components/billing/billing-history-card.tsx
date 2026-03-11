@@ -45,9 +45,11 @@ export function BillingHistoryCard({ invoices }: BillingHistoryCardProps) {
   const handleDownload = (invoice: Invoice) => {
     if (invoice.invoicePdf) {
       window.open(invoice.invoicePdf, "_blank");
+    } else if (invoice.hostedInvoiceUrl) {
+      window.open(invoice.hostedInvoiceUrl, "_blank");
     } else {
-      toast.info("Download invoice", {
-        description: "PDF will be available with Stripe integration.",
+      toast.info("No receipt available", {
+        description: "Receipt is not yet available for this payment.",
       });
     }
   };

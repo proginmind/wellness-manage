@@ -125,7 +125,11 @@ export async function getBilling(organizationId: string): Promise<BillingRespons
     const [customerData, invoicesData, paymentIntentsData] = await Promise.all([
       stripe.customers.retrieve(stripeCustomerId),
       stripe.invoices.list({ customer: stripeCustomerId, limit: 12 }),
-      stripe.paymentIntents.list({ customer: stripeCustomerId, limit: 12 }),
+      stripe.paymentIntents.list({
+        customer: stripeCustomerId,
+        limit: 12,
+        expand: ["data.latest_charge"],
+      }),
     ]);
 
     if (customerData && !("deleted" in customerData && customerData.deleted)) {
@@ -192,16 +196,22 @@ export async function getBilling(organizationId: string): Promise<BillingRespons
       // Include one-time payment intents not already covered by an invoice
       ...paymentIntentsData.data
         .filter((pi) => pi.status === "succeeded" && !invoicePaymentIntentIds.has(pi.id))
-        .map((pi) => ({
-          id: pi.id,
-          number: null,
-          status: "paid" as const,
-          amountPaid: pi.amount_received ?? pi.amount ?? 0,
-          currency: pi.currency ?? "usd",
-          created: new Date(pi.created * 1000).toISOString(),
-          hostedInvoiceUrl: null,
-          invoicePdf: null,
-        })),
+        .map((pi) => {
+          const charge =
+            pi.latest_charge && typeof pi.latest_charge === "object"
+              ? (pi.latest_charge as import("stripe").Stripe.Charge)
+              : null;
+          return {
+            id: pi.id,
+            number: null,
+            status: "paid" as const,
+            amountPaid: pi.amount_received ?? pi.amount ?? 0,
+            currency: pi.currency ?? "usd",
+            created: new Date(pi.created * 1000).toISOString(),
+            hostedInvoiceUrl: charge?.receipt_url ?? null,
+            invoicePdf: null,
+          };
+        }),
     ].sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
   } catch (error) {
     console.error("Error fetching Stripe customer/invoices:", error);
