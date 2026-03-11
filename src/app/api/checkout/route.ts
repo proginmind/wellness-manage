@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireOwner } from "@/lib/api-permissions";
 import { getStripe } from "@/lib/stripe";
-import { getOrganizationById } from "@/lib/supabase/queries";
+import { getOrganizationById, updateOrganization } from "@/lib/supabase/queries";
 
 export async function POST(request: Request) {
   try {
@@ -28,6 +28,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Organization not found" }, { status: 500 });
     }
 
+    // Ensure a persistent Stripe customer exists for this org before checkout.
+    // Using customer_email alone doesn't guarantee a Customer object is created
+    // for one-time payments, so session.customer would be null in the webhook.
+    let stripeCustomerId = organization.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: userEmail ?? undefined,
+        metadata: { organization_id: organizationId },
+      });
+      stripeCustomerId = customer.id;
+      await updateOrganization(organizationId, { stripeCustomerId });
+    }
+
     const price = await stripe.prices.retrieve(priceId);
     const mode = price.recurring ? ("subscription" as const) : ("payment" as const);
 
@@ -39,11 +52,7 @@ export async function POST(request: Request) {
       success_url: `${appUrl}/settings/billing?success=true`,
       cancel_url: `${appUrl}/settings/plans?canceled=true`,
       metadata: { organization_id: organizationId },
-      ...(organization.stripeCustomerId
-        ? { customer: organization.stripeCustomerId }
-        : userEmail
-          ? { customer_email: userEmail }
-          : {}),
+      customer: stripeCustomerId,
     });
 
     if (!session.url) {

@@ -122,9 +122,10 @@ export async function getBilling(organizationId: string): Promise<BillingRespons
   let invoices: Invoice[] = [];
 
   try {
-    const [customerData, invoicesData] = await Promise.all([
+    const [customerData, invoicesData, paymentIntentsData] = await Promise.all([
       stripe.customers.retrieve(stripeCustomerId),
       stripe.invoices.list({ customer: stripeCustomerId, limit: 12 }),
+      stripe.paymentIntents.list({ customer: stripeCustomerId, limit: 12 }),
     ]);
 
     if (customerData && !("deleted" in customerData && customerData.deleted)) {
@@ -169,16 +170,39 @@ export async function getBilling(organizationId: string): Promise<BillingRespons
       }
     }
 
-    invoices = invoicesData.data.map((inv) => ({
-      id: inv.id,
-      number: inv.number ?? null,
-      status: toInvoiceStatus(inv.status ?? "void"),
-      amountPaid: inv.amount_paid ?? 0,
-      currency: inv.currency ?? "usd",
-      created: new Date((inv.created ?? 0) * 1000).toISOString(),
-      hostedInvoiceUrl: inv.hosted_invoice_url ?? null,
-      invoicePdf: inv.invoice_pdf ?? null,
-    }));
+    const invoicePaymentIntentIds = new Set(
+      invoicesData.data
+        .map((inv) =>
+          typeof inv.payment_intent === "string" ? inv.payment_intent : inv.payment_intent?.id
+        )
+        .filter(Boolean)
+    );
+
+    invoices = [
+      ...invoicesData.data.map((inv) => ({
+        id: inv.id,
+        number: inv.number ?? null,
+        status: toInvoiceStatus(inv.status ?? "void"),
+        amountPaid: inv.amount_paid ?? 0,
+        currency: inv.currency ?? "usd",
+        created: new Date((inv.created ?? 0) * 1000).toISOString(),
+        hostedInvoiceUrl: inv.hosted_invoice_url ?? null,
+        invoicePdf: inv.invoice_pdf ?? null,
+      })),
+      // Include one-time payment intents not already covered by an invoice
+      ...paymentIntentsData.data
+        .filter((pi) => pi.status === "succeeded" && !invoicePaymentIntentIds.has(pi.id))
+        .map((pi) => ({
+          id: pi.id,
+          number: null,
+          status: "paid" as const,
+          amountPaid: pi.amount_received ?? pi.amount ?? 0,
+          currency: pi.currency ?? "usd",
+          created: new Date(pi.created * 1000).toISOString(),
+          hostedInvoiceUrl: null,
+          invoicePdf: null,
+        })),
+    ].sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
   } catch (error) {
     console.error("Error fetching Stripe customer/invoices:", error);
   }
