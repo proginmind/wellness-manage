@@ -26,9 +26,9 @@ const navigationItems: NavItem[] = [
     icon: Building2,
   },
   {
-    href: "/settings/plans",
-    label: "Plans",
-    icon: CreditCard,
+    href: "/settings/invitations",
+    label: "Invitations",
+    icon: Mail,
     ownerOnly: true,
   },
   {
@@ -38,9 +38,9 @@ const navigationItems: NavItem[] = [
     ownerOnly: true,
   },
   {
-    href: "/settings/invitations",
-    label: "Invitations",
-    icon: Mail,
+    href: "/settings/plans",
+    label: "Plans",
+    icon: CreditCard,
     ownerOnly: true,
   },
 ];
