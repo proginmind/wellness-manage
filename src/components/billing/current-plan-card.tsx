@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CreditCard, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CreditCard, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Subscription } from "@/types/billing";
 import { formatCurrency } from "@/lib/currency";
-import { buildRoute } from "@/lib/routes";
+import { buildApiRoute, buildRoute } from "@/lib/routes";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -35,14 +35,35 @@ function formatInterval(interval: string): string {
 }
 
 export function CurrentPlanCard({ subscription, onCancelClick }: CurrentPlanCardProps) {
+  const router = useRouter();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
-  const handleCancel = () => {
-    setShowCancelDialog(false);
-    toast.info("Cancel subscription", {
-      description: "This will be implemented with Stripe integration.",
-    });
-    onCancelClick?.();
+  const handleCancel = async () => {
+    setIsCanceling(true);
+    try {
+      const res = await fetch(buildApiRoute.billingCancel(), { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error("Failed to cancel", { description: data.error ?? "Please try again." });
+        return;
+      }
+
+      setShowCancelDialog(false);
+      toast.success("Subscription canceled", {
+        description:
+          subscription?.plan.interval !== "one_time"
+            ? "Your access continues until the end of the billing period."
+            : "Your subscription has been canceled.",
+      });
+      onCancelClick?.();
+      router.refresh();
+    } catch {
+      toast.error("Failed to cancel", { description: "An unexpected error occurred." });
+    } finally {
+      setIsCanceling(false);
+    }
   };
 
   if (!subscription) {
@@ -66,6 +87,8 @@ export function CurrentPlanCard({ subscription, onCancelClick }: CurrentPlanCard
 
   const { plan, status } = subscription;
   const isActive = status === "active";
+  const isLifetime = plan.interval === "one_time";
+  const showCancelButton = isActive && !isLifetime;
 
   return (
     <>
@@ -103,7 +126,7 @@ export function CurrentPlanCard({ subscription, onCancelClick }: CurrentPlanCard
                 <span className="truncate">Manage plan</span>
               </Link>
             </Button>
-            {isActive && (
+            {showCancelButton && (
               <Button
                 variant="outline"
                 className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 sm:w-auto sm:shrink-0 dark:hover:bg-red-900/20"
@@ -117,7 +140,10 @@ export function CurrentPlanCard({ subscription, onCancelClick }: CurrentPlanCard
         </CardContent>
       </Card>
 
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialog
+        open={showCancelDialog}
+        onOpenChange={isCanceling ? undefined : setShowCancelDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel subscription</AlertDialogTitle>
@@ -127,13 +153,21 @@ export function CurrentPlanCard({ subscription, onCancelClick }: CurrentPlanCard
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep subscription</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogCancel disabled={isCanceling}>Keep subscription</AlertDialogCancel>
+            <Button
               onClick={handleCancel}
+              disabled={isCanceling}
               className="bg-red-600 hover:bg-red-700 dark:bg-red-900 dark:hover:bg-red-800"
             >
-              Cancel subscription
-            </AlertDialogAction>
+              {isCanceling ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Canceling...
+                </>
+              ) : (
+                "Cancel subscription"
+              )}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

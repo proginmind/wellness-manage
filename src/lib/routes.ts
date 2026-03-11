@@ -113,6 +113,7 @@ export const buildApiRoute = {
 
   // Billing
   billing: () => "/api/billing" as const,
+  billingCancel: () => "/api/billing/cancel" as const,
   checkout: () => "/api/checkout" as const,
 
   // Stats
