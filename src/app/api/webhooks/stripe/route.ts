@@ -57,6 +57,37 @@ export async function POST(request: Request) {
         if (organizationId && customerId) {
           await updateOrganization(organizationId, { stripeCustomerId: customerId });
         }
+
+        // For one-time payments there are no subscription events, so we insert a
+        // subscription row here to record the purchase.
+        if (session.mode === "payment" && session.payment_status === "paid" && organizationId) {
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+            limit: 1,
+          });
+          const priceId = lineItems.data[0]?.price?.id;
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : (session.payment_intent?.id ?? session.id);
+
+          if (priceId) {
+            await insertSubscription({
+              organizationId,
+              stripeSubscriptionId: paymentIntentId,
+              stripePriceId: priceId,
+              status: "active",
+              currentPeriodStart: null,
+              currentPeriodEnd: null,
+              cancelAtPeriodEnd: false,
+              canceledAt: null,
+            });
+          } else {
+            console.warn(
+              "Stripe webhook: no price found in checkout session line items",
+              session.id
+            );
+          }
+        }
         break;
       }
 
