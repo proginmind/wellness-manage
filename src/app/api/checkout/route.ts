@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const price = await stripe.prices.retrieve(priceId);
     const mode = price.recurring ? ("subscription" as const) : ("payment" as const);
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
