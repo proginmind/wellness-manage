@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { EventCategory } from "@/types/event-category";
 import { EventType } from "@/types/event-type";
 import { Invitation, InvitationStatus } from "@/types/invitation";
@@ -178,7 +180,11 @@ export function memberToDb(
  * @param userId - User ID to fetch profile for (required to avoid redundant auth calls)
  * @throws Error if profile not found
  */
-export async function getCurrentUserProfile(userId: string): Promise<Profile> {
+// Wrapped with React cache() to deduplicate calls within a single request.
+// Multiple server components calling this concurrently will share one DB query.
+export const getCurrentUserProfile = cache(async function getCurrentUserProfile(
+  userId: string
+): Promise<Profile> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -193,7 +199,7 @@ export async function getCurrentUserProfile(userId: string): Promise<Profile> {
   }
 
   return dbToProfile(data);
-}
+});
 
 /**
  * Update current user's profile
@@ -677,23 +683,14 @@ export async function getMembersCount(organizationId: string): Promise<number> {
 /**
  * Get member statistics for dashboard (organization-scoped)
  */
-export async function getMemberStats() {
+export async function getMemberStats(organizationId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const profile = await getCurrentUserProfile(user.id);
 
   // Get all members count
   const { count: total, error: totalError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
-    .eq("organization_id", profile.organizationId);
+    .eq("organization_id", organizationId);
 
   if (totalError) {
     console.error("Error fetching total count:", totalError);
@@ -704,7 +701,7 @@ export async function getMemberStats() {
   const { count: active, error: activeError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
-    .eq("organization_id", profile.organizationId)
+    .eq("organization_id", organizationId)
     .eq("status", "active");
 
   if (activeError) {
@@ -716,7 +713,7 @@ export async function getMemberStats() {
   const { count: archived, error: archivedError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
-    .eq("organization_id", profile.organizationId)
+    .eq("organization_id", organizationId)
     .eq("status", "archived");
 
   if (archivedError) {
@@ -732,7 +729,7 @@ export async function getMemberStats() {
   const { count: newThisMonth, error: newError } = await supabase
     .from("members")
     .select("*", { count: "exact", head: true })
-    .eq("organization_id", profile.organizationId)
+    .eq("organization_id", organizationId)
     .eq("status", "active")
     .gte("date_joined", startOfMonth.toISOString().split("T")[0]);
 
