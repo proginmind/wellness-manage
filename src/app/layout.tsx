@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 
+import { SWRConfig } from "swr";
+
+import { getUserData } from "@/lib/get-user-data";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -28,11 +31,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Start the fetch without awaiting – the promise is passed to SWRConfig so
+  // useUser() throughout the app resolves immediately on hydration with no
+  // client-side loading flash.
+  const userDataPromise = getUserData();
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-        <Toaster />
+        <SWRConfig value={{ fallback: { "/api/auth/me": userDataPromise } }}>
+          {children}
+          <Toaster />
+        </SWRConfig>
       </body>
     </html>
   );
