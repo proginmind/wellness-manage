@@ -2,23 +2,23 @@
 
 import useSWR from "swr";
 
-import { EventType } from "@/types/event-type";
+import { EventTypesListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute } from "@/lib/routes";
-import { useUser } from "@/hooks/useUser";
 import { EventTypesList } from "@/components/event-types-list";
 
-interface EventTypesResponse {
-  eventTypes: EventType[];
-  total: number;
+interface EventTypesListContainerProps {
+  fallbackData?: EventTypesListResponse;
+  currency?: string;
 }
 
-export function EventTypesListContainer() {
-  const { data, error, isLoading } = useSWR<EventTypesResponse>(
-    buildApiRoute.eventTypes(),
-    fetcher
-  );
-  const { user } = useUser();
+export function EventTypesListContainer({
+  fallbackData,
+  currency = "USD",
+}: EventTypesListContainerProps) {
+  const { data, error } = useSWR<EventTypesListResponse>(buildApiRoute.eventTypes(), fetcher, {
+    fallbackData,
+  });
 
   if (error) {
     return (
@@ -29,8 +29,7 @@ export function EventTypesListContainer() {
     );
   }
 
-  // Loading State
-  if (isLoading) {
+  if (!data) {
     return (
       <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
@@ -39,10 +38,5 @@ export function EventTypesListContainer() {
     );
   }
 
-  return (
-    <EventTypesList
-      eventTypes={data?.eventTypes || []}
-      currency={user?.organization?.currency ?? "USD"}
-    />
-  );
+  return <EventTypesList eventTypes={data.eventTypes} currency={currency} />;
 }

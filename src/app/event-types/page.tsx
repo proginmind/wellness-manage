@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
+import { getCurrentUserProfile, getEventTypes, getOrganizationById } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
 import { EventTypesListContainer } from "@/components/event-types-list-container";
 import { PageHeader } from "@/components/page-header";
@@ -13,7 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function EventTypesPage() {
-  // Auth handled by middleware - no manual checks needed
+  const user = await requireAuth();
+  const profile = await getCurrentUserProfile(user.id);
+  const [eventTypes, organization] = await Promise.all([
+    getEventTypes(profile.organizationId),
+    getOrganizationById(profile.organizationId),
+  ]);
 
   return (
     <AppLayout>
@@ -30,7 +37,14 @@ export default async function EventTypesPage() {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <EventTypesListContainer />
+        <EventTypesListContainer
+          fallbackData={{
+            eventTypes,
+            total: eventTypes.length,
+            filters: { isActive: null, isBookable: null },
+          }}
+          currency={organization?.currency ?? "USD"}
+        />
       </div>
     </AppLayout>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
+import { getVisits } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function VisitsPage() {
-  // Auth is handled by middleware - no need for manual checks!
+  const visitsData = await getVisits();
 
   return (
     <AppLayout>
@@ -30,7 +31,13 @@ export default async function VisitsPage() {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <VisitsListContainer />
+        <VisitsListContainer
+          fallbackData={{
+            visits: visitsData.map((v) => ({ visit: v.visit, member: v.member })),
+            total: visitsData.length,
+            search: null,
+          }}
+        />
       </div>
     </AppLayout>
   );

@@ -3,52 +3,39 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Calendar, Mail, Plus, Search } from "lucide-react";
+import { Calendar, Mail, Search } from "lucide-react";
 import useSWR from "swr";
 
 import { fetcher } from "@/lib/fetcher";
-import { UserRole } from "@/lib/permissions";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
+import { StaffProfileWithEventTypes } from "@/lib/supabase/queries";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 import { PermissionGate } from "../PermissionGate";
 
-interface EventType {
-  id: string;
-  name: string;
-  color: string;
+type StaffMember = StaffProfileWithEventTypes;
+
+interface TeamListProps {
+  fallbackData?: { staff: StaffMember[]; total: number };
 }
 
-interface StaffMember {
-  id: string;
-  userId: string;
-  email: string;
-  role: UserRole;
-  firstName?: string;
-  lastName?: string;
-  description?: string;
-  dateOfBirth?: string;
-  phoneNumber?: string;
-  avatarImage?: string;
-  createdAt: string;
-  eventTypes?: EventType[];
-}
-
-export function TeamList() {
+export function TeamList({ fallbackData }: TeamListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const { data, error, isLoading } = useSWR<{ staff: StaffMember[]; total: number }>(
+  const apiUrl =
     buildApiRoute.profiles() +
-      `?include=eventTypes` +
-      (debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : ""),
-    fetcher
-  );
+    `?include=eventTypes` +
+    (debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : "");
+
+  const { data, error } = useSWR<{ staff: StaffMember[]; total: number }>(apiUrl, fetcher, {
+    keepPreviousData: true,
+    fallbackData: debouncedSearch ? undefined : fallbackData,
+  });
 
   const staff = data?.staff || [];
 
@@ -68,7 +55,7 @@ export function TeamList() {
       </div>
 
       {/* Loading State */}
-      {isLoading && (
+      {!data && !error && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
@@ -96,7 +83,7 @@ export function TeamList() {
       )}
 
       {/* Empty State */}
-      {!isLoading && !error && staff.length === 0 && (
+      {data && !error && staff.length === 0 && (
         <Card>
           <CardContent className="p-6 text-center text-zinc-500 dark:text-zinc-400">
             {searchQuery ? "No staff members found matching your search" : "No staff members yet"}
@@ -105,7 +92,7 @@ export function TeamList() {
       )}
 
       {/* Staff List */}
-      {!isLoading && !error && staff.length > 0 && (
+      {data && !error && staff.length > 0 && (
         <div className="flex flex-col gap-4">
           {staff.map((member) => {
             // Determine display name
@@ -195,7 +182,7 @@ export function TeamList() {
       )}
 
       {/* Total Count */}
-      {!isLoading && !error && staff.length > 0 && (
+      {data && !error && staff.length > 0 && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">
           {staff.length} {staff.length === 1 ? "staff member" : "staff members"}
           {searchQuery && " found"}

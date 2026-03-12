@@ -47,7 +47,7 @@ const menuItems = [
     icon: Layers,
   },
   {
-    title: "Categories",
+    title: "Event Categories",
     href: buildRoute.eventCategories(),
     icon: Folder,
   },

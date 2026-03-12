@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
+import { getCurrentUserProfile, getEventCategories } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
 import { EventCategoryListContainer } from "@/components/event-category-list-container";
 import { PageHeader } from "@/components/page-header";
@@ -14,8 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function EventCategoriesPage() {
-  // Auth is handled by middleware - no need for manual checks!
-  await requireAuth();
+  const user = await requireAuth();
+  const profile = await getCurrentUserProfile(user.id);
+  const eventCategories = await getEventCategories(profile.organizationId);
 
   return (
     <AppLayout>
@@ -32,7 +34,13 @@ export default async function EventCategoriesPage() {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <EventCategoryListContainer />
+        <EventCategoryListContainer
+          fallbackData={{
+            eventCategories,
+            total: eventCategories.length,
+            filters: { isActive: null },
+          }}
+        />
       </div>
     </AppLayout>
   );

@@ -20,7 +20,11 @@ interface VisitsResponse {
   search: string | null;
 }
 
-export function VisitsListContainer() {
+interface VisitsListContainerProps {
+  fallbackData?: VisitsResponse;
+}
+
+export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Debounce search query to avoid excessive API calls
@@ -31,8 +35,9 @@ export function VisitsListContainer() {
     ? `/api/visits?search=${encodeURIComponent(debouncedSearch)}`
     : "/api/visits";
 
-  const { data, error, isLoading } = useSWR<VisitsResponse>(apiUrl, fetcher, {
-    keepPreviousData: true, // Keep showing old data while fetching new data
+  const { data, error } = useSWR<VisitsResponse>(apiUrl, fetcher, {
+    keepPreviousData: true,
+    fallbackData: debouncedSearch ? undefined : fallbackData,
   });
 
   if (error) {
@@ -58,7 +63,7 @@ export function VisitsListContainer() {
             className="pl-9"
           />
         </div>
-        {debouncedSearch && !isLoading && data && (
+        {debouncedSearch && data && (
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Found {data.total} {data.total === 1 ? "visit" : "visits"}
           </p>
@@ -69,13 +74,13 @@ export function VisitsListContainer() {
       </div>
 
       {/* Loading State */}
-      {isLoading ? (
+      {!data ? (
         <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
           <p className="mt-4 text-sm">Loading visits...</p>
         </div>
       ) : (
-        <VisitsList visits={data?.visits || []} searchQuery={debouncedSearch} />
+        <VisitsList visits={data.visits} searchQuery={debouncedSearch} />
       )}
     </div>
   );

@@ -2129,3 +2129,88 @@ export async function upsertStaffAvailability(
     throw new Error("Failed to save staff availability");
   }
 }
+
+export interface StaffProfileWithEventTypes {
+  id: string;
+  userId: string;
+  email: string;
+  role: string;
+  firstName?: string;
+  lastName?: string;
+  description?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  avatarImage?: string;
+  createdAt: string;
+  eventTypes: { id: string; name: string; color: string }[];
+}
+
+export async function getStaffProfiles(
+  organizationId: string,
+  options: { search?: string; includeEventTypes?: boolean } = {}
+): Promise<StaffProfileWithEventTypes[]> {
+  const supabase = await createClient();
+  const { search, includeEventTypes = false } = options;
+
+  let query = supabase
+    .from("profiles")
+    .select(
+      "id, user_id, role, email, first_name, last_name, description, date_of_birth, phone_number, avatar_image, created_at"
+    )
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+
+  if (search) {
+    query = query.ilike("email", `%${search}%`);
+  }
+
+  const { data: profiles, error } = await query;
+
+  if (error) {
+    throw new Error("Failed to fetch staff profiles");
+  }
+
+  let staff: StaffProfileWithEventTypes[] = (profiles || []).map((p: any) => ({
+    id: p.id,
+    userId: p.user_id,
+    email: p.email,
+    role: p.role,
+    firstName: p.first_name,
+    lastName: p.last_name,
+    description: p.description,
+    dateOfBirth: p.date_of_birth,
+    phoneNumber: p.phone_number,
+    avatarImage: p.avatar_image,
+    createdAt: p.created_at,
+    eventTypes: [],
+  }));
+
+  if (includeEventTypes && staff.length > 0) {
+    const { data: assignments } = await supabase
+      .from("profiles_event_types")
+      .select("profile_id, event_types(id, name, color)")
+      .eq("organization_id", organizationId)
+      .in(
+        "profile_id",
+        staff.map((s) => s.id)
+      );
+
+    if (assignments) {
+      const eventTypesByProfile = new Map<string, { id: string; name: string; color: string }[]>();
+      assignments.forEach((a: any) => {
+        if (!eventTypesByProfile.has(a.profile_id)) {
+          eventTypesByProfile.set(a.profile_id, []);
+        }
+        if (a.event_types) {
+          eventTypesByProfile.get(a.profile_id)!.push(a.event_types);
+        }
+      });
+      staff = staff.map((member) => ({
+        ...member,
+        eventTypes: eventTypesByProfile.get(member.id) || [],
+      }));
+    }
+  }
+
+  return staff;
+}
