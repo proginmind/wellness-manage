@@ -40,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ConfirmationSummary } from "@/components/visit-confirmation-summary";
 
 const STEPS = [
-  { id: 0, label: "Member" },
+  { id: 0, label: "Client" },
   { id: 1, label: "Service & time" },
   { id: 2, label: "Confirm" },
 ];

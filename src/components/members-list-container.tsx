@@ -42,7 +42,7 @@ export function MembersListContainer({ fallbackData }: MembersListContainerProps
   if (error) {
     return (
       <div className="text-center py-12 text-red-500 dark:text-red-400">
-        <p className="text-lg font-medium mb-2">Failed to load members</p>
+        <p className="text-lg font-medium mb-2">Failed to load clients</p>
         <p className="text-sm">{error.info?.error || "Please try again later"}</p>
       </div>
     );
@@ -56,7 +56,7 @@ export function MembersListContainer({ fallbackData }: MembersListContainerProps
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 dark:text-zinc-400" />
           <Input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search clients by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -64,7 +64,7 @@ export function MembersListContainer({ fallbackData }: MembersListContainerProps
         </div>
         {debouncedSearch && data && (
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Found {data.total} {data.total === 1 ? "member" : "members"}
+            Found {data.total} {data.total === 1 ? "client" : "clients"}
           </p>
         )}
         {searchQuery !== debouncedSearch && (
@@ -76,7 +76,7 @@ export function MembersListContainer({ fallbackData }: MembersListContainerProps
       {!data ? (
         <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-sm">Loading members...</p>
+          <p className="mt-4 text-sm">Loading clients...</p>
         </div>
       ) : (
         <MembersList members={data.members} searchQuery={debouncedSearch} />

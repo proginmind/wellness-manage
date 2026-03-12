@@ -24,8 +24,8 @@ export function EventTypesList({ eventTypes, currency }: EventTypesListProps) {
   return (
     <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
       <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
-      <p className="text-lg font-medium mb-2">No event types yet</p>
-      <p className="text-sm">Get started by creating your first service or event type</p>
+      <p className="text-lg font-medium mb-2">No services yet</p>
+      <p className="text-sm">Get started by creating your first service</p>
     </div>
   );
 }

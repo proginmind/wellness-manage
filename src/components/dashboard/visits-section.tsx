@@ -23,13 +23,13 @@ export function VisitsSection({ upcomingVisits }: VisitsSectionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upcoming Visits</CardTitle>
+        <CardTitle>Upcoming Appointments</CardTitle>
         <CardDescription>Next 7 days</CardDescription>
       </CardHeader>
       <CardContent>
         {upcomingVisits.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No upcoming visits scheduled</p>
+            <p>No upcoming appointments scheduled</p>
           </div>
         ) : (
           <Table>
@@ -37,7 +37,7 @@ export function VisitsSection({ upcomingVisits }: VisitsSectionProps) {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Time</TableHead>
-                <TableHead>Member</TableHead>
+                <TableHead>Client</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>

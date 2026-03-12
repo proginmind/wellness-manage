@@ -108,12 +108,12 @@ export default function MemberDetailPage() {
             className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Members
+            Back to Clients
           </Link>
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-gray-500 dark:text-gray-400">
-                {error ? "Failed to load member" : "Member not found"}
+                {error ? "Failed to load client" : "Client not found"}
               </p>
             </CardContent>
           </Card>
@@ -136,7 +136,7 @@ export default function MemberDetailPage() {
             className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Members
+            Back to Clients
           </Link>
 
           <div className="flex items-start justify-between">
@@ -189,7 +189,7 @@ export default function MemberDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Member profile and contact details</CardDescription>
+                <CardDescription>Client profile and contact details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -257,7 +257,7 @@ export default function MemberDetailPage() {
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-zinc-500 dark:text-zinc-400">Member ID</p>
+                  <p className="text-zinc-500 dark:text-zinc-400">Client ID</p>
                   <p className="font-mono text-xs">{member.id}</p>
                 </div>
                 {member.archivedAt && (
@@ -285,10 +285,10 @@ export default function MemberDetailPage() {
       <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Member</AlertDialogTitle>
+            <AlertDialogTitle>Archive Client</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to archive {data?.member.firstName} {data?.member.lastName}?
-              This will remove them from the active members list. You can restore them later if
+              This will remove them from the active clients list. You can restore them later if
               needed.
             </AlertDialogDescription>
           </AlertDialogHeader>

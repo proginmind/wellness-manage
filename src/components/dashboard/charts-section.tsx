@@ -17,14 +17,14 @@ export function ChartsSection({
       <div className="grid gap-6 md:grid-cols-2">
         <DonutChart
           data={visitStatus}
-          title="Visit Status Distribution"
-          description="All visits breakdown"
+          title="Appointment Status"
+          description="All appointments breakdown"
           valueFormat="number"
         />
         <DonutChart
           data={revenueByCategory}
           title="Revenue by Category"
-          description="Completed visits"
+          description="Completed appointments"
           valueFormat="currency"
         />
       </div>

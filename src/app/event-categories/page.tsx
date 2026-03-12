@@ -12,7 +12,7 @@ import { PermissionGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Event Categories",
+  title: "Categories",
 };
 
 export default async function EventCategoriesPage() {
@@ -24,7 +24,7 @@ export default async function EventCategoriesPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Event Categories"
+        title="Categories"
         description="Organize your services into categories"
         action={
           <PermissionGate resource="event_categories" action="create">

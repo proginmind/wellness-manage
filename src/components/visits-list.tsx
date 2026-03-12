@@ -31,15 +31,15 @@ export function VisitsList({ visits, searchQuery }: VisitsListProps) {
         // No results for search query
         <>
           <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">No visits found</p>
+          <p className="text-lg font-medium mb-2">No appointments found</p>
           <p className="text-sm">Try adjusting your search to find what you&apos;re looking for</p>
         </>
       ) : (
-        // No visits at all
+        // No appointments at all
         <>
           <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">No visits yet</p>
-          <p className="text-sm">Get started by adding your first visit to the wellness center</p>
+          <p className="text-lg font-medium mb-2">No appointments yet</p>
+          <p className="text-sm">Get started by scheduling your first appointment</p>
         </>
       )}
     </div>

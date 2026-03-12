@@ -89,7 +89,7 @@ export function TeamList({ fallbackData }: TeamListProps) {
       {data && !error && staff.length === 0 && (
         <Card>
           <CardContent className="p-6 text-center text-zinc-500 dark:text-zinc-400">
-            {searchQuery ? "No staff members found matching your search" : "No staff members yet"}
+            {searchQuery ? "No staff found matching your search" : "No staff yet"}
           </CardContent>
         </Card>
       )}
@@ -187,7 +187,7 @@ export function TeamList({ fallbackData }: TeamListProps) {
       {/* Total Count */}
       {data && !error && staff.length > 0 && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">
-          {staff.length} {staff.length === 1 ? "staff member" : "staff members"}
+          {staff.length} {staff.length === 1 ? "staff member" : "staff members"} total
           {searchQuery && " found"}
         </p>
       )}

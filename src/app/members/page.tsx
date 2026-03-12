@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Members",
+  title: "Clients",
 };
 
 export default async function MembersPage() {
@@ -23,11 +23,11 @@ export default async function MembersPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Members"
-        description="Manage your wellness center members"
+        title="Clients"
+        description="Manage your wellness center clients"
         action={
           <Button asChild>
-            <Link href={buildRoute.membersNew()}>Add Member</Link>
+            <Link href={buildRoute.membersNew()}>Add Client</Link>
           </Button>
         }
       />

@@ -41,7 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ConfirmationSummary } from "@/components/visit-confirmation-summary";
 
 const STEPS = [
-  { id: 0, label: "Member" },
+  { id: 0, label: "Client" },
   { id: 1, label: "Service & time" },
   { id: 2, label: "Confirm" },
 ];
@@ -183,13 +183,13 @@ export default function NewVisitPage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Visits
+            Back to Appointments
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            New appointment
+            New Appointment
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
-            Book a visit in three steps
+            Book an appointment in three steps
           </p>
         </div>
 
@@ -387,7 +387,7 @@ export default function NewVisitPage() {
                   disabled={form.formState.isSubmitting}
                   onClick={() => form.handleSubmit(onSubmit)()}
                 >
-                  {form.formState.isSubmitting ? "Creating..." : "Create visit"}
+                  {form.formState.isSubmitting ? "Creating..." : "Create appointment"}
                 </Button>
               )}
             </div>

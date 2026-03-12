@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { VisitsListContainer } from "@/components/visits-list-container";
 
 export const metadata: Metadata = {
-  title: "Visits",
+  title: "Appointments",
 };
 
 export default async function VisitsPage() {
@@ -24,12 +24,12 @@ export default async function VisitsPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Visits"
-        description="Manage your wellness center visits"
+        title="Appointments"
+        description="Manage your wellness center appointments"
         action={
           <PermissionGate resource="visits" action="create">
             <Button asChild>
-              <Link href={buildRoute.visitsNew()}>Add Visit</Link>
+              <Link href={buildRoute.visitsNew()}>Add Appointment</Link>
             </Button>
           </PermissionGate>
         }

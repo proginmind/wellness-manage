@@ -67,9 +67,7 @@ export default function NewEventCategoryPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Categories
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Add New Event Category
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Category</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Create a new category to organize your services
           </p>

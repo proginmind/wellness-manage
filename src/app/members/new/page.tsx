@@ -64,11 +64,11 @@ export default function NewMemberPage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Members
+            Back to Clients
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Member</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Client</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Fill in the information to add a new member to the wellness center
+            Fill in the information to add a new client to the wellness center
           </p>
         </div>
 

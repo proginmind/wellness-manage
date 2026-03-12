@@ -114,7 +114,7 @@ export default function EditMemberPage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Members
+            Back to Clients
           </Link>
           <Card>
             <CardContent className="pt-6">
@@ -141,9 +141,9 @@ export default function EditMemberPage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Member Details
+            Back to Client Details
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Member</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Client</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Update {member.firstName} {member.lastName}'s information
           </p>

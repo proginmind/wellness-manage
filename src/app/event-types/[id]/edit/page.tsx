@@ -120,12 +120,12 @@ export default function EditEventTypePage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Event Types
+            Back to Services
           </Link>
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-gray-500 dark:text-gray-400">
-                {error ? "Failed to load event type" : "Event type not found"}
+                {error ? "Failed to load service" : "Service not found"}
               </p>
             </CardContent>
           </Card>
@@ -147,9 +147,9 @@ export default function EditEventTypePage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Event Type Details
+            Back to Service Details
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Event Type</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Service</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Update {eventType.name}</p>
         </div>
 

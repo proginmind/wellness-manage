@@ -24,7 +24,7 @@ export function EventCategoryList({ categories }: EventCategoryListProps) {
     <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
       <Folder className="h-12 w-12 mx-auto mb-4 opacity-50" />
       <p className="text-lg font-medium mb-2">No categories yet</p>
-      <p className="text-sm">Get started by creating your first event category</p>
+      <p className="text-sm">Get started by creating your first service category</p>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { TeamList } from "@/components/settings/team-list";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Team",
+  title: "Staff",
 };
 
 export default async function TeamPage() {
@@ -24,8 +24,8 @@ export default async function TeamPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Team"
-        description="View and manage your organization's staff members"
+        title="Staff"
+        description="View and manage your organization's staff"
         action={
           <PermissionGate resource="invitations" action="create">
             <Button asChild>

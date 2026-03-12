@@ -87,8 +87,8 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
   return (
     <AppLayout>
       <PageHeader
-        title="Visit Details"
-        backLink={{ href: buildRoute.visits(), label: "Back to Visits" }}
+        title="Appointment Details"
+        backLink={{ href: buildRoute.visits(), label: "Back to Appointments" }}
         action={
           <div className="flex items-center gap-2">
             {visit.status !== "cancelled" && (
@@ -124,7 +124,7 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
             <Card>
               <CardHeader>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <CardTitle>Visit Overview</CardTitle>
+                  <CardTitle>Appointment Overview</CardTitle>
                   {getStatusBadge(visit.status)}
                 </div>
               </CardHeader>
@@ -208,7 +208,7 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
             {/* Member Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Member Information</CardTitle>
+                <CardTitle>Client Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -291,7 +291,7 @@ export default async function VisitDetailPage({ params }: VisitDetailPageProps) 
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div>
-                  <p className="text-zinc-500 dark:text-zinc-400">Visit ID</p>
+                  <p className="text-zinc-500 dark:text-zinc-400">Appointment ID</p>
                   <p className="font-mono text-xs">{visit.id}</p>
                 </div>
                 <Separator />

@@ -27,15 +27,15 @@ export function MembersList({ members, searchQuery }: MembersListProps) {
         // No results for search query
         <>
           <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">No members found</p>
+          <p className="text-lg font-medium mb-2">No clients found</p>
           <p className="text-sm">Try adjusting your search to find what you're looking for</p>
         </>
       ) : (
-        // No members at all
+        // No clients at all
         <>
           <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">No members yet</p>
-          <p className="text-sm">Get started by adding your first member to the wellness center</p>
+          <p className="text-lg font-medium mb-2">No clients yet</p>
+          <p className="text-sm">Get started by adding your first client to the wellness center</p>
         </>
       )}
     </div>

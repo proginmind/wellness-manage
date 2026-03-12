@@ -46,7 +46,7 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
   if (error) {
     return (
       <div className="text-center py-12 text-red-500 dark:text-red-400">
-        <p className="text-lg font-medium mb-2">Failed to load visits</p>
+        <p className="text-lg font-medium mb-2">Failed to load appointments</p>
         <p className="text-sm">{error.info?.error || "Please try again later"}</p>
       </div>
     );
@@ -60,7 +60,7 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 dark:text-zinc-400" />
           <Input
             type="text"
-            placeholder="Search by member name or email..."
+            placeholder="Search by client name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -68,7 +68,7 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
         </div>
         {debouncedSearch && data && (
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Found {data.total} {data.total === 1 ? "visit" : "visits"}
+            Found {data.total} {data.total === 1 ? "appointment" : "appointments"}
           </p>
         )}
         {searchQuery !== debouncedSearch && (
@@ -80,7 +80,7 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
       {!data ? (
         <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-sm">Loading visits...</p>
+          <p className="mt-4 text-sm">Loading appointments...</p>
         </div>
       ) : (
         <VisitsList visits={data.visits} searchQuery={debouncedSearch} />

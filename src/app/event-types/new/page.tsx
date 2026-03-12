@@ -72,11 +72,9 @@ export default function NewEventTypePage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Event Types
+            Back to Services
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Create New Event Type
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create New Service</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Add a new service to your wellness center
           </p>

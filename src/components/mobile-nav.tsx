@@ -29,27 +29,27 @@ const menuItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Members",
+    title: "Clients",
     href: buildRoute.members(),
     icon: UsersRound,
   },
   {
-    title: "Team",
+    title: "Staff",
     href: buildRoute.team(),
     icon: Users,
   },
   {
-    title: "Visits",
+    title: "Appointments",
     href: buildRoute.visits(),
     icon: Calendar,
   },
   {
-    title: "Event Types",
+    title: "Services",
     href: buildRoute.eventTypes(),
     icon: Layers,
   },
   {
-    title: "Event Categories",
+    title: "Categories",
     href: buildRoute.eventCategories(),
     icon: Folder,
   },

@@ -54,7 +54,7 @@ export default async function EventTypeDetailPage({ params }: EventTypeDetailPag
             className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Event Types
+            Back to Services
           </Link>
 
           <div className="flex items-start justify-between">

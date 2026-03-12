@@ -28,7 +28,7 @@ export function KpiSection({
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -41,7 +41,7 @@ export function KpiSection({
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Upcoming Visits</CardTitle>
+          <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
           <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -68,7 +68,7 @@ export function KpiSection({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{activeStaff}</div>
-          <p className="text-xs text-muted-foreground">Team members</p>
+          <p className="text-xs text-muted-foreground">Active staff</p>
         </CardContent>
       </Card>
     </div>
