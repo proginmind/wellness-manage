@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buildRoute } from "@/lib/routes";
+import { getMembers } from "@/lib/supabase/queries";
 import { AppLayout } from "@/components/app-layout";
 import { MembersListContainer } from "@/components/members-list-container";
 import { PageHeader } from "@/components/page-header";
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MembersPage() {
-  // Auth is handled by middleware - no need for manual checks!
+  const members = await getMembers();
 
   return (
     <AppLayout>
@@ -27,7 +28,7 @@ export default async function MembersPage() {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <MembersListContainer />
+        <MembersListContainer fallbackData={{ members, total: members.length, search: null }} />
       </div>
     </AppLayout>
   );
