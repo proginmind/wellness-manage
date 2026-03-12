@@ -1,0 +1,1474 @@
+openapi: 3.1.0
+info:
+  title: Wellness Manage API
+  version: 1.0.0
+  description: |
+    Internal REST API for the Wellness Manage application.
+    All endpoints (except `/api/health`) require an authenticated session cookie.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://wellness-manage.vercel.app
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication and current user
+  - name: Members
+    description: Wellness center member management
+  - name: Visits
+    description: Visit scheduling and management
+  - name: Event Types
+    description: Service / event type management
+  - name: Event Categories
+    description: Category management for event types
+  - name: Team
+    description: Staff profiles and team management
+  - name: Profile
+    description: Current user's own profile
+  - name: Invitations
+    description: Staff invitation flow (owner only)
+  - name: Organization
+    description: Organization settings (owner only)
+  - name: Dashboard
+    description: Aggregated KPI and chart data
+  - name: Billing
+    description: Subscription and billing (owner only)
+  - name: Plans
+    description: Available plans (owner only)
+  - name: Checkout
+    description: Stripe checkout session creation (owner only)
+  - name: Account
+    description: Account lifecycle operations
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          nullable: true
+        dateOfBirth:
+          type: string
+          format: date
+        dateJoined:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [active, archived]
+        image:
+          type: string
+          nullable: true
+        organizationId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    Visit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        memberId:
+          type: string
+          format: uuid
+        staffId:
+          type: string
+          format: uuid
+          nullable: true
+        eventTypeId:
+          type: string
+          format: uuid
+          nullable: true
+        scheduledAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [scheduled, completed, cancelled]
+        organizationId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    EventType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          description: Duration in minutes
+        price:
+          type: number
+          format: float
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        isBookable:
+          type: boolean
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        maxAdvanceBookingDays:
+          type: integer
+          nullable: true
+        organizationId:
+          type: string
+          format: uuid
+
+    EventCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        organizationId:
+          type: string
+          format: uuid
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [owner, staff]
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        avatarImage:
+          type: string
+          nullable: true
+        organizationId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [pending, accepted, expired]
+        organizationId:
+          type: string
+          format: uuid
+        invitedBy:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, canceled, past_due, trialing]
+        stripePriceId:
+          type: string
+        cancelAtPeriodEnd:
+          type: boolean
+        currentPeriodStart:
+          type: string
+          format: date-time
+          nullable: true
+        currentPeriodEnd:
+          type: string
+          format: date-time
+          nullable: true
+
+    TrialStatus:
+      type: object
+      properties:
+        isOnTrial:
+          type: boolean
+        isExpired:
+          type: boolean
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        daysLeft:
+          type: integer
+
+paths:
+  # ─── Auth ─────────────────────────────────────────────────────────────────
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      description: Returns the authenticated user, their profile, organization, and trial status.
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      profile:
+                        $ref: "#/components/schemas/Profile"
+                      organization:
+                        type: object
+                        nullable: true
+                  trial:
+                    $ref: "#/components/schemas/TrialStatus"
+                    nullable: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/signout:
+    post:
+      tags: [Auth]
+      summary: Sign out
+      description: Invalidates the current session and redirects to /login.
+      responses:
+        "302":
+          description: Redirect to /login
+
+  # ─── Members ──────────────────────────────────────────────────────────────
+
+  /api/members:
+    get:
+      tags: [Members]
+      summary: List members
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter by name or email
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Member"
+                  total:
+                    type: integer
+                  search:
+                    type: string
+                    nullable: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [Members]
+      summary: Create member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, dateOfBirth, dateJoined]
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phoneNumber:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+                dateJoined:
+                  type: string
+                  format: date
+                image:
+                  type: string
+      responses:
+        "201":
+          description: Member created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  member:
+                    $ref: "#/components/schemas/Member"
+                  message:
+                    type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/members/{id}:
+    get:
+      tags: [Members]
+      summary: Get member by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Member details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  member:
+                    $ref: "#/components/schemas/Member"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags: [Members]
+      summary: Update member
+      description: |
+        Two operation modes:
+        - Pass `{ "status": "archived" | "active" }` alone to archive/unarchive.
+        - Pass a full member body to update all fields.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  description: Archive or unarchive
+                  required: [status]
+                  properties:
+                    status:
+                      type: string
+                      enum: [active, archived]
+                - type: object
+                  description: Full update
+                  required: [firstName, lastName, email, dateOfBirth, dateJoined]
+                  properties:
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    phoneNumber:
+                      type: string
+                    dateOfBirth:
+                      type: string
+                      format: date
+                    dateJoined:
+                      type: string
+                      format: date
+                    image:
+                      type: string
+      responses:
+        "200":
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  member:
+                    $ref: "#/components/schemas/Member"
+                  message:
+                    type: string
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Visits ───────────────────────────────────────────────────────────────
+
+  /api/visits:
+    get:
+      tags: [Visits]
+      summary: List visits
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter by member name or email
+      responses:
+        "200":
+          description: List of visits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visits:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        visit:
+                          $ref: "#/components/schemas/Visit"
+                        member:
+                          $ref: "#/components/schemas/Member"
+                  total:
+                    type: integer
+                  search:
+                    type: string
+                    nullable: true
+    post:
+      tags: [Visits]
+      summary: Create visit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberId, scheduledAt]
+              properties:
+                memberId:
+                  type: string
+                  format: uuid
+                staffId:
+                  type: string
+                  format: uuid
+                eventTypeId:
+                  type: string
+                  format: uuid
+                scheduledAt:
+                  type: string
+                  format: date-time
+                notes:
+                  type: string
+      responses:
+        "201":
+          description: Visit created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visit:
+                    $ref: "#/components/schemas/Visit"
+                  message:
+                    type: string
+
+  /api/visits/{id}:
+    get:
+      tags: [Visits]
+      summary: Get visit by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Visit with member details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visit:
+                    $ref: "#/components/schemas/Visit"
+                  member:
+                    $ref: "#/components/schemas/Member"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags: [Visits]
+      summary: Update or cancel visit
+      description: |
+        Two operation modes:
+        - Pass `{ "status": "cancelled" }` alone to cancel the visit.
+        - Pass a full visit body to update fields (not allowed for cancelled visits).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Visit updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visit:
+                    $ref: "#/components/schemas/Visit"
+                  message:
+                    type: string
+        "409":
+          description: Cannot edit a cancelled visit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Event Types ──────────────────────────────────────────────────────────
+
+  /api/event-types:
+    get:
+      tags: [Event Types]
+      summary: List event types
+      parameters:
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: is_bookable
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of event types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventTypes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EventType"
+                  total:
+                    type: integer
+                  filters:
+                    type: object
+                    properties:
+                      isActive:
+                        type: boolean
+                        nullable: true
+                      isBookable:
+                        type: boolean
+                        nullable: true
+    post:
+      tags: [Event Types]
+      summary: Create event type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, duration]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                duration:
+                  type: integer
+                price:
+                  type: number
+                  format: float
+                color:
+                  type: string
+                isActive:
+                  type: boolean
+                isBookable:
+                  type: boolean
+                categoryId:
+                  type: string
+                  format: uuid
+                maxAdvanceBookingDays:
+                  type: integer
+      responses:
+        "201":
+          description: Event type created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventType:
+                    $ref: "#/components/schemas/EventType"
+                  message:
+                    type: string
+
+  /api/event-types/{id}:
+    get:
+      tags: [Event Types]
+      summary: Get event type by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Event type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventType:
+                    $ref: "#/components/schemas/EventType"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags: [Event Types]
+      summary: Update or archive event type
+      description: |
+        Two operation modes:
+        - Pass `{ "isActive": false }` alone to archive, `{ "isActive": true }` to unarchive.
+        - Pass a full event type body for a complete update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Event type updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventType:
+                    $ref: "#/components/schemas/EventType"
+                  message:
+                    type: string
+
+  # ─── Event Categories ─────────────────────────────────────────────────────
+
+  /api/event-categories:
+    get:
+      tags: [Event Categories]
+      summary: List event categories
+      parameters:
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of event categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventCategories:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EventCategory"
+                  total:
+                    type: integer
+                  filters:
+                    type: object
+                    properties:
+                      isActive:
+                        type: boolean
+                        nullable: true
+    post:
+      tags: [Event Categories]
+      summary: Create event category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventCategory:
+                    $ref: "#/components/schemas/EventCategory"
+                  message:
+                    type: string
+
+  /api/event-categories/{id}:
+    get:
+      tags: [Event Categories]
+      summary: Get event category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Event category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventCategory:
+                    $ref: "#/components/schemas/EventCategory"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags: [Event Categories]
+      summary: Update event category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventCategory:
+                    $ref: "#/components/schemas/EventCategory"
+                  message:
+                    type: string
+    delete:
+      tags: [Event Categories]
+      summary: Archive event category
+      description: Soft-deletes the category by setting it to inactive.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Category archived
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventCategory:
+                    $ref: "#/components/schemas/EventCategory"
+                  message:
+                    type: string
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Team / Profiles ──────────────────────────────────────────────────────
+
+  /api/profiles:
+    get:
+      tags: [Team]
+      summary: List staff profiles
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter by email
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [owner, staff]
+          description: Filter by role
+        - name: include
+          in: query
+          schema:
+            type: string
+            enum: [eventTypes]
+          description: Pass `eventTypes` to embed assigned event types on each profile
+      responses:
+        "200":
+          description: Staff list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  staff:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Profile"
+                        - type: object
+                          properties:
+                            eventTypes:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                    format: uuid
+                                  name:
+                                    type: string
+                                  color:
+                                    type: string
+                  total:
+                    type: integer
+
+  /api/profiles/{id}:
+    get:
+      tags: [Team]
+      summary: Get staff profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Profile with event types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Current User Profile ─────────────────────────────────────────────────
+
+  /api/profile:
+    get:
+      tags: [Profile]
+      summary: Get own profile
+      responses:
+        "200":
+          description: Current user's profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+    put:
+      tags: [Profile]
+      summary: Update own profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                description:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+                phoneNumber:
+                  type: string
+                avatarImage:
+                  type: string
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+
+  # ─── Invitations ──────────────────────────────────────────────────────────
+
+  /api/invitations:
+    get:
+      tags: [Invitations]
+      summary: List invitations
+      description: Owner only. Returns all invitations for the organization.
+      responses:
+        "200":
+          description: Invitations list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Invitation"
+    post:
+      tags: [Invitations]
+      summary: Send invitation
+      description: Owner only. Sends an email invitation to a new staff member.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitation:
+                    $ref: "#/components/schemas/Invitation"
+        "409":
+          description: User already a member or invitation already pending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/invitations/{id}:
+    delete:
+      tags: [Invitations]
+      summary: Cancel invitation
+      description: Owner only. Cancels a pending invitation.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Invitation cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Organization ─────────────────────────────────────────────────────────
+
+  /api/organization:
+    put:
+      tags: [Organization]
+      summary: Update organization settings
+      description: Owner only. Updates name and/or currency.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                currency:
+                  type: string
+                  description: ISO 4217 currency code (e.g. USD, EUR)
+                  example: USD
+      responses:
+        "200":
+          description: Updated fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  name:
+                    type: string
+                  currency:
+                    type: string
+        "422":
+          description: Unsupported currency code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Dashboard ────────────────────────────────────────────────────────────
+
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard data
+      description: Returns all KPIs, upcoming visits, and chart data in a single call.
+      responses:
+        "200":
+          description: Dashboard payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kpi:
+                    type: object
+                    properties:
+                      memberStats:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          active:
+                            type: integer
+                          archived:
+                            type: integer
+                      upcomingVisitsCount:
+                        type: integer
+                      monthlyRevenue:
+                        type: number
+                      activeStaff:
+                        type: integer
+                  currency:
+                    type: string
+                  upcomingVisits:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        visit:
+                          $ref: "#/components/schemas/Visit"
+                        member:
+                          $ref: "#/components/schemas/Member"
+                  charts:
+                    type: object
+                    properties:
+                      revenueChart:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            revenue:
+                              type: number
+                      visitStatus:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: integer
+                            fill:
+                              type: string
+                      revenueByCategory:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: number
+                            fill:
+                              type: string
+
+  # ─── Billing ──────────────────────────────────────────────────────────────
+
+  /api/billing:
+    get:
+      tags: [Billing]
+      summary: Get billing info
+      description: Owner only. Returns current subscription, payment methods, and invoice history.
+      responses:
+        "200":
+          description: Billing data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    $ref: "#/components/schemas/Subscription"
+                    nullable: true
+                  paymentMethod:
+                    type: object
+                    nullable: true
+                    properties:
+                      brand:
+                        type: string
+                      last4:
+                        type: string
+                      expMonth:
+                        type: integer
+                      expYear:
+                        type: integer
+                  invoices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        amount:
+                          type: number
+                        currency:
+                          type: string
+                        status:
+                          type: string
+                        date:
+                          type: string
+                          format: date-time
+                        pdfUrl:
+                          type: string
+                          nullable: true
+
+  /api/billing/cancel:
+    post:
+      tags: [Billing]
+      summary: Cancel subscription
+      description: |
+        Owner only. For Stripe subscriptions, sets `cancel_at_period_end = true` so
+        access continues until the end of the current billing period. For one-time
+        purchases, marks the subscription as canceled immediately.
+      responses:
+        "200":
+          description: Cancellation scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "400":
+          description: No active subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Plans ────────────────────────────────────────────────────────────────
+
+  /api/plans:
+    get:
+      tags: [Plans]
+      summary: List available plans
+      description: Owner only. Returns plans fetched from Stripe with the current plan highlighted.
+      responses:
+        "200":
+          description: Plans list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        price:
+                          type: number
+                        currency:
+                          type: string
+                        interval:
+                          type: string
+                          enum: [month, year, one_time]
+                        priceId:
+                          type: string
+                        features:
+                          type: array
+                          items:
+                            type: string
+                        isCurrent:
+                          type: boolean
+                  currentPriceId:
+                    type: string
+                    nullable: true
+
+  # ─── Checkout ─────────────────────────────────────────────────────────────
+
+  /api/checkout:
+    post:
+      tags: [Checkout]
+      summary: Create Stripe Checkout session
+      description: |
+        Owner only. Creates a Stripe Checkout session for the given price and returns
+        the redirect URL. The browser should redirect to `url` to complete payment.
+        On success Stripe redirects to `/settings/billing?success=true`.
+        On cancel Stripe redirects to `/settings/plans?canceled=true`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [priceId]
+              properties:
+                priceId:
+                  type: string
+                  description: Stripe Price ID (e.g. price_xxx)
+                  example: price_1234abcd
+      responses:
+        "200":
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        "400":
+          description: Missing priceId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Account ──────────────────────────────────────────────────────────────
+
+  /api/account/close:
+    post:
+      tags: [Account]
+      summary: Close account
+      description: |
+        Owner only. Permanently deletes the organization and all associated data.
+        This action is irreversible.
+      responses:
+        "200":
+          description: Account closed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "403":
+          description: Forbidden (non-owner)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─── Health ───────────────────────────────────────────────────────────────
+
+  /api/health:
+    get:
+      tags: []
+      summary: Health check
+      description: Returns 200 if the service is up. No authentication required.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
