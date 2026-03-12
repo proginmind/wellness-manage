@@ -10,6 +10,7 @@ import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { StaffProfileWithEventTypes } from "@/lib/supabase/queries";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +37,8 @@ export function TeamList({ fallbackData }: TeamListProps) {
     keepPreviousData: true,
     fallbackData: debouncedSearch ? undefined : fallbackData,
   });
+
+  useTrialGuard(error);
 
   const staff = data?.staff || [];
 

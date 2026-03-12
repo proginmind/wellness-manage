@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { EventTypesListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute } from "@/lib/routes";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { EventTypesList } from "@/components/event-types-list";
 
 interface EventTypesListContainerProps {
@@ -19,6 +20,8 @@ export function EventTypesListContainer({
   const { data, error } = useSWR<EventTypesListResponse>(buildApiRoute.eventTypes(), fetcher, {
     fallbackData,
   });
+
+  useTrialGuard(error);
 
   if (error) {
     return (

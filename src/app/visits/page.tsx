@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
-import { getVisits } from "@/lib/supabase/queries";
+import { getCurrentUserProfile, getVisits } from "@/lib/supabase/queries";
+import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default async function VisitsPage() {
+  const user = await requireAuth();
+  const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
   const visitsData = await getVisits();
 
   return (

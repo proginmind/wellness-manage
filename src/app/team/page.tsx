@@ -4,6 +4,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
 import { getCurrentUserProfile, getStaffProfiles } from "@/lib/supabase/queries";
+import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 export default async function TeamPage() {
   const user = await requireAuth();
   const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
   const staff = await getStaffProfiles(profile.organizationId, { includeEventTypes: true });
 
   return (

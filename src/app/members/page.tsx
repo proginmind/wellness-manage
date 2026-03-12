@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
-import { getMembers } from "@/lib/supabase/queries";
+import { getCurrentUserProfile, getMembers } from "@/lib/supabase/queries";
+import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { MembersListContainer } from "@/components/members-list-container";
 import { PageHeader } from "@/components/page-header";
@@ -13,6 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function MembersPage() {
+  const user = await requireAuth();
+  const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
   const members = await getMembers();
 
   return (

@@ -4,8 +4,11 @@ import { redirect } from "next/navigation";
 import { requireOwnerServer } from "@/lib/api-permissions";
 import { getBilling } from "@/lib/billing";
 import { buildRoute } from "@/lib/routes";
+import { getLatestSubscriptionByOrganizationId, getOrganizationById } from "@/lib/supabase/queries";
+import { getTrialStatus } from "@/lib/trial";
 import { BillingContent } from "@/components/billing/billing-content";
 import { CheckoutRedirectToast } from "@/components/checkout-redirect-toast";
+import { TrialBanner } from "@/components/trial-banner";
 
 export const metadata: Metadata = {
   title: "Billing",
@@ -20,7 +23,12 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   if (!context) redirect(buildRoute.settingsProfile());
 
   const params = await searchParams;
-  const data = await getBilling(context.organizationId);
+  const [data, org, latestSub] = await Promise.all([
+    getBilling(context.organizationId),
+    getOrganizationById(context.organizationId),
+    getLatestSubscriptionByOrganizationId(context.organizationId),
+  ]);
+  const trial = getTrialStatus(org?.trialEndsAt ?? null, latestSub?.status === "active");
 
   return (
     <div className="min-w-0 space-y-6 overflow-hidden">
@@ -31,6 +39,8 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           Manage your subscription, payment method, and billing history
         </p>
       </div>
+
+      {(trial.isOnTrial || trial.isExpired) && <TrialBanner trial={trial} />}
 
       <BillingContent data={data} />
     </div>

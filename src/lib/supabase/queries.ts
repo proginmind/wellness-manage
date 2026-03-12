@@ -24,6 +24,7 @@ interface OrganizationRow {
   owner_id: string;
   currency: string;
   stripe_customer_id?: string | null;
+  trial_ends_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -96,6 +97,7 @@ export function dbToOrganization(row: OrganizationRow): Organization {
     ownerId: row.owner_id,
     currency: row.currency ?? "USD",
     stripeCustomerId: row.stripe_customer_id ?? undefined,
+    trialEndsAt: row.trial_ends_at ? new Date(row.trial_ends_at) : null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -302,7 +304,7 @@ export async function updateOrganizationCurrency(
  */
 export async function updateOrganization(
   organizationId: string,
-  fields: { name?: string; currency?: string; stripeCustomerId?: string }
+  fields: { name?: string; currency?: string; stripeCustomerId?: string; trialEndsAt?: Date | null }
 ): Promise<void> {
   const supabase = createAdminClient();
 
@@ -310,6 +312,10 @@ export async function updateOrganization(
   if ("stripeCustomerId" in dbFields) {
     dbFields.stripe_customer_id = dbFields.stripeCustomerId;
     delete dbFields.stripeCustomerId;
+  }
+  if ("trialEndsAt" in dbFields) {
+    dbFields.trial_ends_at = dbFields.trialEndsAt;
+    delete dbFields.trialEndsAt;
   }
 
   const { error } = await supabase.from("organizations").update(dbFields).eq("id", organizationId);

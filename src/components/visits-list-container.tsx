@@ -8,6 +8,7 @@ import { Member } from "@/types/member";
 import { Visit } from "@/types/visit";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { Input } from "@/components/ui/input";
 import { VisitsList } from "@/components/visits-list";
 
@@ -39,6 +40,8 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
     keepPreviousData: true,
     fallbackData: debouncedSearch ? undefined : fallbackData,
   });
+
+  useTrialGuard(error);
 
   if (error) {
     return (

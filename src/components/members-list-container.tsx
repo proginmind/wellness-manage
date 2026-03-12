@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { Member } from "@/types/member";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { MembersList } from "@/components/members-list";
 import { Input } from "@/components/ui/input";
 
@@ -35,6 +36,8 @@ export function MembersListContainer({ fallbackData }: MembersListContainerProps
     keepPreviousData: true,
     fallbackData: debouncedSearch ? undefined : fallbackData,
   });
+
+  useTrialGuard(error);
 
   if (error) {
     return (

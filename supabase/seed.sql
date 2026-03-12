@@ -82,8 +82,8 @@ BEGIN
 
   IF v_org_id IS NULL THEN
     -- Create organization with owner profile ID
-    INSERT INTO public.organizations (name, owner_id)
-    VALUES ('Wellness Center Demo', v_owner_profile_id)
+    INSERT INTO public.organizations (name, owner_id, trial_ends_at)
+    VALUES ('Wellness Center Demo', v_owner_profile_id, now() + interval '14 days')
     RETURNING id INTO v_org_id;
 
     -- Update owner profile with organization_id

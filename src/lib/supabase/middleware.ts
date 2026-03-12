@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { getTrialStatus, TRIAL_ALLOWED_PATHS } from "@/lib/trial";
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -35,13 +37,21 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { pathname } = request.nextUrl;
+
   // Define protected route patterns
-  const protectedRoutes = ["/dashboard", "/members", "/visits", "/event-types", "/settings"];
+  const protectedRoutes = [
+    "/dashboard",
+    "/members",
+    "/visits",
+    "/event-types",
+    "/event-categories",
+    "/team",
+    "/settings",
+  ];
 
   // Check if current path is a protected route
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
   // Redirect to login if accessing protected route without auth
   if (!user && isProtectedRoute) {
@@ -52,12 +62,51 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect logged-in users away from auth pages
   const authPages = ["/login", "/forgot-password", "/reset-password"];
-  const isAuthPage = authPages.some((page) => request.nextUrl.pathname === page);
+  const isAuthPage = authPages.some((page) => pathname === page);
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Trial enforcement: redirect expired trial users from restricted pages
+  if (user && isProtectedRoute) {
+    const isAllowedPath = TRIAL_ALLOWED_PATHS.some((allowed) => pathname.startsWith(allowed));
+
+    if (!isAllowedPath) {
+      // Fetch trial_ends_at from org via profile (single query)
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("organization_id, organizations!inner(trial_ends_at)")
+        .eq("user_id", user.id)
+        .single();
+
+      const orgRow = profileRow?.organizations as unknown as {
+        trial_ends_at: string | null;
+      } | null;
+      const trialEndsAt = orgRow?.trial_ends_at ? new Date(orgRow.trial_ends_at) : null;
+
+      if (trialEndsAt && trialEndsAt <= new Date()) {
+        // Trial date is past — check for an active subscription
+        const { count } = await supabase
+          .from("subscriptions")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", profileRow!.organization_id)
+          .eq("status", "active");
+
+        const trialStatus = getTrialStatus(trialEndsAt, (count ?? 0) > 0);
+
+        if (trialStatus.isExpired) {
+          const url = request.nextUrl.clone();
+          url.pathname = "/settings/billing";
+          const redirect = NextResponse.redirect(url);
+          // Copy cookies so the session stays in sync
+          supabaseResponse.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+          return redirect;
+        }
+      }
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

@@ -4,6 +4,7 @@ export interface Organization {
   ownerId: string;
   currency: string;
   stripeCustomerId?: string;
+  trialEndsAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

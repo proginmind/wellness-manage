@@ -7,8 +7,13 @@
 import { NextResponse } from "next/server";
 
 import { can, type Action, type Resource, type UserRole } from "@/lib/permissions";
-import { getCurrentUserProfile } from "@/lib/supabase/queries";
+import {
+  getCurrentUserProfile,
+  getLatestSubscriptionByOrganizationId,
+  getOrganizationById,
+} from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
+import { getTrialStatus, TRIAL_ALLOWED_RESOURCES } from "@/lib/trial";
 
 // ============================================================================
 // TYPES
@@ -78,6 +83,21 @@ export async function requirePermission(
         },
         { status: 403 }
       );
+    }
+
+    // Trial enforcement: block restricted resources when trial is expired
+    if (!TRIAL_ALLOWED_RESOURCES.has(resource as any)) {
+      const [org, latestSub] = await Promise.all([
+        getOrganizationById(profile.organizationId),
+        getLatestSubscriptionByOrganizationId(profile.organizationId),
+      ]);
+      const trialStatus = getTrialStatus(org?.trialEndsAt ?? null, latestSub?.status === "active");
+      if (trialStatus.isExpired) {
+        return NextResponse.json(
+          { error: "Trial expired", message: "Your trial has ended. Please upgrade to continue." },
+          { status: 402 }
+        );
+      }
     }
 
     // Return permission context for use in route handler

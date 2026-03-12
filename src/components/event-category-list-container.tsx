@@ -4,6 +4,7 @@ import useSWR from "swr";
 
 import { EventCategoriesListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { EventCategoryList } from "@/components/event-category-list";
 
 interface EventCategoryListContainerProps {
@@ -14,6 +15,8 @@ export function EventCategoryListContainer({ fallbackData }: EventCategoryListCo
   const { data, error } = useSWR<EventCategoriesListResponse>("/api/event-categories", fetcher, {
     fallbackData,
   });
+
+  useTrialGuard(error);
 
   if (error) {
     return (

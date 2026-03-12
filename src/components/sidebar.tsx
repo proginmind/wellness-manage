@@ -18,6 +18,7 @@ import {
 import { buildApiRoute, buildRoute, isRouteActive } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
@@ -60,6 +61,7 @@ interface SidebarContentProps {
 
 function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) {
   const pathname = usePathname();
+  const { trial } = useUser();
 
   return (
     <div className="flex h-full flex-col">
@@ -94,7 +96,24 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
       <nav className="flex-1 space-y-1 p-2 pt-0">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = !trial?.isExpired && pathname === item.href;
+
+          if (trial?.isExpired) {
+            return (
+              <span
+                key={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-not-allowed select-none",
+                  "text-zinc-300 dark:text-zinc-600",
+                  collapsed && "justify-center"
+                )}
+                title={collapsed ? item.title : undefined}
+              >
+                <Icon className="h-5 w-5" />
+                {!collapsed && <span>{item.title}</span>}
+              </span>
+            );
+          }
 
           return (
             <Link
@@ -118,6 +137,49 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
 
       {/* Bottom menu */}
       <div className="p-2">
+        {/* Trial badge */}
+        {trial && (trial.isOnTrial || trial.isExpired) && (
+          <Link
+            href={buildRoute.settingsPlans()}
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 mb-1 text-xs font-medium transition-colors",
+              trial.isExpired
+                ? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:hover:bg-red-900"
+                : trial.daysLeft <= 3
+                  ? "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900"
+                  : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900",
+              collapsed && "justify-center px-2"
+            )}
+            title={
+              collapsed
+                ? trial.isExpired
+                  ? "Trial ended"
+                  : `Trial: ${trial.daysLeft}d left`
+                : undefined
+            }
+          >
+            <span
+              className={cn(
+                "h-2 w-2 shrink-0 rounded-full",
+                trial.isExpired
+                  ? "bg-red-500"
+                  : trial.daysLeft <= 3
+                    ? "bg-amber-500"
+                    : "bg-blue-500"
+              )}
+            />
+            {!collapsed && (
+              <span>
+                {trial.isExpired
+                  ? "Trial ended"
+                  : trial.daysLeft === 1
+                    ? "Trial · 1 day left"
+                    : `Trial · ${trial.daysLeft} days left`}
+              </span>
+            )}
+          </Link>
+        )}
+
         {/* Settings */}
         <Link
           href={buildRoute.settingsProfile()}

@@ -5,9 +5,12 @@ import useSWR from "swr";
 import { Member } from "@/types/member";
 import { Visit } from "@/types/visit";
 import { fetcher } from "@/lib/fetcher";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
+import { useUser } from "@/hooks/useUser";
 import { ChartsSection } from "@/components/dashboard/charts-section";
 import { KpiSection } from "@/components/dashboard/kpi-section";
 import { VisitsSection } from "@/components/dashboard/visits-section";
+import { TrialBanner } from "@/components/trial-banner";
 
 interface DashboardData {
   kpi: {
@@ -30,15 +33,20 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ fallbackData }: DashboardContentProps) {
-  const { data } = useSWR<DashboardData>("/api/dashboard", fetcher, {
+  const { data, error } = useSWR<DashboardData>("/api/dashboard", fetcher, {
     fallbackData,
   });
+  const { trial } = useUser();
+
+  useTrialGuard(error);
 
   // data is always defined: server provides fallbackData, SWR revalidates in background
   if (!data) return null;
 
   return (
     <div className="space-y-8">
+      {trial && (trial.isOnTrial || trial.isExpired) && <TrialBanner trial={trial} />}
+
       <KpiSection
         memberStats={data.kpi.memberStats}
         upcomingVisitsCount={data.kpi.upcomingVisitsCount}

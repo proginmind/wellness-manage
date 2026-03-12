@@ -4,6 +4,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { buildRoute } from "@/lib/routes";
 import { getCurrentUserProfile, getEventCategories } from "@/lib/supabase/queries";
+import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { EventCategoryListContainer } from "@/components/event-category-list-container";
 import { PageHeader } from "@/components/page-header";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 export default async function EventCategoriesPage() {
   const user = await requireAuth();
   const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
   const eventCategories = await getEventCategories(profile.organizationId);
 
   return (

@@ -12,6 +12,7 @@ import {
   getUpcomingVisits,
   getVisitStatusDistribution,
 } from "@/lib/supabase/queries";
+import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const user = await requireAuth();
   const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
 
   const [
     org,
