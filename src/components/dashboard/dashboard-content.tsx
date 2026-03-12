@@ -1,0 +1,59 @@
+"use client";
+
+import useSWR from "swr";
+
+import { Member } from "@/types/member";
+import { Visit } from "@/types/visit";
+import { fetcher } from "@/lib/fetcher";
+import { ChartsSection } from "@/components/dashboard/charts-section";
+import { KpiSection } from "@/components/dashboard/kpi-section";
+import { VisitsSection } from "@/components/dashboard/visits-section";
+
+interface DashboardData {
+  kpi: {
+    memberStats: { total: number; active: number; archived: number };
+    upcomingVisitsCount: number;
+    monthlyRevenue: number;
+    activeStaff: number;
+  };
+  currency: string;
+  upcomingVisits: { visit: Visit; member: Member }[];
+  charts: {
+    revenueChart: Array<{ name: string; revenue: number }>;
+    visitStatus: Array<{ name: string; value: number; fill: string }>;
+    revenueByCategory: Array<{ name: string; value: number; fill: string }>;
+  };
+}
+
+interface DashboardContentProps {
+  fallbackData: DashboardData;
+}
+
+export function DashboardContent({ fallbackData }: DashboardContentProps) {
+  const { data } = useSWR<DashboardData>("/api/dashboard", fetcher, {
+    fallbackData,
+  });
+
+  // data is always defined: server provides fallbackData, SWR revalidates in background
+  if (!data) return null;
+
+  return (
+    <div className="space-y-8">
+      <KpiSection
+        memberStats={data.kpi.memberStats}
+        upcomingVisitsCount={data.kpi.upcomingVisitsCount}
+        monthlyRevenue={data.kpi.monthlyRevenue}
+        activeStaff={data.kpi.activeStaff}
+        currency={data.currency}
+      />
+
+      <VisitsSection upcomingVisits={data.upcomingVisits} />
+
+      <ChartsSection
+        revenueChart={data.charts.revenueChart}
+        visitStatus={data.charts.visitStatus}
+        revenueByCategory={data.charts.revenueByCategory}
+      />
+    </div>
+  );
+}

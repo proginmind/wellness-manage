@@ -1,33 +1,29 @@
 import { Calendar, DollarSign, Users } from "lucide-react";
 
-import { requireAuth } from "@/lib/auth";
 import { formatCurrency } from "@/lib/currency";
-import {
-  getActiveStaffCount,
-  getCurrentUserProfile,
-  getMemberStats,
-  getMonthlyRevenue,
-  getOrganizationById,
-  getUpcomingVisits,
-} from "@/lib/supabase/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export async function KpiSection() {
-  // Fetch auth + profile + org in parallel — profile is cached via React cache()
-  // so sub-components calling getCurrentUserProfile concurrently share the result
-  const user = await requireAuth();
-  const [userProfile] = await Promise.all([getCurrentUserProfile(user.id)]);
-  const org = await getOrganizationById(userProfile.organizationId);
+interface MemberStats {
+  total: number;
+  active: number;
+  archived: number;
+}
 
-  const [memberStats, upcomingVisits, monthlyRevenue, activeStaff] = await Promise.all([
-    getMemberStats(userProfile.organizationId),
-    getUpcomingVisits(),
-    getMonthlyRevenue(),
-    getActiveStaffCount(),
-  ]);
+interface KpiSectionProps {
+  memberStats: MemberStats;
+  upcomingVisitsCount: number;
+  monthlyRevenue: number;
+  activeStaff: number;
+  currency: string;
+}
 
-  const currency = org?.currency ?? "USD";
-
+export function KpiSection({
+  memberStats,
+  upcomingVisitsCount,
+  monthlyRevenue,
+  activeStaff,
+  currency,
+}: KpiSectionProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -49,7 +45,7 @@ export async function KpiSection() {
           <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{upcomingVisits.length}</div>
+          <div className="text-2xl font-bold">{upcomingVisitsCount}</div>
           <p className="text-xs text-muted-foreground">Next 7 days</p>
         </CardContent>
       </Card>

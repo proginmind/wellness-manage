@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { format } from "date-fns";
 
+import { Member } from "@/types/member";
+import { Visit } from "@/types/visit";
 import { buildRoute } from "@/lib/routes";
-import { getUpcomingVisits } from "@/lib/supabase/queries";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,9 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export async function VisitsSection() {
-  const upcomingVisits = await getUpcomingVisits();
+interface VisitsSectionProps {
+  upcomingVisits: { visit: Visit; member: Member }[];
+}
 
+export function VisitsSection({ upcomingVisits }: VisitsSectionProps) {
   return (
     <Card>
       <CardHeader>
