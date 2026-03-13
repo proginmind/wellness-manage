@@ -1,0 +1,50 @@
+---
+description: Component patterns, forms, and UI conventions
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+
+# Component Structure
+
+- `src/components/ui/` — Shadcn primitives (Button, Card, Badge, Input, etc.) — do not edit
+- `src/components/` — feature components (forms, cards, lists, containers)
+- `src/components/settings/`, `billing/`, `dashboard/`, `plans/` — domain-grouped sub-folders
+
+## Naming Convention
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| List container (SWR) | `*-list-container.tsx` | `members-list-container.tsx` |
+| Pure list / table | `*-list.tsx` | `members-list.tsx` |
+| Card | `*-card.tsx` | `member-card.tsx` |
+| Form | `*-form.tsx` | `member-form.tsx` |
+
+# Forms
+
+Use `react-hook-form` + `@hookform/resolvers/zod`. Schemas live in `src/lib/validations/`.
+
+```tsx
+const form = useForm<MemberFormValues>({
+  resolver: zodResolver(memberFormSchema),
+  defaultValues: { ... },
+});
+```
+
+# Client vs Server Components
+
+- Add `"use client"` only when you need hooks, event handlers, or browser APIs
+- Server components fetch directly from Supabase queries — no `fetch()` to own API routes
+- Client components fetch data via SWR using the `fetcher` from `@/lib/fetcher`
+
+# Hooks
+
+Custom hooks live in `src/hooks/`:
+- `useUser()` — current user, org, trial status (pre-populated from layout via SWR)
+- `useTrialGuard(error)` — redirects to billing on 402 response
+- `useLocalStorage(key, defaultValue)` — syncs state with localStorage (reads synchronously)
+- `useDebounce(value, ms)` — debounce input for search fields
+- `usePermissions()` — client-side RBAC checks
+
+# UI Component Imports
+
+Always import Shadcn components from `@/components/ui/*`, not from Radix directly.

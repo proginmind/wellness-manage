@@ -1,0 +1,45 @@
+---
+description: API route conventions and permission patterns
+globs: src/app/api/**/*.ts
+alwaysApply: false
+---
+
+# API Route Structure
+
+All API routes live in `src/app/api/` following Next.js App Router conventions.
+
+## Permission Helpers (use these, don't roll your own auth)
+
+```ts
+// Most routes — checks role + trial status:
+const result = await requirePermission("members", "create");
+if (result instanceof NextResponse) return result;
+const { organizationId, role } = result;
+
+// Owner-only routes (billing, plans, org settings):
+const result = await requireOwner();
+if (result instanceof NextResponse) return result;
+
+// Any authenticated user, no RBAC check:
+const result = await requireAuth();
+if (result instanceof NextResponse) return result;
+```
+
+All three come from `@/lib/api-permissions`. `requirePermission` also enforces trial expiry (returns 402).
+
+## Response Conventions
+
+- Success: `NextResponse.json(data)` — 200 default, or explicit `{ status: 201 }` for creates
+- Errors: always `NextResponse.json({ error: "message" }, { status: NNN })`
+- Status codes: 401 Unauthorized, 403 Forbidden, 402 Trial expired, 404 Not found, 500 Server error
+- Wrap handler body in try/catch; log with `console.error` and return 500 on unexpected errors
+
+## Supabase in API Routes
+
+Use `createClient()` from `@/lib/supabase/server` (session-aware).
+Use `createAdminClient()` from `@/lib/supabase/admin` only for privileged ops that bypass RLS.
+
+## Resources and Actions
+
+Defined in `@/lib/permissions.ts`. Valid resources: `members | visits | organization | staff | invitations | event_types | event_categories | billing | plans | profile`.
+Valid actions: `view | create | update | delete | archive | export | invite | remove | manage`.

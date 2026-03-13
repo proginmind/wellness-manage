@@ -1,0 +1,27 @@
+---
+description: Tech stack and project conventions
+alwaysApply: true
+---
+
+# Tech Stack
+
+- **Framework**: Next.js 16 (App Router, React 19, TypeScript)
+- **Database / Auth**: Supabase (Postgres + Row Level Security)
+- **Styling**: Tailwind CSS v4 + Shadcn UI (Radix primitives)
+- **Client data fetching**: SWR v2
+- **Forms**: react-hook-form + Zod validation
+- **Payments**: Stripe (subscriptions, webhooks)
+- **Package manager**: always `pnpm`, never `npm` or `yarn`
+- **Dates**: `date-fns`
+- **Charts**: `recharts`
+- **Toasts**: `sonner`
+- **Icons**: `lucide-react`
+
+# Project Conventions
+
+- Use `cn()` from `@/lib/utils` for className merging
+- All routes and API paths come from `buildRoute` / `buildApiRoute` in `@/lib/routes` — never hardcode strings like `"/members"` or `"/api/members"`
+- Format currency via `formatCurrency` from `@/lib/currency`
+- Run `pnpm tsc --noEmit` after significant changes to verify types
+- No explanatory code comments ("// fetch the data", "// return result")
+- After edits use ReadLints on changed files and fix introduced errors

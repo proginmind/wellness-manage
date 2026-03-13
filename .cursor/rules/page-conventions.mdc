@@ -1,0 +1,49 @@
+---
+description: Page component conventions (server components, layout, metadata)
+globs: src/app/**/page.tsx
+alwaysApply: false
+---
+
+# Server Page Checklist
+
+Every protected page follows this order:
+
+```tsx
+export const metadata: Metadata = { title: "Clients" }; // UI label, not entity name
+
+export default async function MembersPage() {
+  const user = await requireAuth();                            // 1. auth guard (redirects to /login)
+  const profile = await getCurrentUserProfile(user.id);       // 2. profile
+  await requireTrialAccess(profile.organizationId);           // 3. trial guard (redirects to /settings/billing)
+  const data = await getSomeData();                           // 4. data fetch (only if all guards pass)
+
+  return (
+    <AppLayout>
+      <PageHeader title="Clients" description="..." action={<Button>...</Button>} />
+      <div className="container mx-auto px-4 py-6">
+        <ClientContainer fallbackData={data} />               // 5. pass as fallbackData
+      </div>
+    </AppLayout>
+  );
+}
+```
+
+# Rules
+
+- `requireAuth` from `@/lib/auth`, `requireTrialAccess` from `@/lib/trial-server`
+- `getCurrentUserProfile` from `@/lib/supabase/queries` (wrapped in React `cache()` — safe to call multiple times)
+- Owner-only pages (billing, plans, invitations/new): use `requireOwnerServer()` from `@/lib/api-permissions` and `redirect()` if null
+- Wrap everything in `<AppLayout>` — it renders the sidebar and mobile nav
+- Use `<PageHeader>` for page title + action button
+- Export `metadata` with UI-friendly title (see UI Naming below)
+- Do NOT add `loading.tsx` to pages with `await` in the component — use the SWR fallback pattern instead
+
+# UI Naming (display labels vs code names)
+
+| Code entity    | UI label     |
+|----------------|--------------|
+| members        | Clients      |
+| visits         | Appointments |
+| team/profiles  | Staff        |
+| event_types    | Services     |
+| event_categories | Categories |

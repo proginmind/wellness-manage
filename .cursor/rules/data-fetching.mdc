@@ -1,0 +1,56 @@
+---
+description: Data fetching pattern — Server prefetch + SWR fallbackData
+alwaysApply: true
+---
+
+# Server + SWR Pattern (all list/data pages)
+
+Every page that renders a list or data-heavy component follows this pattern:
+
+**Server page** (`page.tsx`) — fetches initial data, passes as `fallbackData`:
+```tsx
+export default async function MembersPage() {
+  const user = await requireAuth();
+  const profile = await getCurrentUserProfile(user.id);
+  await requireTrialAccess(profile.organizationId);
+  const members = await getMembers();
+
+  return (
+    <AppLayout>
+      <MembersListContainer fallbackData={{ members, total: members.length, search: null }} />
+    </AppLayout>
+  );
+}
+```
+
+**Client container** — accepts `fallbackData`, uses SWR, shows spinner only when `!data`:
+```tsx
+export function MembersListContainer({ fallbackData }: Props) {
+  const { data, error } = useSWR<MembersResponse>(apiUrl, fetcher, {
+    keepPreviousData: true,
+    fallbackData: debouncedSearch ? undefined : fallbackData,
+  });
+  useTrialGuard(error);
+
+  if (!data) return <Spinner />;  // not isLoading — fallbackData populates data
+  // ...
+}
+```
+
+# Rules
+
+- **Never** add `loading.tsx` alongside server pages that use `await` — it shows on every navigation
+- Use `!data` (not `isLoading`) for the loading guard when `fallbackData` is provided
+- Use `keepPreviousData: true` in SWR to avoid flickering during search/filter changes
+- Pass SWR the `fetcher` from `@/lib/fetcher` — it attaches `.info` and `.status` to errors
+
+# User Data Prefetch (layout-level)
+
+The root layout starts `getUserData()` as an unresolved promise and injects it into `SWRConfig`:
+```tsx
+// app/layout.tsx
+const userDataPromise = getUserData(); // no await
+<SWRConfig value={{ fallback: { "/api/auth/me": userDataPromise } }}>
+```
+
+This means `useUser()` resolves instantly on hydration — never add a loading state for user/trial data in UI components.

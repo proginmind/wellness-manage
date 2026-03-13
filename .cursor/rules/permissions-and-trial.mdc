@@ -1,0 +1,44 @@
+---
+description: RBAC permission system and trial enforcement layers
+alwaysApply: true
+---
+
+# Roles
+
+Two roles: `owner` and `staff`. Defined in `@/lib/permissions.ts`.
+- `owner` — full access to everything including billing, plans, invitations, event management
+- `staff` — can manage members/visits/own profile; read-only on org, event types/categories; no billing
+
+# Checking Permissions
+
+```ts
+// In components (client):
+const { usePermissions } = useUser();     // exposes can(), role, etc.
+
+// In server/API:
+import { can, isOwner } from "@/lib/permissions";
+can("staff", "members", "delete")  // false
+can("owner", "members", "delete")  // true
+```
+
+# Trial Enforcement — Four Layers
+
+Always apply all relevant layers when adding new protected functionality:
+
+| Layer | File | What it does |
+|-------|------|-------------|
+| Middleware | `src/lib/supabase/middleware.ts` | Redirects expired trial users from page routes before render |
+| Server page guard | `src/lib/trial-server.ts` → `requireTrialAccess()` | Called at top of each server page; redirects before any data fetch |
+| API layer | `src/lib/api-permissions.ts` → `requirePermission()` | Returns 402 for blocked resources when trial expired |
+| Client SWR guard | `src/hooks/useTrialGuard.ts` → `useTrialGuard(error)` | Redirects to billing if SWR error has `.status === 402` |
+
+# Trial-Allowed Resources (always accessible)
+
+`billing`, `plans`, `profile`, `organization` — defined in `TRIAL_ALLOWED_RESOURCES` in `@/lib/trial.ts`.
+
+# When Adding a New Protected Page
+
+1. Add path to `protectedRoutes` in middleware if not already covered by a prefix
+2. Call `requireTrialAccess(profile.organizationId)` in the server page component
+3. Use `requirePermission(resource, action)` in the API route handler
+4. Call `useTrialGuard(error)` in the SWR client container
