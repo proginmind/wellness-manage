@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import currencies from "@/data/currencies.json";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -19,6 +18,7 @@ import {
   organizationAddressSchema,
   organizationSocialLinksSchema,
 } from "@/lib/validations/organization";
+import { CurrencySelect, VALID_CURRENCY_CODES } from "@/components/currency-select";
 import { OwnerGate } from "@/components/PermissionGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,15 +31,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const VALID_CURRENCY_CODES = new Set(currencies.map((c) => c.code));
 
 const editSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -236,20 +227,14 @@ function EditOrganizationForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Currency</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange} disabled={isMutating}>
-                    <FormControl>
-                      <SelectTrigger className="w-full sm:w-72">
-                        <SelectValue placeholder="Select a currency" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="max-h-72 overflow-y-auto">
-                      {currencies.map((c) => (
-                        <SelectItem key={c.code} value={c.code}>
-                          {c.code} · {c.name} ({c.symbol})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <CurrencySelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isMutating}
+                      className="w-full sm:w-72"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
