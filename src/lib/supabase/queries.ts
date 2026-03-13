@@ -193,10 +193,14 @@ export const getCurrentUserProfile = cache(async function getCurrentUserProfile(
     .from("profiles")
     .select("*")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
+  // PGRST116 (no rows) is expected before onboarding completes — not a real error
+  if (error) {
     console.error("Error fetching user profile:", error);
+    throw new Error("Failed to fetch user profile");
+  }
+  if (!data) {
     throw new Error("User profile not found");
   }
 
@@ -243,6 +247,61 @@ export async function updateProfile(
   }
 
   return dbToProfile(data);
+}
+
+/**
+ * Create a new organization and owner profile atomically.
+ * Uses the admin client to bypass RLS (the user has no profile yet).
+ */
+export async function createOrganizationWithOwner(
+  userId: string,
+  email: string,
+  name: string,
+  currency: string
+): Promise<{ organization: Organization; profile: Profile }> {
+  const admin = createAdminClient();
+
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+  // 1. Create profile first — org.owner_id references profiles.id
+  const { data: profileRow, error: profileError } = await admin
+    .from("profiles")
+    .insert({ user_id: userId, email, role: "owner" })
+    .select()
+    .single();
+
+  if (profileError) throw new Error(`Failed to create profile: ${profileError.message}`);
+  if (!profileRow) throw new Error("Profile insert returned no data");
+
+  // 2. Create org with owner_id pointing to the new profile
+  const { data: orgRow, error: orgError } = await admin
+    .from("organizations")
+    .insert({
+      name,
+      owner_id: profileRow.id,
+      currency,
+      trial_ends_at: trialEndsAt.toISOString(),
+    })
+    .select()
+    .single();
+
+  if (orgError) throw new Error(`Failed to create organization: ${orgError.message}`);
+  if (!orgRow) throw new Error("Organization insert returned no data");
+
+  // 3. Link profile back to the org
+  const { error: updateError } = await admin
+    .from("profiles")
+    .update({ organization_id: orgRow.id })
+    .eq("id", profileRow.id);
+
+  if (updateError)
+    throw new Error(`Failed to link profile to organization: ${updateError.message}`);
+
+  return {
+    organization: dbToOrganization(orgRow as OrganizationRow),
+    profile: dbToProfile({ ...profileRow, organization_id: orgRow.id } as ProfileRow),
+  };
 }
 
 /**

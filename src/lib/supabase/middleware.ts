@@ -48,6 +48,7 @@ export async function updateSession(request: NextRequest) {
     "/event-categories",
     "/team",
     "/settings",
+    "/onboarding",
   ];
 
   // Check if current path is a protected route
@@ -68,6 +69,33 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Onboarding enforcement: users without a profile must set up their org first
+  if (user && !pathname.startsWith("/api")) {
+    const { data: profileRow } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!profileRow) {
+      // No profile yet — only /onboarding is allowed
+      if (pathname !== "/onboarding") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
+      // Allow /onboarding to render — skip remaining checks
+      return supabaseResponse;
+    }
+
+    // Has a profile — onboarding page is no longer needed
+    if (pathname === "/onboarding") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   // Trial enforcement: redirect expired trial users from restricted pages
