@@ -17,6 +17,15 @@ alwaysApply: true
 - **Toasts**: `sonner`
 - **Icons**: `lucide-react`
 
+# Coding Philosophy
+
+- Write the minimum code needed to solve the problem — no over-engineering
+- Prefer simple, readable solutions over clever ones
+- Reuse existing utilities, hooks, and patterns before creating new ones
+- Prefer composition over duplication — extract shared logic only when used in 3+ places
+- Choose performant-by-default approaches: parallel data fetching with `Promise.all`, avoid waterfalls, use `cache()` for repeated server queries
+- TypeScript: no `any`, explicit return types on exported functions, prefer `interface` over `type` for object shapes
+
 # Project Conventions
 
 - Use `cn()` from `@/lib/utils` for className merging
