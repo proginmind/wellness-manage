@@ -30,6 +30,7 @@ alwaysApply: true
 
 - **Never commit changes unless the user explicitly asks** — do not run `git add` or `git commit` on your own
 - Never push to remote unless explicitly asked
+- Never add "Made with Cursor" or any AI-attribution text to commit messages
 
 # Project Conventions
 
