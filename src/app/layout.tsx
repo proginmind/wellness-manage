@@ -31,9 +31,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Start the fetch without awaiting – the promise is passed to SWRConfig so
-  // useUser() throughout the app resolves immediately on hydration with no
-  // client-side loading flash.
   const userDataPromise = getUserData();
 
   return (
