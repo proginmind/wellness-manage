@@ -26,6 +26,11 @@ alwaysApply: true
 - Choose performant-by-default approaches: parallel data fetching with `Promise.all`, avoid waterfalls, use `cache()` for repeated server queries
 - TypeScript: no `any`, explicit return types on exported functions, prefer `interface` over `type` for object shapes
 
+# Agent Behavior
+
+- **Never commit changes unless the user explicitly asks** — do not run `git add` or `git commit` on your own
+- Never push to remote unless explicitly asked
+
 # Project Conventions
 
 - Use `cn()` from `@/lib/utils` for className merging
