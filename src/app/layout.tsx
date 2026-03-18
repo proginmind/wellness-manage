@@ -6,6 +6,7 @@ import "./globals.css";
 import { SWRConfig } from "swr";
 
 import { getUserData } from "@/lib/get-user-data";
+import { SentryUserContext } from "@/components/sentry-user-context";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SWRConfig value={{ fallback: { "/api/auth/me": userDataPromise } }}>
+          <SentryUserContext />
           {children}
           <Toaster />
         </SWRConfig>
