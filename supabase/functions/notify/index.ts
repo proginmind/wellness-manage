@@ -2,11 +2,24 @@
 
 import React from "react";
 import { renderAsync } from "@react-email/components";
+import * as Sentry from "https://deno.land/x/sentry/index.mjs";
 import { createEvent } from "ics";
 import { Resend } from "resend";
 
 import { VisitCreatedClient } from "./_templates/visit-created-client.tsx";
 import { VisitCreatedStaff } from "./_templates/visit-created-staff.tsx";
+
+Sentry.init({
+  dsn: Deno.env.get("SENTRY_DSN"),
+  // defaultIntegrations must be false — Deno.serve has no scope isolation between
+  // requests, so global breadcrumbs/context would bleed across concurrent calls.
+  defaultIntegrations: false,
+  environment: Deno.env.get("APP_ENV") ?? "local",
+  tracesSampleRate: 0,
+});
+
+Sentry.setTag("region", Deno.env.get("SB_REGION"));
+Sentry.setTag("execution_id", Deno.env.get("SB_EXECUTION_ID"));
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -174,35 +187,44 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  try {
-    const body = await req.json();
-    const { type, recipients = [], template, templateData = {} } = body;
+  return Sentry.withScope(async (scope) => {
+    try {
+      const body = await req.json();
+      const { type, recipients = [], template, templateData = {} } = body;
 
-    switch (type) {
-      case "email": {
-        await sendEmail(recipients, template, templateData);
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
+      scope.setContext("request_body", { type, template, recipientCount: recipients.length });
+
+      switch (type) {
+        case "email": {
+          await sendEmail(recipients, template, templateData);
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        default: {
+          return new Response(JSON.stringify({ error: "Invalid type. Use type: 'email'." }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
       }
-      default: {
-        return new Response(JSON.stringify({ error: "Invalid type. Use type: 'email'." }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+    } catch (e) {
+      console.error("notify error:", e);
+      Sentry.captureException(e);
+      await Sentry.flush(2000);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-  } catch (e) {
-    console.error("notify error:", e);
-    return new Response(JSON.stringify({ error: e }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  });
 });
 
 /* To invoke locally:
 
-  1. Run `supabase start` and set RESEND_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env
-  2. supabase functions serve notify --no-verify-jwt --env-file .env
+  1. Run `supabase start` and set the following in supabase/functions/.env:
+       RESEND_API_KEY=...
+       SENTRY_DSN=...        (from Sentry project settings → Client Keys)
+       APP_ENV=local
+  2. supabase functions serve notify --no-verify-jwt --env-file supabase/functions/.env
 
   3. Visit created for client:
 
