@@ -67,13 +67,21 @@ NEXT_PUBLIC_API_URL=https://your-app.vercel.app/api
 After deployment, update your Supabase project:
 
 1. Go to Supabase Dashboard → **Authentication** → **URL Configuration**
-2. Add your Vercel URL to **Site URL:**
-   ```
-   https://your-app.vercel.app
-   ```
-3. Add to **Redirect URLs:**
+2. Set **Site URL** to the **canonical public URL** for that environment (production domain or preview URL). If this still points at `http://localhost:3000`, password-reset and OAuth links in emails will send users to localhost.
+3. Add every app origin you use to **Redirect URLs** (Supabase rejects `redirectTo` values that are not listed and falls back to Site URL). Include at least:
    ```
    https://your-app.vercel.app/**
+   https://your-production-domain.com/**
+   ```
+   For **Forgot password**, the app sends `redirectTo` = `{NEXT_PUBLIC_APP_URL}/reset-password` (or browser origin locally). Allowlist the exact paths, e.g.:
+   ```
+   https://your-app.vercel.app/reset-password
+   https://staging.example.com/reset-password
+   http://localhost:3000/reset-password
+   ```
+4. Match **Vercel env vars**: set `NEXT_PUBLIC_APP_URL` per environment (Production vs Preview) to that deployment’s public URL so reset emails use staging vs prod correctly.
+5. Optional OAuth callback (if used):
+   ```
    https://your-app.vercel.app/auth/callback
    ```
 
