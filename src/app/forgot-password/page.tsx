@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import { getPasswordResetRedirectUrl } from "@/lib/auth-redirect-url";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,9 +24,7 @@ export default function ForgotPasswordPage() {
     setSuccess(false);
 
     try {
-      // Get the current origin dynamically
-      const origin = window.location.origin;
-      const redirectUrl = `${origin}/reset-password`;
+      const redirectUrl = getPasswordResetRedirectUrl();
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,

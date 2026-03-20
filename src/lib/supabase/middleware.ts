@@ -61,8 +61,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users away from auth pages
-  const authPages = ["/login", "/forgot-password", "/reset-password"];
+  // Redirect logged-in users away from auth pages (not /reset-password — they may have
+  // a recovery session after PKCE exchange and must stay to set a new password).
+  const authPages = ["/login", "/forgot-password"];
   const isAuthPage = authPages.some((page) => pathname === page);
 
   if (user && isAuthPage) {
