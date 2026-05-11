@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CreditCard, Mail, Receipt, UserCircle } from "lucide-react";
+import { Building2, CreditCard, Receipt, UserCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useIsOwner } from "@/hooks/usePermissions";
@@ -24,12 +24,6 @@ const navigationItems: NavItem[] = [
     href: "/settings/organization",
     label: "Organization",
     icon: Building2,
-  },
-  {
-    href: "/settings/invitations",
-    label: "Invitations",
-    icon: Mail,
-    ownerOnly: true,
   },
   {
     href: "/settings/billing",

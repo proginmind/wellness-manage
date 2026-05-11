@@ -118,4 +118,4 @@ supabase db seed
 
 - Never use these emails in production
 - Change the seed script emails before deploying
-- Use proper invitation flow for production users
+- Add staff accounts through your chosen operational process for production users

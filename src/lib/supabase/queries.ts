@@ -2,7 +2,6 @@ import { cache } from "react";
 
 import { EventCategory } from "@/types/event-category";
 import { EventType } from "@/types/event-type";
-import { Invitation, InvitationStatus } from "@/types/invitation";
 import { Member, MemberStatus } from "@/types/member";
 import { Organization } from "@/types/organization";
 import { Profile } from "@/types/profile";
@@ -59,17 +58,6 @@ interface ProfileRow {
   updated_at: string;
 }
 
-interface InvitationRow {
-  id: string;
-  organization_id: string;
-  email: string;
-  invited_by: string;
-  status: InvitationStatus;
-  token: string;
-  expires_at: string;
-  created_at: string;
-}
-
 interface MemberRow {
   id: string;
   organization_id: string;
@@ -118,19 +106,6 @@ export function dbToProfile(row: ProfileRow): Profile {
     avatarImage: row.avatar_image || undefined,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
-  };
-}
-
-export function dbToInvitation(row: InvitationRow): Invitation {
-  return {
-    id: row.id,
-    organizationId: row.organization_id,
-    email: row.email,
-    invitedBy: row.invited_by,
-    status: row.status,
-    token: row.token,
-    expiresAt: new Date(row.expires_at),
-    createdAt: new Date(row.created_at),
   };
 }
 
@@ -1079,126 +1054,6 @@ export async function getRevenueByCategoryDistribution(): Promise<
     value: data.revenue,
     fill: data.color,
   }));
-}
-
-// ============================================================================
-// INVITATION QUERIES
-// ============================================================================
-
-/**
- * Get all invitations for current user's organization
- */
-export async function getInvitations(): Promise<Invitation[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const profile = await getCurrentUserProfile(user.id);
-
-  const { data, error } = await supabase
-    .from("invitations")
-    .select("*")
-    .eq("organization_id", profile.organizationId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching invitations:", error);
-    throw new Error("Failed to fetch invitations");
-  }
-
-  return (data || []).map(dbToInvitation);
-}
-
-/**
- * Create a new invitation (owner only, enforced by RLS)
- */
-export async function createInvitation(email: string): Promise<Invitation> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const profile = await getCurrentUserProfile(user.id);
-
-  if (profile.role !== "owner") {
-    throw new Error("Only owners can send invitations");
-  }
-
-  const dbData = {
-    organization_id: profile.organizationId,
-    email: email.toLowerCase().trim(),
-    invited_by: profile.id,
-  };
-
-  const { data, error } = await supabase.from("invitations").insert(dbData).select().single();
-
-  if (error) {
-    console.error("Error creating invitation:", error);
-    throw new Error(
-      error.code === "23505"
-        ? "Invitation already exists for this email"
-        : "Failed to create invitation"
-    );
-  }
-
-  return dbToInvitation(data);
-}
-
-/**
- * Get invitation by token (public access)
- */
-export async function getInvitationByToken(token: string): Promise<Invitation | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("invitations")
-    .select("*")
-    .eq("token", token)
-    .eq("status", "pending")
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      return null;
-    }
-    console.error("Error fetching invitation:", error);
-    throw new Error("Failed to fetch invitation");
-  }
-
-  // Check if expired
-  const invitation = dbToInvitation(data);
-  if (invitation.expiresAt < new Date()) {
-    return null;
-  }
-
-  return invitation;
-}
-
-/**
- * Accept invitation (marks as accepted, trigger creates profile)
- */
-export async function acceptInvitation(token: string): Promise<void> {
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("invitations")
-    .update({ status: "accepted" as InvitationStatus })
-    .eq("token", token)
-    .eq("status", "pending");
-
-  if (error) {
-    console.error("Error accepting invitation:", error);
-    throw new Error("Failed to accept invitation");
-  }
 }
 
 // ============================================================================

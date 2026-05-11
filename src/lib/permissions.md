@@ -21,10 +21,14 @@ This application uses a **Granular Resource-Action** permission system (Option B
 ### Resources
 
 - `members` - Wellness center members
+- `visits` - Appointments / visits
 - `organization` - Organization settings
-- `staff` - Staff management
-- `invitations` - Staff invitations
-- `profile` - User profile
+- `staff` - Staff profiles and team management
+- `event_types` - Services (event types)
+- `event_categories` - Service categories
+- `billing` - Subscription and billing
+- `plans` - Subscription plans
+- `profile` - Signed-in user’s own profile
 
 ### Actions
 
@@ -32,42 +36,61 @@ This application uses a **Granular Resource-Action** permission system (Option B
 - `create` - Create new items
 - `update` - Modify existing items
 - `delete` - Permanent deletion
-- `archive` - Soft deletion
+- `archive` - Soft deletion / cancel
 - `export` - Data export
-- `invite` - Send invitations
-- `remove` - Remove access
-- `manage` - Full management
+- `remove` - Remove access (e.g. staff from org)
+- `manage` - Full management (reserved for resources that use it)
 
 ### Permission Format
 
 Permissions are expressed as `resource.action`:
 
 - `members.delete` - Delete members
-- `staff.invite` - Invite staff
+- `staff.remove` - Remove a staff member from the organization
 - `organization.update` - Update organization
 
 ## Permission Matrix
 
-| Resource         | Owner | Staff |
-| ---------------- | ----- | ----- |
-| **Members**      |
-| view             | ✅    | ✅    |
-| create           | ✅    | ✅    |
-| update           | ✅    | ✅    |
-| archive          | ✅    | ✅    |
-| delete           | ✅    | ❌    |
-| export           | ✅    | ✅    |
-| **Organization** |
-| view             | ✅    | ✅    |
-| update           | ✅    | ❌    |
-| delete           | ✅    | ❌    |
-| **Staff**        |
-| view             | ✅    | ✅    |
-| invite           | ✅    | ❌    |
-| remove           | ✅    | ❌    |
-| **Invitations**  |
-| view             | ✅    | ❌    |
-| manage           | ✅    | ❌    |
+| Resource             | Owner | Staff |
+| -------------------- | ----- | ----- |
+| **Members**          |
+| view                 | ✅    | ✅    |
+| create               | ✅    | ✅    |
+| update               | ✅    | ✅    |
+| archive              | ✅    | ✅    |
+| delete               | ✅    | ❌    |
+| export               | ✅    | ✅    |
+| **Visits**           |
+| view                 | ✅    | ✅    |
+| create               | ✅    | ✅    |
+| update               | ✅    | ✅    |
+| archive              | ✅    | ✅    |
+| delete               | ✅    | ❌    |
+| **Organization**     |
+| view                 | ✅    | ✅    |
+| update               | ✅    | ❌    |
+| delete               | ✅    | ❌    |
+| **Staff**            |
+| view                 | ✅    | ✅    |
+| update               | ✅    | ❌    |
+| remove               | ✅    | ❌    |
+| **Event types**      |
+| view                 | ✅    | ✅    |
+| create               | ✅    | ❌    |
+| update               | ✅    | ❌    |
+| delete               | ✅    | ❌    |
+| **Event categories** |
+| view                 | ✅    | ✅    |
+| create               | ✅    | ❌    |
+| update               | ✅    | ❌    |
+| delete               | ✅    | ❌    |
+| **Billing**          |
+| view                 | ✅    | ❌    |
+| **Plans**            |
+| view                 | ✅    | ❌    |
+| **Profile**          |
+| view                 | ✅    | ✅    |
+| update               | ✅    | ✅    |
 
 ## Usage
 
@@ -123,8 +146,8 @@ import { PermissionGate, OwnerGate } from "@/components/PermissionGate";
 function MyComponent() {
   return (
     <>
-      <PermissionGate resource="staff" action="invite">
-        <InviteButton />
+      <PermissionGate resource="staff" action="remove">
+        <RemoveStaffButton />
       </PermissionGate>
 
       <OwnerGate fallback={<p>Owner only</p>}>
@@ -141,17 +164,17 @@ function MyComponent() {
 import { assertPermission, can, hasPermission } from "@/lib/permissions";
 
 // Check permission
-if (can("staff", "members", "delete")) {
+if (can("owner", "members", "delete")) {
   // ...
 }
 
 // Check with string format
-if (hasPermission("owner", "staff.invite")) {
+if (hasPermission("owner", "staff.remove")) {
   // ...
 }
 
 // Throw error if denied
-assertPermission("staff", "members", "delete");
+assertPermission("owner", "members", "delete");
 // throws: PermissionError if denied
 ```
 
@@ -187,8 +210,7 @@ const { canView, canCreate, canUpdate, canDelete, canArchive, canExport } = useM
 Staff management permissions.
 
 ```typescript
-const { canViewStaff, canInviteStaff, canRemoveStaff, canViewInvitations, canManageInvitations } =
-  useStaffPermissions();
+const { canViewStaff, canRemoveStaff } = useStaffPermissions();
 ```
 
 ### useOrganizationPermissions()
@@ -299,19 +321,19 @@ function DeleteButton() {
 }
 ```
 
-### Example 2: Invite Staff (Owner Only)
+### Example 2: Owner-only staff removal (UI gate)
 
 ```typescript
 // UI with Gate
-<PermissionGate resource="staff" action="invite">
-  <Button onClick={handleInvite}>
-    Invite Staff
+<PermissionGate resource="staff" action="remove">
+  <Button variant="destructive" onClick={handleRemoveStaff}>
+    Remove from organization
   </Button>
 </PermissionGate>
 
-// API Route
-export async function POST(request: Request) {
-  const result = await requireOwner(); // ← Shortcut for owner check
+// API Route — use requirePermission with the same resource/action
+export async function DELETE(request: Request) {
+  const result = await requirePermission("staff", "remove");
   if (result instanceof NextResponse) return result;
   // ...
 }

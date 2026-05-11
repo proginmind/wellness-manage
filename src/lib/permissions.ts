@@ -22,7 +22,6 @@ export type Resource =
   | "visits"
   | "organization"
   | "staff"
-  | "invitations"
   | "event_types"
   | "event_categories"
   | "billing"
@@ -39,13 +38,12 @@ export type Action =
   | "delete"
   | "archive"
   | "export"
-  | "invite"
   | "remove"
   | "manage";
 
 /**
  * Permission string format: "resource.action"
- * e.g., "members.delete", "staff.invite"
+ * e.g., "members.delete", "staff.remove"
  */
 export type Permission = `${Resource}.${Action}`;
 
@@ -70,10 +68,7 @@ export const PERMISSIONS = {
     organization: ["view", "update", "delete"] as Action[],
 
     // Staff: Full management
-    staff: ["view", "invite", "remove", "update"] as Action[],
-
-    // Invitations: Full management
-    invitations: ["view", "create", "update", "delete", "manage"] as Action[],
+    staff: ["view", "remove", "update"] as Action[],
 
     // Event Types: Full management (owner only)
     event_types: ["view", "create", "update", "delete"] as Action[],
@@ -103,9 +98,6 @@ export const PERMISSIONS = {
 
     // Staff: View only (can see colleagues)
     staff: ["view"] as Action[],
-
-    // Invitations: No access
-    invitations: [] as Action[],
 
     // Event Types: Read-only (needed for creating bookings/visits)
     event_types: ["view"] as Action[],
@@ -158,8 +150,8 @@ export function can(role: UserRole, resource: Resource, action: Action): boolean
  * @returns true if permitted, false otherwise
  *
  * @example
- * hasPermission('owner', 'staff.invite') // true
- * hasPermission('staff', 'staff.invite') // false
+ * hasPermission('owner', 'staff.remove') // true
+ * hasPermission('staff', 'staff.remove') // false
  */
 export function hasPermission(role: UserRole, permission: Permission): boolean {
   const [resource, action] = permission.split(".") as [Resource, Action];
@@ -326,16 +318,8 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
 
   // Staff
   "staff.view": "View staff members",
-  "staff.invite": "Invite new staff",
   "staff.remove": "Remove staff members",
   "staff.update": "Update staff member qualifications",
-
-  // Invitations
-  "invitations.view": "View pending invitations",
-  "invitations.create": "Create new invitations",
-  "invitations.update": "Update invitations",
-  "invitations.delete": "Delete invitations",
-  "invitations.manage": "Manage all invitations",
 
   // Event Types
   "event_types.view": "View event types",
@@ -360,17 +344,14 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "profile.update": "Update own profile",
 
   // Unused combinations (for type safety)
-  "members.invite": "N/A",
   "members.remove": "N/A",
   "members.manage": "N/A",
   "visits.export": "N/A",
-  "visits.invite": "N/A",
   "visits.remove": "N/A",
   "visits.manage": "N/A",
   "organization.create": "N/A",
   "organization.archive": "N/A",
   "organization.export": "N/A",
-  "organization.invite": "N/A",
   "organization.remove": "N/A",
   "organization.manage": "N/A",
   "staff.create": "N/A",
@@ -378,18 +359,12 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "staff.archive": "N/A",
   "staff.export": "N/A",
   "staff.manage": "N/A",
-  "invitations.archive": "N/A",
-  "invitations.export": "N/A",
-  "invitations.invite": "N/A",
-  "invitations.remove": "N/A",
   "event_types.archive": "N/A",
   "event_types.export": "N/A",
-  "event_types.invite": "N/A",
   "event_types.remove": "N/A",
   "event_types.manage": "N/A",
   "event_categories.archive": "N/A",
   "event_categories.export": "N/A",
-  "event_categories.invite": "N/A",
   "event_categories.remove": "N/A",
   "event_categories.manage": "N/A",
   "billing.create": "N/A",
@@ -397,7 +372,6 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "billing.delete": "N/A",
   "billing.archive": "N/A",
   "billing.export": "N/A",
-  "billing.invite": "N/A",
   "billing.remove": "N/A",
   "billing.manage": "N/A",
   "plans.create": "N/A",
@@ -405,14 +379,12 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "plans.delete": "N/A",
   "plans.archive": "N/A",
   "plans.export": "N/A",
-  "plans.invite": "N/A",
   "plans.remove": "N/A",
   "plans.manage": "N/A",
   "profile.create": "N/A",
   "profile.delete": "N/A",
   "profile.archive": "N/A",
   "profile.export": "N/A",
-  "profile.invite": "N/A",
   "profile.remove": "N/A",
   "profile.manage": "N/A",
 };

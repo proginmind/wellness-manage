@@ -124,7 +124,7 @@ export async function requirePermission(
  * @returns Result object with allowed flag and context
  *
  * @example
- * const result = await checkPermission('staff', 'invite');
+ * const result = await checkPermission('staff', 'remove');
  * if (!result.allowed) {
  *   return NextResponse.json({ error: result.error }, { status: 403 });
  * }

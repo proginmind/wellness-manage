@@ -225,7 +225,7 @@ SUPABASE_SECRET_KEY=your-secret-key-here
 
 ### Important: Multi-Tenant Architecture
 
-The application now uses an **organization-based multi-tenant architecture**. Each user belongs to an organization, and all data (members, invitations) is scoped to that organization.
+The application now uses an **organization-based multi-tenant architecture**. Each user belongs to an organization, and all data (members, visits, and related records) is scoped to that organization.
 
 ### Create Your Organization
 
@@ -285,7 +285,6 @@ This will create:
 - ✅ An organization named "Wellness Center"
 - ✅ A profile for your user (owner role)
 - ✅ 10 fake members
-- ✅ A sample invitation
 
 ## Step 5: Seed Database (Optional - Old Script)
 

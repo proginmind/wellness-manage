@@ -41,5 +41,5 @@ Use `createAdminClient()` from `@/lib/supabase/admin` only for privileged ops th
 
 ## Resources and Actions
 
-Defined in `@/lib/permissions.ts`. Valid resources: `members | visits | organization | staff | invitations | event_types | event_categories | billing | plans | profile`.
-Valid actions: `view | create | update | delete | archive | export | invite | remove | manage`.
+Defined in `@/lib/permissions.ts`. Valid resources: `members | visits | organization | staff | event_types | event_categories | billing | plans | profile`.
+Valid actions: `view | create | update | delete | archive | export | remove | manage`.

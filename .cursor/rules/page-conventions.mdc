@@ -32,7 +32,7 @@ export default async function MembersPage() {
 
 - `requireAuth` from `@/lib/auth`, `requireTrialAccess` from `@/lib/trial-server`
 - `getCurrentUserProfile` from `@/lib/supabase/queries` (wrapped in React `cache()` — safe to call multiple times)
-- Owner-only pages (billing, plans, invitations/new): use `requireOwnerServer()` from `@/lib/api-permissions` and `redirect()` if null
+- Owner-only pages (billing, plans): use `requireOwnerServer()` from `@/lib/api-permissions` and `redirect()` if null
 - Wrap everything in `<AppLayout>` — it renders the sidebar and mobile nav
 - Use `<PageHeader>` for page title + action button
 - Export `metadata` with UI-friendly title (see UI Naming below)

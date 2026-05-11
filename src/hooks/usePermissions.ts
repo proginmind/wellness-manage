@@ -209,7 +209,7 @@ export function useMemberPermissions() {
 }
 
 /**
- * Hook for staff/invitation permissions
+ * Hook for staff permissions
  *
  * @returns Staff management permission checks
  */
@@ -218,10 +218,7 @@ export function useStaffPermissions() {
 
   return {
     canViewStaff: can("staff", "view"),
-    canInviteStaff: can("staff", "invite"),
     canRemoveStaff: can("staff", "remove"),
-    canViewInvitations: can("invitations", "view"),
-    canManageInvitations: can("invitations", "manage"),
   };
 }
 

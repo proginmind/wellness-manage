@@ -10,7 +10,11 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "prepare": "husky",
-    "deploy": "scripts/deploy.sh"
+    "deploy": "scripts/deploy.sh",
+    "supabase:start": "pnpx supabase start",
+    "supabase:stop": "pnpx supabase stop",
+    "supabase:db:push": "pnpx supabase db push",
+    "supabase:db:reset": "pnpx supabase db reset"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

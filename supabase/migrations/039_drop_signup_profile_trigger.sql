@@ -1,7 +1,6 @@
 -- The handle_new_user trigger was designed to auto-create a placeholder profile
--- on every new auth signup. It is now superseded by two explicit flows:
---   1. Onboarding (/api/organization/setup) for new owners
---   2. handle_invitation_acceptance trigger for invited staff
+-- on every new auth signup. It is now superseded by onboarding (/api/organization/setup)
+-- for new owners.
 --
 -- The trigger also inserts without a `role` value, which violates the NOT NULL
 -- constraint added in a later migration, causing errors for every new signup.

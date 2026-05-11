@@ -35,18 +35,8 @@ This application uses a granular permission system based on roles, resources, an
 | Action | Owner | Staff |
 | ------ | ----- | ----- |
 | View   | ✅    | ✅    |
-| Invite | ✅    | ❌    |
-| Remove | ✅    | ❌    |
-
-### Invitations
-
-| Action | Owner | Staff |
-| ------ | ----- | ----- |
-| View   | ✅    | ❌    |
-| Create | ✅    | ❌    |
 | Update | ✅    | ❌    |
-| Delete | ✅    | ❌    |
-| Manage | ✅    | ❌    |
+| Remove | ✅    | ❌    |
 
 ### Event Types (Services)
 

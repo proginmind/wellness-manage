@@ -19,7 +19,7 @@ const MOCK_PLANS_RESPONSE: SubscriptionPlansResponse = {
         "Event types and categories",
         "Staff availability scheduling",
         "Organization settings",
-        "Staff invitations",
+        "Role-based staff access",
         "Dashboard and analytics",
       ],
     },
