@@ -58,13 +58,8 @@ export const buildRoute = {
   settingsOrganization: () => "/settings/organization" as const,
   settingsOrganizationEdit: () => "/settings/organization/edit" as const,
   settingsTeam: () => "/settings/team" as const,
-  settingsInvitations: () => "/settings/invitations" as const,
-  settingsInvitationsNew: () => "/settings/invitations/new" as const,
   settingsPlans: () => "/settings/plans" as const,
   settingsBilling: () => "/settings/billing" as const,
-
-  // Invitations
-  invite: (token: string) => `/invite/${token}` as const,
 } as const;
 
 // ============================================================================
@@ -95,12 +90,6 @@ export const buildApiRoute = {
   // Event Categories
   eventCategories: () => "/api/event-categories" as const,
   eventCategory: (id: string) => `/api/event-categories/${id}` as const,
-
-  // Invitations
-  invitations: () => "/api/invitations" as const,
-  invitation: (id: string) => `/api/invitations/${id}` as const,
-  invitationProcess: (token: string) => `/api/invitations/process/${token}` as const,
-  invitationAccept: (token: string) => `/api/invitations/process/${token}/accept` as const,
 
   // Profiles (staff/team members)
   profiles: () => "/api/profiles" as const,

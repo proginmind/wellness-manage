@@ -27,8 +27,6 @@ tags:
     description: Staff profiles and team management
   - name: Profile
     description: Current user's own profile
-  - name: Invitations
-    description: Staff invitation flow (owner only)
   - name: Organization
     description: Organization settings (owner only)
   - name: Dashboard
@@ -209,31 +207,6 @@ components:
         organizationId:
           type: string
           format: uuid
-        createdAt:
-          type: string
-          format: date-time
-
-    Invitation:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        status:
-          type: string
-          enum: [pending, accepted, expired]
-        organizationId:
-          type: string
-          format: uuid
-        invitedBy:
-          type: string
-          format: uuid
-        expiresAt:
-          type: string
-          format: date-time
         createdAt:
           type: string
           format: date-time
@@ -1066,86 +1039,6 @@ paths:
                 properties:
                   profile:
                     $ref: "#/components/schemas/Profile"
-
-  # ─── Invitations ──────────────────────────────────────────────────────────
-
-  /api/invitations:
-    get:
-      tags: [Invitations]
-      summary: List invitations
-      description: Owner only. Returns all invitations for the organization.
-      responses:
-        "200":
-          description: Invitations list
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  invitations:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Invitation"
-    post:
-      tags: [Invitations]
-      summary: Send invitation
-      description: Owner only. Sends an email invitation to a new staff member.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [email]
-              properties:
-                email:
-                  type: string
-                  format: email
-      responses:
-        "200":
-          description: Invitation created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  invitation:
-                    $ref: "#/components/schemas/Invitation"
-        "409":
-          description: User already a member or invitation already pending
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /api/invitations/{id}:
-    delete:
-      tags: [Invitations]
-      summary: Cancel invitation
-      description: Owner only. Cancels a pending invitation.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Invitation cancelled
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
   # ─── Organization ─────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@ alwaysApply: true
 # Roles
 
 Two roles: `owner` and `staff`. Defined in `@/lib/permissions.ts`.
-- `owner` — full access to everything including billing, plans, invitations, event management
+- `owner` — full access to everything including billing, plans, and event management
 - `staff` — can manage members/visits/own profile; read-only on org, event types/categories; no billing
 
 # Checking Permissions

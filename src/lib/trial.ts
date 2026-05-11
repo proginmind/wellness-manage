@@ -60,6 +60,5 @@ export const TRIAL_ALLOWED_PATHS = [
   "/login",
   "/forgot-password",
   "/reset-password",
-  "/invite",
   "/api",
 ] as const;

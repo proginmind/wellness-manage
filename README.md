@@ -128,11 +128,6 @@ erDiagram
     uuid organization_id FK
     uuid category_id FK
   }
-  INVITATIONS {
-    uuid id PK
-    uuid organization_id FK
-    uuid invited_by FK
-  }
   MEMBERS {
     uuid id PK
     uuid user_id FK
@@ -170,8 +165,6 @@ erDiagram
   ORGANIZATIONS ||--o{ EVENT_CATEGORIES : contains
   ORGANIZATIONS ||--o{ EVENT_TYPES : contains
   EVENT_CATEGORIES ||--o{ EVENT_TYPES : categorizes
-  ORGANIZATIONS ||--o{ INVITATIONS : has
-  PROFILES ||--o{ INVITATIONS : sends
   ORGANIZATIONS ||--o{ MEMBERS : contains
   PROFILES ||--o{ PROFILES_EVENT_TYPES : assigned_to
   EVENT_TYPES ||--o{ PROFILES_EVENT_TYPES : qualified_for
@@ -192,7 +185,6 @@ erDiagram
 - **EVENT_TYPES**: Specific services/treatments offered
 - **PROFILES_EVENT_TYPES**: Junction table linking profiles to services they can perform (many-to-many)
 - **VISITS**: Appointments/visits scheduled for members
-- **INVITATIONS**: Pending staff invitations to join organizations (sent by profiles)
 
 ## Development Guidelines
 

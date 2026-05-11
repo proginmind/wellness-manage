@@ -16,8 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import { PermissionGate } from "../PermissionGate";
-
 type StaffMember = StaffProfileWithEventTypes;
 
 interface TeamListProps {
@@ -44,7 +42,7 @@ export function TeamList({ fallbackData }: TeamListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Search & Invite Button */}
+      {/* Search */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />

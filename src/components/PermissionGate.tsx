@@ -26,11 +26,11 @@ interface PermissionGateProps {
  *
  * @example With fallback
  * <PermissionGate
- *   resource="staff"
- *   action="invite"
- *   fallback={<p>Only owners can invite staff</p>}
+ *   resource="billing"
+ *   action="view"
+ *   fallback={<p>Billing is only available to organization owners</p>}
  * >
- *   <InviteButton />
+ *   <BillingLink />
  * </PermissionGate>
  */
 export function PermissionGate({

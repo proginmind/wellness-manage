@@ -9,7 +9,7 @@ alwaysApply: false
 | Client | Import | Use when |
 |--------|--------|---------|
 | Server (session-aware) | `createClient()` from `@/lib/supabase/server` | Server components, API routes, middleware |
-| Admin (bypasses RLS) | `createAdminClient()` from `@/lib/supabase/admin` | Privileged ops only (webhooks, invitations) |
+| Admin (bypasses RLS) | `createAdminClient()` from `@/lib/supabase/admin` | Privileged ops only (webhooks, onboarding) |
 | Browser | `createBrowserClient()` from `@/lib/supabase/client` | Client components needing direct Supabase access |
 
 # Query Functions
@@ -37,7 +37,6 @@ Mapping happens inside `queries.ts` via helper functions like `dbToMember()`, `d
 | `event_types` | Services (e.g. massage, yoga class) |
 | `event_categories` | Groups for event types |
 | `subscriptions` | One row per Stripe subscription lifecycle event; current state = latest row for org |
-| `invitations` | Staff invite tokens |
 
 # Migrations
 
