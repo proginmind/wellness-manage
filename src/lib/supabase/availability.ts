@@ -227,7 +227,9 @@ export async function getAvailableSlots(
   const profileAvatars = new Map<string, string>();
   const profileEmails = new Map<string, string>();
   for (const p of profilesData ?? []) {
-    const name = [p.first_name, p.last_name].filter(Boolean).join(" ") || p.id.slice(0, 8);
+    const name =
+      [p.first_name, p.last_name].filter(Boolean).join(" ") ||
+      (p.email ? (p.email as string).split("@")[0] : "Staff");
     profileNames.set(p.id, name);
     if (p.avatar_image) profileAvatars.set(p.id, p.avatar_image as string);
     if (p.email) profileEmails.set(p.id, p.email as string);
