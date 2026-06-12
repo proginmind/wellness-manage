@@ -15,6 +15,7 @@ import {
 import { requireTrialAccess } from "@/lib/trial-server";
 import { AppLayout } from "@/components/app-layout";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -47,12 +48,9 @@ export default async function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {user.email}</p>
-        </div>
+      <PageHeader title="Dashboard" description={`Welcome back, ${user.email}`} />
 
+      <div className="container mx-auto px-4 py-6">
         <DashboardContent
           fallbackData={{
             kpi: {
