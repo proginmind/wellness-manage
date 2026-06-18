@@ -1171,6 +1171,8 @@ If you encounter issues:
 
 ### Test Accounts
 
+> **Full seeding guide:** see [docs/database-seeding.md](docs/database-seeding.md) for local and production setup, including one test user on production.
+
 This document describes test data and accounts for development and testing.
 
 #### Quick Start (Works Everywhere!)
@@ -1179,11 +1181,22 @@ The seed script now works without requiring auth users to exist first!
 
 ##### Setup Steps
 
-1. **Reset database:**
-   - **Local:** `pnpx supabase db reset`
-   - **Remote:** `supabase db push && supabase db seed`
+1. **Reset and seed** (recommended):
 
-2. **Create auth users** (choose one method):
+   ```bash
+   pnpm db:reset-and-seed    # remote or local (wipes auth + data, then seeds)
+   ```
+
+   Local alternative:
+
+   ```bash
+   pnpm supabase:db:reset    # migrations only
+   pnpm db:seed              # full demo data + auth user
+   ```
+
+   Configure `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and optionally `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD`. See [docs/database-seeding.md](docs/database-seeding.md).
+
+2. **Create auth users** (only if `SEED_CREATE_AUTH_USERS=false`):
 
    **Option A: Use the helper script (recommended for local):**
 
@@ -1202,14 +1215,13 @@ The seed script now works without requiring auth users to exist first!
 
 3. **That's it!** Your auth accounts automatically link to the pre-created profiles!
 
-#### How Auto-Linking Works
+#### How Auth Linking Works
 
-1. Seed script creates profiles **without** auth accounts
-2. You sign up with a matching email (e.g., `owner@example.com`)
-3. The `handle_new_user()` trigger:
-   - Detects your email matches a profile
-   - Links your `auth.users.id` to that profile
-   - Your role and organization are already set!
+1. The seed script creates profiles **without** `user_id`
+2. It creates auth users via the Admin API and sets `profiles.user_id`
+3. Your role and organization are already configured on the profile
+
+_Note: The old `handle_new_user` database trigger was removed; use `pnpm db:seed` to create and link auth users._
 
 #### Test Accounts
 
