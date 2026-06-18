@@ -6,6 +6,7 @@ import { EventCategoriesListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
 import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { EventCategoryList } from "@/components/event-category-list";
+import { MembersListSkeleton } from "@/components/list-skeletons";
 
 interface EventCategoryListContainerProps {
   fallbackData?: EventCategoriesListResponse;
@@ -27,14 +28,7 @@ export function EventCategoryListContainer({ fallbackData }: EventCategoryListCo
     );
   }
 
-  if (!data) {
-    return (
-      <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-        <p className="mt-4 text-sm">Loading service categories...</p>
-      </div>
-    );
-  }
+  if (!data) return <MembersListSkeleton />;
 
   return <EventCategoryList categories={data.eventCategories} />;
 }
