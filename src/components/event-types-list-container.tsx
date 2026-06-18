@@ -6,17 +6,18 @@ import { EventTypesListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute } from "@/lib/routes";
 import { useTrialGuard } from "@/hooks/useTrialGuard";
+import { useUser } from "@/hooks/useUser";
 import { EventTypesList } from "@/components/event-types-list";
+import { MembersListSkeleton } from "@/components/list-skeletons";
 
 interface EventTypesListContainerProps {
   fallbackData?: EventTypesListResponse;
-  currency?: string;
 }
 
-export function EventTypesListContainer({
-  fallbackData,
-  currency = "USD",
-}: EventTypesListContainerProps) {
+export function EventTypesListContainer({ fallbackData }: EventTypesListContainerProps) {
+  const { user } = useUser();
+  const currency = user?.organization?.currency ?? "USD";
+
   const { data, error } = useSWR<EventTypesListResponse>(buildApiRoute.eventTypes(), fetcher, {
     fallbackData,
   });
@@ -32,14 +33,7 @@ export function EventTypesListContainer({
     );
   }
 
-  if (!data) {
-    return (
-      <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-        <p className="mt-4 text-sm">Loading services...</p>
-      </div>
-    );
-  }
+  if (!data) return <MembersListSkeleton />;
 
   return <EventTypesList eventTypes={data.eventTypes} currency={currency} />;
 }

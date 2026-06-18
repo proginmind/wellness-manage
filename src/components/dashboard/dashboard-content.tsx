@@ -9,6 +9,7 @@ import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { useUser } from "@/hooks/useUser";
 import { ChartsSection } from "@/components/dashboard/charts-section";
 import { KpiSection } from "@/components/dashboard/kpi-section";
+import { DashboardSkeleton } from "@/components/dashboard/skeletons";
 import { VisitsSection } from "@/components/dashboard/visits-section";
 import { TrialBanner } from "@/components/trial-banner";
 
@@ -29,7 +30,7 @@ interface DashboardData {
 }
 
 interface DashboardContentProps {
-  fallbackData: DashboardData;
+  fallbackData?: DashboardData;
 }
 
 export function DashboardContent({ fallbackData }: DashboardContentProps) {
@@ -40,8 +41,7 @@ export function DashboardContent({ fallbackData }: DashboardContentProps) {
 
   useTrialGuard(error);
 
-  // data is always defined: server provides fallbackData, SWR revalidates in background
-  if (!data) return null;
+  if (!data) return <DashboardSkeleton />;
 
   return (
     <div className="space-y-8">
