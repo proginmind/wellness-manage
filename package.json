@@ -14,7 +14,9 @@
     "supabase:start": "pnpx supabase start",
     "supabase:stop": "pnpx supabase stop",
     "supabase:db:push": "pnpx supabase db push",
-    "supabase:db:reset": "pnpx supabase db reset"
+    "supabase:db:reset": "pnpx supabase db reset",
+    "db:seed": "tsx scripts/seed-db.ts",
+    "db:reset-and-seed": "tsx scripts/seed-db.ts --reset"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
