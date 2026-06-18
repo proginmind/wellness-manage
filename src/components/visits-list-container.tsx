@@ -9,6 +9,7 @@ import { Visit } from "@/types/visit";
 import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTrialGuard } from "@/hooks/useTrialGuard";
+import { VisitsListSkeleton } from "@/components/list-skeletons";
 import { Input } from "@/components/ui/input";
 import { VisitsList } from "@/components/visits-list";
 
@@ -76,12 +77,8 @@ export function VisitsListContainer({ fallbackData }: VisitsListContainerProps) 
         )}
       </div>
 
-      {/* Loading State */}
       {!data ? (
-        <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-sm">Loading appointments...</p>
-        </div>
+        <VisitsListSkeleton />
       ) : (
         <VisitsList visits={data.visits} searchQuery={debouncedSearch} />
       )}
