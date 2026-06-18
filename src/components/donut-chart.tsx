@@ -38,7 +38,7 @@ export function DonutChart({ data, title, description, valueFormat = "number" }:
               outerRadius={90}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) => `${name}: ${(percent ?? 0 * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name}: ${Math.round((percent ?? 0) * 100)}%`}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
