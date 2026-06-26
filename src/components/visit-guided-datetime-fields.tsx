@@ -109,6 +109,10 @@ export function VisitGuidedDatetimeFields({
                     field.onChange(time);
                     form.setValue("staffId", staffId);
                   }}
+                  onClearSelection={() => {
+                    field.onChange("");
+                    form.setValue("staffId", undefined);
+                  }}
                   isLoading={slotsLoading}
                 />
               </FormControl>

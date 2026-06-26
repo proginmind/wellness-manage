@@ -1,8 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import type { VisitBookingMode } from "@/lib/validations/visit";
-import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/segmented-control";
 
 interface VisitBookingModeToggleProps {
   value: VisitBookingMode;
@@ -11,6 +10,11 @@ interface VisitBookingModeToggleProps {
   className?: string;
 }
 
+const BOOKING_MODE_OPTIONS = [
+  { value: "guided" as const, label: "From availability" },
+  { value: "manual" as const, label: "Manual entry" },
+];
+
 export function VisitBookingModeToggle({
   value,
   onChange,
@@ -18,27 +22,12 @@ export function VisitBookingModeToggle({
   className,
 }: VisitBookingModeToggleProps) {
   return (
-    <div className={cn("flex rounded-lg border p-1 gap-1", className)}>
-      <Button
-        type="button"
-        variant={value === "guided" ? "default" : "ghost"}
-        size="sm"
-        className="flex-1"
-        disabled={disabled}
-        onClick={() => onChange("guided")}
-      >
-        From availability
-      </Button>
-      <Button
-        type="button"
-        variant={value === "manual" ? "default" : "ghost"}
-        size="sm"
-        className="flex-1"
-        disabled={disabled}
-        onClick={() => onChange("manual")}
-      >
-        Manual entry
-      </Button>
-    </div>
+    <SegmentedControl
+      value={value}
+      onChange={onChange}
+      options={BOOKING_MODE_OPTIONS}
+      disabled={disabled}
+      className={className}
+    />
   );
 }
