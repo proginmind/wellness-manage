@@ -6,8 +6,12 @@ import * as Sentry from "https://deno.land/x/sentry/index.mjs";
 import { createEvent } from "ics";
 import { Resend } from "resend";
 
+import { VisitCancelledClient } from "./_templates/visit-cancelled-client.tsx";
+import { VisitCancelledStaff } from "./_templates/visit-cancelled-staff.tsx";
 import { VisitCreatedClient } from "./_templates/visit-created-client.tsx";
 import { VisitCreatedStaff } from "./_templates/visit-created-staff.tsx";
+import { VisitRescheduledClient } from "./_templates/visit-rescheduled-client.tsx";
+import { VisitRescheduledStaff } from "./_templates/visit-rescheduled-staff.tsx";
 
 Sentry.init({
   dsn: Deno.env.get("SENTRY_DSN"),
@@ -150,6 +154,166 @@ async function sendEmail(
       };
       const html = await renderAsync(React.createElement(VisitCreatedStaff, props));
       const subject = "New appointment assigned to you";
+      const icsTitle = templateData.memberName
+        ? `${templateData.serviceName} – ${templateData.memberName}`
+        : templateData.serviceName;
+      const icsAttachment = buildIcsAttachment(
+        templateData.startIso,
+        durationMinutes,
+        icsTitle,
+        templateData.notes
+      );
+      for (const recipient of recipients) {
+        const { error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: recipient,
+          subject,
+          html,
+          ...(icsAttachment ? { attachments: [icsAttachment] } : {}),
+        });
+        if (error) {
+          return { ok: false, status: 500, message: error.message };
+        }
+      }
+      return { ok: true };
+    }
+
+    case "visit_cancelled_client": {
+      const durationMinutes = templateData.durationMinutes
+        ? parseInt(templateData.durationMinutes)
+        : undefined;
+      const props = {
+        memberName: templateData.memberName,
+        serviceName: templateData.serviceName,
+        date: templateData.date,
+        time: templateData.time,
+        durationMinutes,
+        staffName: templateData.staffName,
+        notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
+      };
+      const html = await renderAsync(React.createElement(VisitCancelledClient, props));
+      const subject = "Your appointment has been cancelled";
+      for (const recipient of recipients) {
+        const { error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: recipient,
+          subject,
+          html,
+        });
+        if (error) {
+          return { ok: false, status: 500, message: error.message };
+        }
+      }
+      return { ok: true };
+    }
+
+    case "visit_cancelled_staff": {
+      const durationMinutes = templateData.durationMinutes
+        ? parseInt(templateData.durationMinutes)
+        : undefined;
+      const props = {
+        staffName: templateData.staffName,
+        memberName: templateData.memberName,
+        serviceName: templateData.serviceName,
+        date: templateData.date,
+        time: templateData.time,
+        durationMinutes,
+        notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
+      };
+      const html = await renderAsync(React.createElement(VisitCancelledStaff, props));
+      const subject = "Appointment cancelled";
+      for (const recipient of recipients) {
+        const { error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: recipient,
+          subject,
+          html,
+        });
+        if (error) {
+          return { ok: false, status: 500, message: error.message };
+        }
+      }
+      return { ok: true };
+    }
+
+    case "visit_rescheduled_client": {
+      const durationMinutes = templateData.durationMinutes
+        ? parseInt(templateData.durationMinutes)
+        : undefined;
+      const props = {
+        memberName: templateData.memberName,
+        serviceName: templateData.serviceName,
+        date: templateData.date,
+        time: templateData.time,
+        previousDate: templateData.previousDate,
+        previousTime: templateData.previousTime,
+        durationMinutes,
+        staffName: templateData.staffName,
+        notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
+      };
+      const html = await renderAsync(React.createElement(VisitRescheduledClient, props));
+      const subject = "Your appointment has been rescheduled";
+      const icsTitle = templateData.staffName
+        ? `${templateData.serviceName} with ${templateData.staffName}`
+        : templateData.serviceName;
+      const icsAttachment = buildIcsAttachment(
+        templateData.startIso,
+        durationMinutes,
+        icsTitle,
+        templateData.notes
+      );
+      for (const recipient of recipients) {
+        const { error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: recipient,
+          subject,
+          html,
+          ...(icsAttachment ? { attachments: [icsAttachment] } : {}),
+        });
+        if (error) {
+          return { ok: false, status: 500, message: error.message };
+        }
+      }
+      return { ok: true };
+    }
+
+    case "visit_rescheduled_staff": {
+      const durationMinutes = templateData.durationMinutes
+        ? parseInt(templateData.durationMinutes)
+        : undefined;
+      const props = {
+        staffName: templateData.staffName,
+        memberName: templateData.memberName,
+        serviceName: templateData.serviceName,
+        date: templateData.date,
+        time: templateData.time,
+        previousDate: templateData.previousDate,
+        previousTime: templateData.previousTime,
+        durationMinutes,
+        notes: templateData.notes,
+        orgName: templateData.orgName,
+        orgPhone: templateData.orgPhone,
+        orgEmail: templateData.orgEmail,
+        orgWebsite: templateData.orgWebsite,
+        orgAddress: templateData.orgAddress,
+      };
+      const html = await renderAsync(React.createElement(VisitRescheduledStaff, props));
+      const subject = "Appointment rescheduled";
       const icsTitle = templateData.memberName
         ? `${templateData.serviceName} – ${templateData.memberName}`
         : templateData.serviceName;

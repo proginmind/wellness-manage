@@ -1,9 +1,54 @@
 import { NextResponse } from "next/server";
 
+import { Visit } from "@/types/visit";
 import { requirePermission } from "@/lib/api-permissions";
-import { getVisitById, updateVisit } from "@/lib/supabase/queries";
+import {
+  hasScheduleChanged,
+  sendVisitCancelledNotifications,
+  sendVisitRescheduledNotifications,
+} from "@/lib/notify";
+import { getMemberById, getProfileById, getVisitById, updateVisit } from "@/lib/supabase/queries";
 import { getVisitEditSchema, type VisitBookingMode } from "@/lib/validations/visit";
 import { isVisitOverlapError } from "@/lib/visit-errors";
+
+async function notifyVisitCancelled(visit: Visit): Promise<void> {
+  const member = await getMemberById(visit.memberId);
+  if (!member?.email) return;
+
+  const staff = visit.staffId ? await getProfileById(visit.staffId) : null;
+  const { client, staff: staffResult } = await sendVisitCancelledNotifications({
+    visit,
+    member,
+    staff,
+  });
+
+  if (!client.ok) {
+    console.error("Notify (visit_cancelled_client) failed:", client.error);
+  }
+  if (staffResult && !staffResult.ok) {
+    console.error("Notify (visit_cancelled_staff) failed:", staffResult.error);
+  }
+}
+
+async function notifyVisitRescheduled(previousVisit: Visit, updatedVisit: Visit): Promise<void> {
+  const member = await getMemberById(updatedVisit.memberId);
+  if (!member?.email) return;
+
+  const staff = updatedVisit.staffId ? await getProfileById(updatedVisit.staffId) : null;
+  const { client, staff: staffResult } = await sendVisitRescheduledNotifications({
+    visit: updatedVisit,
+    member,
+    staff,
+    previousVisit,
+  });
+
+  if (!client.ok) {
+    console.error("Notify (visit_rescheduled_client) failed:", client.error);
+  }
+  if (staffResult && !staffResult.ok) {
+    console.error("Notify (visit_rescheduled_staff) failed:", staffResult.error);
+  }
+}
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -50,6 +95,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       const { archiveVisit } = await import("@/lib/supabase/queries");
       const updatedVisit = await archiveVisit(id);
+      await notifyVisitCancelled(updatedVisit);
+
       return NextResponse.json({ visit: updatedVisit, message: "Visit archived successfully" });
     }
 
@@ -97,6 +144,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     const updatedVisit = await updateVisit(id, organizationId, parsed.data);
+
+    if (hasScheduleChanged(existing.visit, updatedVisit)) {
+      await notifyVisitRescheduled(existing.visit, updatedVisit);
+    }
 
     return NextResponse.json({ visit: updatedVisit });
   } catch (error) {
