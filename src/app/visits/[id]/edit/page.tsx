@@ -15,11 +15,12 @@ import { fetcher } from "@/lib/fetcher";
 import { applySchemaErrors } from "@/lib/form-errors";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import {
-  getVisitEditSchema,
+  getVisitEditUiSchema,
   visitFormBaseSchema,
   type VisitBookingMode,
   type VisitEditFormValues,
 } from "@/lib/validations/visit";
+import { confirmVisitSubmit } from "@/lib/visit-form-submit";
 import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
 import { MemberCombobox } from "@/components/member-combobox";
@@ -110,6 +111,14 @@ export default function EditVisitPage() {
     return raw.slice(0, 5);
   }, [visitData?.visit.time]);
 
+  const originalDateTime = useMemo(() => {
+    if (!visitData) return undefined;
+    return {
+      date: visitData.visit.date ? format(new Date(visitData.visit.date), "yyyy-MM-dd") : "",
+      time: initialTime,
+    };
+  }, [visitData, initialTime]);
+
   const form = useForm<VisitEditFormValues>({
     resolver: zodResolver(visitFormBaseSchema),
     values: visitData
@@ -151,7 +160,7 @@ export default function EditVisitPage() {
       return;
     }
     if (step === 1) {
-      const schema = getVisitEditSchema(bookingMode);
+      const schema = getVisitEditUiSchema(bookingMode, originalDateTime);
       const parsed = schema.safeParse(form.getValues());
       if (!parsed.success) {
         applySchemaErrors(form, parsed.error.issues);
@@ -166,18 +175,11 @@ export default function EditVisitPage() {
   };
 
   const onSubmit = async (data: VisitEditFormValues) => {
-    const schema = getVisitEditSchema(bookingMode);
-    const parsed = schema.safeParse(data);
-    if (!parsed.success) {
-      applySchemaErrors(form, parsed.error.issues);
-      return;
-    }
-
     try {
       const response = await fetch(`/api/visits/${visitId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, bookingMode }),
+        body: JSON.stringify({ ...data, bookingMode }),
       });
       if (!response.ok) {
         const err = await response.json();
@@ -193,6 +195,14 @@ export default function EditVisitPage() {
       });
     }
   };
+
+  const handleConfirmSubmit = () =>
+    confirmVisitSubmit({
+      form,
+      schema: getVisitEditUiSchema(bookingMode, originalDateTime),
+      onInvalid: () => setStep(1),
+      onValid: onSubmit,
+    });
 
   const selectedMember = members.find((m) => m.id === form.watch("memberId"));
   const selectedEventType = eventTypes.find((et) => et.id === form.watch("eventTypeId"));
@@ -427,7 +437,7 @@ export default function EditVisitPage() {
                 <Button
                   type="button"
                   disabled={form.formState.isSubmitting}
-                  onClick={() => form.handleSubmit(onSubmit)()}
+                  onClick={handleConfirmSubmit}
                 >
                   {form.formState.isSubmitting ? "Saving..." : "Save changes"}
                 </Button>

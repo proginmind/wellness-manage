@@ -32,14 +32,34 @@ async function main(): Promise<void> {
   loadEnv();
 
   // Schema tests
-  const manualOk = visitManualFormSchema.safeParse({
+  const manualPast = visitManualFormSchema.safeParse({
     memberId: "00000000-0000-4000-8000-000000000001",
     eventTypeId: "00000000-0000-4000-8000-000000000002",
     staffId: "00000000-0000-4000-8000-000000000003",
     date: "2020-01-01",
     time: "14:30",
   });
-  if (!manualOk.success) throw new Error("Manual schema should allow past dates");
+  if (manualPast.success) throw new Error("Manual schema should reject past datetimes");
+
+  const manualTodayPastTime = visitManualFormSchema.safeParse({
+    memberId: "00000000-0000-4000-8000-000000000001",
+    eventTypeId: "00000000-0000-4000-8000-000000000002",
+    staffId: "00000000-0000-4000-8000-000000000003",
+    date: new Date().toISOString().slice(0, 10),
+    time: "00:01",
+  });
+  if (manualTodayPastTime.success) {
+    throw new Error("Manual schema should reject past time on today");
+  }
+
+  const manualOk = visitManualFormSchema.safeParse({
+    memberId: "00000000-0000-4000-8000-000000000001",
+    eventTypeId: "00000000-0000-4000-8000-000000000002",
+    staffId: "00000000-0000-4000-8000-000000000003",
+    date: "2099-06-15",
+    time: "14:30",
+  });
+  if (!manualOk.success) throw new Error("Manual schema should allow future datetimes");
 
   const manualMissingStaff = visitManualFormSchema.safeParse({
     memberId: "00000000-0000-4000-8000-000000000001",
@@ -62,7 +82,7 @@ async function main(): Promise<void> {
     memberId: "00000000-0000-4000-8000-000000000001",
     eventTypeId: "00000000-0000-4000-8000-000000000002",
     staffId: "00000000-0000-4000-8000-000000000003",
-    date: "2026-06-15",
+    date: "2099-06-15",
     time: "08:15",
   });
   if (!createReq.success) throw new Error("Create request schema failed");
