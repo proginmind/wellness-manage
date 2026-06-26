@@ -1,26 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Visit } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 
-import type { EventTypesListResponse, MembersListResponse } from "@/types/api";
+import type { EventTypesListResponse, MembersListResponse, StaffListResponse } from "@/types/api";
 import { fetcher } from "@/lib/fetcher";
-import { buildRoute } from "@/lib/routes";
-import type { VisitFormValues } from "@/lib/validations/visit";
-import { visitFormSchema } from "@/lib/validations/visit";
+import { applySchemaErrors } from "@/lib/form-errors";
+import { buildApiRoute, buildRoute } from "@/lib/routes";
+import {
+  getVisitCreateSchema,
+  visitFormBaseSchema,
+  type VisitBookingMode,
+  type VisitFormValues,
+} from "@/lib/validations/visit";
 import { useUser } from "@/hooks/useUser";
 import { AppLayout } from "@/components/app-layout";
-import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { MemberCombobox } from "@/components/member-combobox";
-import { TimeSlotPicker, type TimeSlotOption } from "@/components/time-slot-picker";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -38,7 +40,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { VisitBookingModeToggle } from "@/components/visit-booking-mode-toggle";
 import { ConfirmationSummary } from "@/components/visit-confirmation-summary";
+import { VisitGuidedDatetimeFields } from "@/components/visit-guided-datetime-fields";
+import { VisitManualDatetimeFields } from "@/components/visit-manual-datetime-fields";
+import { getStaffAvatarUrl, getStaffDisplayName } from "@/components/visit-staff-select";
 
 const STEPS = [
   { id: 0, label: "Client" },
@@ -49,11 +55,14 @@ const STEPS = [
 export default function NewVisitPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [slots, setSlots] = useState<TimeSlotOption[]>([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [bookingMode, setBookingMode] = useState<VisitBookingMode>("guided");
 
   const { data: membersData } = useSWR<MembersListResponse>("/api/members", fetcher);
   const { data: eventTypesData } = useSWR<EventTypesListResponse>("/api/event-types", fetcher);
+  const { data: staffData } = useSWR<StaffListResponse>(
+    `${buildApiRoute.profiles()}?include=eventTypes`,
+    fetcher
+  );
   const { user } = useUser();
   const orgCurrency = user?.organization?.currency ?? "USD";
 
@@ -61,7 +70,7 @@ export default function NewVisitPage() {
   const eventTypes = eventTypesData?.eventTypes?.filter((et) => et.isActive) ?? [];
 
   const form = useForm<VisitFormValues>({
-    resolver: zodResolver(visitFormSchema),
+    resolver: zodResolver(visitFormBaseSchema),
     defaultValues: {
       memberId: "",
       eventTypeId: "",
@@ -74,49 +83,15 @@ export default function NewVisitPage() {
 
   const watchMemberId = form.watch("memberId");
   const watchEventTypeId = form.watch("eventTypeId");
-  const watchDate = form.watch("date");
+  const selectedStaffId = form.watch("staffId");
 
-  // Fetch slots when date and eventTypeId are set
-  useEffect(() => {
-    if (!watchEventTypeId || !watchDate) {
-      setSlots([]);
-      return;
-    }
-    let cancelled = false;
-    setSlotsLoading(true);
-    const params = new URLSearchParams({
-      eventTypeId: watchEventTypeId,
-      date: watchDate,
-      ...(watchMemberId ? { memberId: watchMemberId } : {}),
-    });
-    fetch(`/api/availability/slots?${params}`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data: { slots: TimeSlotOption[] }) => {
-        if (!cancelled) setSlots(data.slots ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setSlots([]);
-      })
-      .finally(() => {
-        if (!cancelled) setSlotsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [watchEventTypeId, watchDate, watchMemberId]);
-
-  const visibleSlots = useMemo(() => {
-    if (!watchDate || !slots.length) return slots;
-    const todayStr = format(new Date(), "yyyy-MM-dd");
-    if (watchDate !== todayStr) return slots;
-    const now = new Date();
-    const nowMins = now.getHours() * 60 + now.getMinutes();
-    return slots.filter((slot) => {
-      const [h, m] = slot.time.split(":").map(Number);
-      const slotMins = (h ?? 0) * 60 + (m ?? 0);
-      return slotMins > nowMins;
-    });
-  }, [slots, watchDate]);
+  const handleBookingModeChange = (mode: VisitBookingMode) => {
+    setBookingMode(mode);
+    form.setValue("date", "");
+    form.setValue("time", "");
+    form.setValue("staffId", undefined);
+    form.clearErrors(["date", "time", "staffId"]);
+  };
 
   const handleNext = async () => {
     if (step === 0) {
@@ -125,9 +100,13 @@ export default function NewVisitPage() {
       return;
     }
     if (step === 1) {
-      const ok = await form.trigger(["eventTypeId", "date", "time"]);
-      if (ok) setStep(2);
-      return;
+      const schema = getVisitCreateSchema(bookingMode);
+      const parsed = schema.safeParse(form.getValues());
+      if (!parsed.success) {
+        applySchemaErrors(form, parsed.error.issues);
+        return;
+      }
+      setStep(2);
     }
   };
 
@@ -136,11 +115,18 @@ export default function NewVisitPage() {
   };
 
   const onSubmit = async (data: VisitFormValues) => {
+    const schema = getVisitCreateSchema(bookingMode);
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      applySchemaErrors(form, parsed.error.issues);
+      return;
+    }
+
     try {
       const response = await fetch("/api/visits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...parsed.data, bookingMode }),
       });
       if (!response.ok) {
         const err = await response.json();
@@ -170,9 +156,18 @@ export default function NewVisitPage() {
 
   const selectedMember = members.find((m) => m.id === form.watch("memberId"));
   const selectedEventType = eventTypes.find((et) => et.id === form.watch("eventTypeId"));
-  const selectedStaffId = form.watch("staffId");
-  const slotsForStaffName = slots.flatMap((s) => s.staff);
-  const selectedStaff = slotsForStaffName.find((s) => s.id === selectedStaffId);
+  const staffList = staffData?.staff as
+    | Array<{
+        id: string;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        avatarImage?: string;
+      }>
+    | undefined;
+  const staffName =
+    getStaffDisplayName(staffList, selectedStaffId) ?? (bookingMode === "guided" ? "—" : "—");
+  const staffAvatarUrl = getStaffAvatarUrl(staffList, selectedStaffId);
 
   return (
     <AppLayout>
@@ -193,7 +188,6 @@ export default function NewVisitPage() {
           </p>
         </div>
 
-        {/* Stepper */}
         <nav aria-label="Progress" className="mb-6 sm:mb-8">
           <ol className="flex items-center gap-2">
             {STEPS.map((s, i) => (
@@ -278,53 +272,22 @@ export default function NewVisitPage() {
 
                 {watchEventTypeId && (
                   <>
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date</FormLabel>
-                          <FormControl>
-                            <AvailabilityCalendar
-                              eventTypeId={watchEventTypeId}
-                              selected={
-                                field.value ? new Date(field.value + "T12:00:00") : undefined
-                              }
-                              onSelect={(d) => {
-                                field.onChange(d ? format(d, "yyyy-MM-dd") : "");
-                                form.setValue("time", "");
-                                form.setValue("staffId", undefined);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {watchDate && (
-                      <FormField
-                        control={form.control}
-                        name="time"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Time & staff</FormLabel>
-                            <FormControl>
-                              <TimeSlotPicker
-                                slots={visibleSlots}
-                                selectedTime={field.value || undefined}
-                                selectedStaffId={form.watch("staffId")}
-                                onSelect={(time, staffId) => {
-                                  field.onChange(time);
-                                  form.setValue("staffId", staffId);
-                                }}
-                                isLoading={slotsLoading}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Booking method</p>
+                      <VisitBookingModeToggle
+                        value={bookingMode}
+                        onChange={handleBookingModeChange}
                       />
+                    </div>
+
+                    {bookingMode === "guided" ? (
+                      <VisitGuidedDatetimeFields
+                        form={form}
+                        eventTypeId={watchEventTypeId}
+                        memberId={watchMemberId || undefined}
+                      />
+                    ) : (
+                      <VisitManualDatetimeFields form={form} eventTypeId={watchEventTypeId} />
                     )}
 
                     <FormField
@@ -359,9 +322,9 @@ export default function NewVisitPage() {
                 currency={orgCurrency}
                 date={form.watch("date")}
                 time={form.watch("time")}
-                staffName={selectedStaff?.displayName ?? "—"}
+                staffName={staffName ?? "—"}
                 staffId={selectedStaffId}
-                staffAvatarUrl={selectedStaff?.avatarUrl}
+                staffAvatarUrl={staffAvatarUrl}
                 notes={form.watch("notes")}
               />
             )}
