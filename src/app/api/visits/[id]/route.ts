@@ -2,20 +2,17 @@ import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
 import { getVisitById, updateVisit } from "@/lib/supabase/queries";
-import { visitEditFormSchema } from "@/lib/validations/visit";
+import { getVisitEditSchema, type VisitBookingMode } from "@/lib/validations/visit";
+import { isVisitOverlapError } from "@/lib/visit-errors";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check permission: visits.view
     const permissionResult = await requirePermission("visits", "view");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
     const { organizationId } = permissionResult;
-
-    // Get visit ID from params
     const { id } = await params;
 
-    // Fetch visit from database (org-scoped)
     const result = await getVisitById(id, organizationId);
 
     if (!result) {
@@ -31,7 +28,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check permission: visits.update
     const permissionResult = await requirePermission("visits", "update");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
@@ -40,14 +36,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const body = await request.json();
 
-    // Archive branch: status update to cancelled
     if ("status" in body && body.status === "cancelled") {
       const { archiveVisit } = await import("@/lib/supabase/queries");
       const updatedVisit = await archiveVisit(id);
       return NextResponse.json({ visit: updatedVisit, message: "Visit archived successfully" });
     }
 
-    // Guard: cannot edit a cancelled visit
     const existing = await getVisitById(id, organizationId);
     if (!existing) {
       return NextResponse.json({ error: "Visit not found" }, { status: 404 });
@@ -56,8 +50,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Cannot edit a cancelled visit" }, { status: 409 });
     }
 
-    // Validate body
-    const parsed = visitEditFormSchema.safeParse(body);
+    const bookingMode = (body.bookingMode as VisitBookingMode | undefined) ?? "guided";
+    const schema = getVisitEditSchema(bookingMode);
+    const { bookingMode: _bookingMode, ...formBody } = body;
+    const parsed = schema.safeParse(formBody);
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Invalid request", details: parsed.error.flatten() },
@@ -71,6 +68,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   } catch (error) {
     console.error("Error updating visit:", error);
     const message = error instanceof Error ? error.message : "Failed to update visit";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = isVisitOverlapError(message) ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
