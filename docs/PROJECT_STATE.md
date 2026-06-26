@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (BETA_GUIDE.md)
+> **Updated by:** agent (beta readiness re-evaluation)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -26,7 +26,8 @@ No active implementation in progress.
 | Item                                           | Date       | Notes                                                                               |
 | ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
 | **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                    |
-| **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify` edge function; wired on PATCH cancel/edit                   |
+| **Production `notify` on prod Supabase**       | 2026-06-26 | `wsiattkcxmdoswkirkjg`; RESEND + `APP_ENV=production`                               |
+| **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify`; wired on PATCH cancel/edit                                 |
 | Client profile: **appointment history**        | 2026-06-26 | `GET /api/members/[id]/visits`, `VisitHistoryCard`; E2E MH-01–04 pass               |
 | Manual **add staff** from Staff page           | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup |
 | Hide payment method UI for lifetime plans      | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                  |
@@ -76,6 +77,7 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 | 2026-06-26 | **Stripe: lifetime license only**                       | One-time lifetime product configured in Dashboard; no subscription plans for beta. Recurring subscriptions deferred to later stages / other user segments.                                                                                     |
 | 2026-06-26 | **Beta feedback:** email/chat → `docs/beta-feedback.md` | No in-app feedback; owner collects via email or chat apps and logs entries in repo under `docs/`.                                                                                                                                              |
 | 2026-06-26 | **Manual staff add** (no email invite)                  | Owner creates staff profile on `/team/new`; `user_id` null until same email signs up                                                                                                                                                           |
+| 2026-06-26 | **Concierge beta: go** (not public launch)              | Core scheduling loop, emails, billing, and BETA_GUIDE sufficient for 1–3 owner-operators with hand onboarding                                                                                                                                  |
 
 ---
 
@@ -93,16 +95,33 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 **Target users (beta):** owners of small massage salons, osteopath cabinets, and similar practices — back-office scheduling, not clinical records. Product name: **Wellness Manage**.
 
-| Scenario                                      | Ready?                                               |
-| --------------------------------------------- | ---------------------------------------------------- |
-| Guided beta (you set up account, 2-week test) | Yes — **intended path**                              |
-| Self-serve signup → trial → pay               | **Deferred** — not a current gap                     |
-| Solo practitioner daily use                   | Yes — complete visit from appointment detail         |
-| Owner + staff with separate logins            | Partial — manual add; login when same email signs up |
+**Verdict (2026-06-26):** **Yes — ready to present to target clients via concierge beta.** Not ready for self-serve public launch.
 
-**Strong:** RBAC, trial gating, appointment booking + availability, services, Stripe webhook design.  
-**Weak:** staff onboarding (multi-login), billing polish.  
-**Intentionally out of scope for now:** public signup, in-app feedback, subscription billing.
+| Scenario                                                             | Ready?       | Notes                                                              |
+| -------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------ |
+| **Concierge beta** (you onboard 1–3 owners, 14-day trial, hand-hold) | **Yes**      | Use [`BETA_GUIDE.md`](./BETA_GUIDE.md); core daily loop complete   |
+| **Demo to prospect** (live walkthrough, you operate Supabase/Stripe) | **Yes**      | Show booking → complete → dashboard; emails if prod smoke-tested   |
+| **Hand client a URL and leave** (no onboarding call)                 | **No**       | Expect confusion on staff login, trial/billing, services setup     |
+| Self-serve signup → trial → pay                                      | **Deferred** | By design                                                          |
+| Solo owner daily use (clients + appointments + complete)             | **Yes**      | Primary beta persona                                               |
+| Owner + staff with separate logins                                   | **Partial**  | Manual staff add; login only when staff email matches auth account |
+| Client self-booking portal                                           | **No**       | Out of scope for beta                                              |
+
+**Strong:** RBAC, trial gating, guided + manual booking, staff availability, services/categories, mark completed + dashboard revenue, client/staff appointment history, email notifications (create / cancel / reschedule), lifetime Stripe checkout (live product **Wellness Manage** ~$149), concierge onboarding doc.
+
+**Acceptable gaps for beta** (disclose in handout): no public signup, no client portal, partial staff login story, English only, no in-app feedback, no subscriptions.
+
+**Weak (operator / scale, not client blockers):** no CI, no automated tests, manual Supabase function deploys, README/env-example drift.
+
+**Intentionally out of scope:** clinical records, public signup, subscription billing, in-app feedback.
+
+### Pre-flight before first real client
+
+- [ ] Smoke-test **production** URL (not local): book → confirm email → reschedule → cancel email ([`e2e-scenarios.md`](./e2e-scenarios.md) NT-01, NT-02)
+- [ ] Confirm Vercel production env: `NEXT_PUBLIC_SUPABASE_URL` → `wsiattkcxmdoswkirkjg`, live Stripe keys
+- [ ] Create org + owner auth in **production** Supabase; set `trial_ends_at`
+- [ ] Send customized [`BETA_GUIDE.md`](./BETA_GUIDE.md) handout
+- [ ] Optional: seed 1–2 services + staff availability so Day 1 is not empty
 
 ---
 
@@ -111,13 +130,21 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 **Strong:** TypeScript strict, Prettier/Husky, 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
 **Missing:** CI, automated tests, ESLint (README stale), pre-commit only runs Prettier.
 
-**Stripe:** integrated — checkout, webhooks, billing page. **Currently configured:** lifetime (one-time) license only in Stripe Dashboard; code also supports subscriptions when products exist. Dev without `STRIPE_SECRET_KEY` uses mock “Lifetime $50”. Subscription plans = later. In-app payment method update still a stub.
+**Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 
 ---
 
 ## Open questions
 
 _None — see Decisions log._
+
+---
+
+## Beta go/no-go log
+
+| Date       | Assessment                                                                 | Decision                                                      |
+| ---------- | -------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 2026-06-26 | Core product + prod notify + BETA_GUIDE in place; product blockers cleared | **Go** for concierge beta (1–3 owners), not for public launch |
 
 ---
 
