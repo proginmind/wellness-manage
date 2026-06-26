@@ -1203,6 +1203,31 @@ export async function getVisits(search?: string): Promise<{ visit: Visit; member
 }
 
 /**
+ * Get all visits for a member (organization-scoped), newest first
+ */
+export async function getVisitsByMemberId(
+  memberId: string,
+  organizationId: string
+): Promise<Visit[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .eq("member_id", memberId)
+    .order("date", { ascending: false })
+    .order("time", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching member visits:", error);
+    throw new Error("Failed to fetch member visits");
+  }
+
+  return (data || []).map(dbToVisit);
+}
+
+/**
  * Get a single visit by ID with member details (organization-scoped)
  * @param id - Visit ID
  * @param organizationId - Organization ID (required for organization scoping)

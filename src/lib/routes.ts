@@ -78,6 +78,7 @@ export const buildApiRoute = {
   // Members
   members: () => "/api/members" as const,
   member: (id: string) => `/api/members/${id}` as const,
+  memberVisits: (id: string) => `/api/members/${id}/visits` as const,
   uploadMemberImage: () => "/api/upload/member-image" as const,
 
   // Visits
