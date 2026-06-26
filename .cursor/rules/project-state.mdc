@@ -1,0 +1,21 @@
+---
+description: Read and update project state file for session continuity
+alwaysApply: true
+---
+
+# Project state (agent continuity)
+
+Before starting non-trivial work:
+
+1. Read `docs/PROJECT_STATE.md` for current focus, active items, backlog, and handoff notes.
+2. If taking a backlog item, move it to **Active work** with status `in progress`.
+
+When finishing meaningful work:
+
+1. Update **Active work** → **Recently completed** (or remove if trivial).
+2. Add any new **Decisions** or **Open questions**.
+3. Refresh the `Last updated` line at the top of `docs/PROJECT_STATE.md`.
+
+Do **not** put sprint progress in `.cursor/rules/` or `README.md` — use `docs/PROJECT_STATE.md` only.
+
+See also `AGENTS.md` at repo root for repo map and commands.
