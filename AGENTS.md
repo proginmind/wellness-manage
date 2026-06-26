@@ -47,4 +47,4 @@ pnpm deploy           # supabase functions + db push
 - [ ] Do the work
 - [ ] Run `pnpm type-check` after significant TS changes
 - [ ] Update `docs/PROJECT_STATE.md` (active work, completed, decisions)
-- [ ] Commit only if the user asked
+- [ ] Commit only if the user asked — **show proposed commit message and wait for approval** before running `git commit` (see `.cursor/rules/git-commits.mdc`)

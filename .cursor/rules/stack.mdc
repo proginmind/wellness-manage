@@ -28,8 +28,7 @@ alwaysApply: true
 
 # Agent Behavior
 
-- **Never commit changes unless the user explicitly asks** — do not run `git add` or `git commit` on your own
-- Never push to remote unless explicitly asked
+- **Git:** see `git-commits.mdc` — never commit or push without approval; show proposed commit message first and wait for confirmation
 - Never add "Made with Cursor" or any AI-attribution text to commit messages
 
 # Project Conventions
