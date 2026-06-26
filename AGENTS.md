@@ -19,6 +19,7 @@ Entry point for Cursor agents (and humans) working in this repo.
 | Seed script          | `scripts/seed-db.ts` (`pnpm db:seed`)       |
 | Deploy (Supabase)    | `pnpm deploy` → `scripts/deploy.sh`         |
 | Manual E2E scenarios | `docs/e2e-scenarios.md`                     |
+| Concierge beta guide | `docs/BETA_GUIDE.md`                        |
 | Beta feedback log    | `docs/beta-feedback.md`                     |
 | API docs (Scalar)    | `/api/docs` — spec in `public/openapi.yaml` |
 
@@ -39,6 +40,8 @@ pnpm ship:staging     # push staging → PR → wait CI → rebase-merge to main
 | Document                | Purpose                        | Update frequency                 |
 | ----------------------- | ------------------------------ | -------------------------------- |
 | `docs/PROJECT_STATE.md` | Sprint state, backlog, handoff | Every significant session        |
+| `docs/BETA_GUIDE.md`    | Concierge tester onboarding    | When beta process changes        |
+| `docs/beta-feedback.md` | Raw tester feedback            | When feedback arrives            |
 | `.cursor/rules/*.mdc`   | How to write code              | Rarely — when conventions change |
 | `README.md`             | Setup, deployment, reference   | When features/docs change        |
 | `docs/*.md`             | Focused guides (seeding, E2E)  | When that area changes           |
