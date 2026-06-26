@@ -244,8 +244,10 @@ export default function TeamMemberDetailPage() {
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-zinc-500 dark:text-zinc-400">User ID</p>
-                  <p className="font-mono text-xs">{profile.userId}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400">Login account</p>
+                  <p className="font-mono text-xs">
+                    {profile.userId ? profile.userId : "Not linked"}
+                  </p>
                 </div>
                 <Separator />
                 <div>

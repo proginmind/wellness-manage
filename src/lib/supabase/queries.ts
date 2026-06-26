@@ -44,7 +44,7 @@ export interface SubscriptionRow {
 
 interface ProfileRow {
   id: string;
-  user_id: string;
+  user_id: string | null;
   organization_id: string;
   email: string;
   role: UserRole;
@@ -94,7 +94,7 @@ export function dbToOrganization(row: OrganizationRow): Organization {
 export function dbToProfile(row: ProfileRow): Profile {
   return {
     id: row.id,
-    userId: row.user_id,
+    userId: row.user_id ?? "",
     organizationId: row.organization_id,
     email: row.email,
     role: row.role,
@@ -222,6 +222,61 @@ export async function updateProfile(
   }
 
   return dbToProfile(data);
+}
+
+/**
+ * Create a staff profile for the organization (no auth account required).
+ * Uses admin client — profiles table has no INSERT RLS for session users.
+ */
+export async function createStaffProfile(
+  organizationId: string,
+  formData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    description?: string;
+    dateOfBirth?: string;
+    phoneNumber?: string;
+    avatarImage?: string;
+  }
+): Promise<Profile> {
+  const admin = createAdminClient();
+  const email = formData.email.trim();
+
+  const { data: existing } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error("A staff member with this email already exists in your organization");
+  }
+
+  const { data, error } = await admin
+    .from("profiles")
+    .insert({
+      organization_id: organizationId,
+      role: "staff",
+      email,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      description: formData.description || null,
+      date_of_birth: formData.dateOfBirth || null,
+      phone_number: formData.phoneNumber || null,
+      avatar_image: formData.avatarImage || null,
+      user_id: null,
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Error creating staff profile:", error);
+    throw new Error("Failed to create staff profile");
+  }
+
+  return dbToProfile(data as ProfileRow);
 }
 
 /**
