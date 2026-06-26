@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (Stripe lifetime + beta feedback doc)
+> **Updated by:** agent (complete visit feature)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -9,7 +9,7 @@ Agents and humans: read this file at the **start** of a work session and update 
 
 ## Current focus
 
-No active implementation in progress. **Beta strategy:** concierge onboarding for a small audience — no public signup for now.
+**Mark appointment as completed** — implemented (detail page + API + edit guards).
 
 ---
 
@@ -23,9 +23,10 @@ No active implementation in progress. **Beta strategy:** concierge onboarding fo
 
 ## Recently completed
 
-| Item                         | Date       | Notes                                                                         |
-| ---------------------------- | ---------- | ----------------------------------------------------------------------------- |
-| Project state tracking setup | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc` |
+| Item                              | Date       | Notes                                                                         |
+| --------------------------------- | ---------- | ----------------------------------------------------------------------------- |
+| Mark appointment as **completed** | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards            |
+| Project state tracking setup      | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc` |
 
 ---
 
@@ -33,15 +34,14 @@ No active implementation in progress. **Beta strategy:** concierge onboarding fo
 
 ### Product — beta / paid pilot blockers
 
-| Priority | Item                                              | Why                                                                                                    |
-| -------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| P0       | Mark appointment as **completed** in UI           | Visits stay `pending`; dashboard revenue/charts empty (`createVisit` in `src/lib/supabase/queries.ts`) |
-| P1       | Stripe payment method update (or Customer Portal) | Stub in `src/components/billing/payment-method-card.tsx`                                               |
-| P1       | Staff invite / add flow                           | Invitations removed (`040_drop_invitations_feature.sql`); team is list-only                            |
-| P2       | Client profile: appointment history               | Not on member detail page                                                                              |
-| P2       | Cancel/reschedule email notifications             | Only visit-created emails via `notify` edge function                                                   |
-| P2       | Commit `docs/e2e-scenarios.md`                    | Manual E2E checklist exists but untracked                                                              |
-| P2       | **`docs/BETA_GUIDE.md`** for concierge testers    | Login, scope/limitations, how to reach you — replaces public signup UX for now                         |
+| Priority | Item                                              | Why                                                                            |
+| -------- | ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| P1       | Stripe payment method update (or Customer Portal) | Stub in `src/components/billing/payment-method-card.tsx`                       |
+| P1       | Staff invite / add flow                           | Invitations removed (`040_drop_invitations_feature.sql`); team is list-only    |
+| P2       | Client profile: appointment history               | Not on member detail page                                                      |
+| P2       | Cancel/reschedule email notifications             | Only visit-created emails via `notify` edge function                           |
+| P2       | Commit `docs/e2e-scenarios.md`                    | Manual E2E checklist exists but untracked                                      |
+| P2       | **`docs/BETA_GUIDE.md`** for concierge testers    | Login, scope/limitations, how to reach you — replaces public signup UX for now |
 
 ### Deferred (after small-audience beta validation)
 
@@ -92,15 +92,15 @@ No active implementation in progress. **Beta strategy:** concierge onboarding fo
 
 **Target users (beta):** owners of small massage salons, osteopath cabinets, and similar practices — back-office scheduling, not clinical records. Product name: **Wellness Manage**.
 
-| Scenario                                      | Ready?                            |
-| --------------------------------------------- | --------------------------------- |
-| Guided beta (you set up account, 2-week test) | Yes — **intended path**           |
-| Self-serve signup → trial → pay               | **Deferred** — not a current gap  |
-| Solo practitioner daily use                   | Mostly — missing "complete visit" |
-| Owner + staff with separate logins            | No — no staff invite UI           |
+| Scenario                                      | Ready?                                       |
+| --------------------------------------------- | -------------------------------------------- |
+| Guided beta (you set up account, 2-week test) | Yes — **intended path**                      |
+| Self-serve signup → trial → pay               | **Deferred** — not a current gap             |
+| Solo practitioner daily use                   | Yes — complete visit from appointment detail |
+| Owner + staff with separate logins            | No — no staff invite UI                      |
 
 **Strong:** RBAC, trial gating, appointment booking + availability, services, Stripe webhook design.  
-**Weak:** visit completion, staff onboarding (multi-login), billing polish, notifications beyond create.  
+**Weak:** staff onboarding (multi-login), billing polish, notifications beyond create.  
 **Intentionally out of scope for now:** public signup, in-app feedback, subscription billing.
 
 ---

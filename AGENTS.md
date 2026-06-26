@@ -31,6 +31,7 @@ pnpm format:check     # prettier check
 pnpm supabase:start   # local Supabase (Docker)
 pnpm db:seed          # demo data
 pnpm deploy           # supabase functions + db push
+pnpm ship:staging     # push staging → PR → wait CI → merge main → sync branches (see scripts/ship-staging.sh)
 ```
 
 ## What goes where

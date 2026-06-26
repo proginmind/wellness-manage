@@ -138,7 +138,8 @@ export default function EditVisitPage() {
   const selectedStaffId = form.watch("staffId");
 
   useEffect(() => {
-    if (visitData?.visit.status === "cancelled") {
+    const status = visitData?.visit.status;
+    if (status === "cancelled" || status === "completed") {
       router.replace(buildRoute.visit(visitId));
     }
   }, [visitData?.visit.status, visitId, router]);

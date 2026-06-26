@@ -1206,6 +1206,36 @@ export async function archiveVisit(id: string): Promise<Visit> {
 }
 
 /**
+ * Mark a pending visit as completed
+ */
+export async function completeVisit(id: string, organizationId: string): Promise<Visit> {
+  const existing = await getVisitById(id, organizationId);
+  if (!existing) {
+    throw new Error("Visit not found");
+  }
+  if (existing.visit.status !== "pending") {
+    throw new Error("Only pending visits can be marked as completed");
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("visits")
+    .update({ status: "completed" })
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Error completing visit:", error);
+    throw new Error("Failed to complete visit");
+  }
+
+  return dbToVisit(data);
+}
+
+/**
  * Update an existing visit, refreshing event type snapshot fields if eventTypeId changes
  */
 export async function updateVisit(
