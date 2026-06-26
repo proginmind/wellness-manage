@@ -1,0 +1,34 @@
+---
+description: Git commit and push — require user approval and show message first
+alwaysApply: true
+---
+
+# Git commits
+
+## Do not commit without approval
+
+- **Never** run `git add`, `git commit`, or `git push` unless the user explicitly asks in that conversation.
+- "Fix this" or "implement X" is **not** permission to commit — wait for an explicit commit/push request.
+- Never amend, force-push, or skip hooks unless the user explicitly requests it.
+
+## Show the commit message before committing
+
+When the user asks to commit:
+
+1. Run `git status` and `git diff` (staged + unstaged) to see what will be included.
+2. **Present the proposed commit message** to the user in your reply — do not run `git commit` yet.
+3. List the files that will be staged (or ask if anything should be excluded).
+4. **Wait for explicit approval** of the message (e.g. "looks good", "commit it", or an edited message).
+5. Only then run `git add` and `git commit`.
+
+If the user approves with a different message, use their version.
+
+## Push
+
+- Never push unless the user explicitly asks.
+- After push, confirm branch and remote ref (e.g. `origin/staging`).
+
+## Commit message style
+
+- 1–2 sentences focused on **why**, not a file list.
+- No "Made with Cursor" or AI attribution in commit messages.

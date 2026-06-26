@@ -106,7 +106,7 @@ export default function ArchiveVisitPage() {
   const { visit, member } = data;
   const memberInitials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
 
-  // If already cancelled, show message
+  // If already cancelled or completed, show message
   if (visit.status === "cancelled") {
     return (
       <AppLayout>
@@ -124,6 +124,35 @@ export default function ArchiveVisitPage() {
               <div className="text-center">
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   This visit is already cancelled.
+                </p>
+                <Button asChild variant="outline">
+                  <Link href={buildRoute.visit(visitId)}>View Visit</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (visit.status === "completed") {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
+          <Link
+            href={buildRoute.visit(visitId)}
+            className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Visit
+          </Link>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Completed appointments cannot be archived.
                 </p>
                 <Button asChild variant="outline">
                   <Link href={buildRoute.visit(visitId)}>View Visit</Link>

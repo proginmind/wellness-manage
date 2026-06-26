@@ -37,9 +37,40 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json();
 
     if ("status" in body && body.status === "cancelled") {
+      const existing = await getVisitById(id, organizationId);
+      if (!existing) {
+        return NextResponse.json({ error: "Visit not found" }, { status: 404 });
+      }
+      if (existing.visit.status === "completed") {
+        return NextResponse.json({ error: "Cannot archive a completed visit" }, { status: 409 });
+      }
+      if (existing.visit.status === "cancelled") {
+        return NextResponse.json({ visit: existing.visit, message: "Visit archived successfully" });
+      }
+
       const { archiveVisit } = await import("@/lib/supabase/queries");
       const updatedVisit = await archiveVisit(id);
       return NextResponse.json({ visit: updatedVisit, message: "Visit archived successfully" });
+    }
+
+    if ("status" in body && body.status === "completed") {
+      const { completeVisit } = await import("@/lib/supabase/queries");
+      try {
+        const updatedVisit = await completeVisit(id, organizationId);
+        return NextResponse.json({
+          visit: updatedVisit,
+          message: "Visit marked as completed",
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to complete visit";
+        if (message === "Visit not found") {
+          return NextResponse.json({ error: message }, { status: 404 });
+        }
+        if (message === "Only pending visits can be marked as completed") {
+          return NextResponse.json({ error: message }, { status: 409 });
+        }
+        throw error;
+      }
     }
 
     const existing = await getVisitById(id, organizationId);
@@ -48,6 +79,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (existing.visit.status === "cancelled") {
       return NextResponse.json({ error: "Cannot edit a cancelled visit" }, { status: 409 });
+    }
+    if (existing.visit.status === "completed") {
+      return NextResponse.json({ error: "Cannot edit a completed visit" }, { status: 409 });
     }
 
     const bookingMode = (body.bookingMode as VisitBookingMode | undefined) ?? "guided";

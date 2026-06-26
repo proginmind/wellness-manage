@@ -1,0 +1,24 @@
+---
+description: Release staging to main via pnpm ship:staging
+alwaysApply: true
+---
+
+# Ship staging → main
+
+When the user asks to **ship**, **release staging**, **merge staging to main**, or run the full push/PR/merge/sync workflow, use:
+
+```bash
+pnpm ship:staging "Commit message here"
+```
+
+If changes are already committed:
+
+```bash
+pnpm ship:staging --skip-commit
+```
+
+Script: `scripts/ship-staging.sh` — commits (optional), pushes `staging`, opens/reuses PR to `main`, waits for CI (`gh pr checks --watch`), merges, pulls `main`, returns to `staging` and merges `main` into it.
+
+Requires: `gh` CLI authenticated, on `staging` branch (script switches if needed).
+
+Do **not** run this unless the user explicitly requests ship/release/merge to main.

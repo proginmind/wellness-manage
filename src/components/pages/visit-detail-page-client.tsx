@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
@@ -11,9 +12,12 @@ import {
   Clock3,
   Edit,
   FileText,
+  Loader2,
   XCircle,
 } from "lucide-react";
-import useSWR from "swr";
+import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
+import useSWRMutation from "swr/mutation";
 
 import { Member } from "@/types/member";
 import { Profile } from "@/types/profile";
@@ -25,6 +29,15 @@ import { AppLayout } from "@/components/app-layout";
 import { CurrencyDisplay } from "@/components/currency-display";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGate } from "@/components/PermissionGate";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +52,21 @@ interface VisitDetailResponse {
 
 interface ProfileResponse {
   profile: Profile;
+}
+
+async function completeVisitMutation(url: string) {
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "completed" }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to complete visit");
+  }
+
+  return response.json();
 }
 
 function getStatusBadge(status: string) {
@@ -147,8 +175,31 @@ function VisitDetailSkeleton() {
 export function VisitDetailPageClient() {
   const params = useParams();
   const id = params.id as string;
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
 
   const { data, error } = useSWR<VisitDetailResponse>(buildApiRoute.visit(id), fetcher);
+
+  const { trigger: triggerComplete, isMutating: isCompleting } = useSWRMutation(
+    buildApiRoute.visit(id),
+    completeVisitMutation,
+    {
+      onSuccess: () => {
+        toast.success("Appointment completed", {
+          description: "This appointment has been marked as completed.",
+        });
+        setShowCompleteDialog(false);
+        void mutate(buildApiRoute.visit(id));
+        void mutate("/api/dashboard");
+        void mutate(buildApiRoute.visits());
+      },
+      onError: (completeError) => {
+        toast.error("Failed to complete appointment", {
+          description:
+            completeError instanceof Error ? completeError.message : "Please try again later",
+        });
+      },
+    }
+  );
 
   const staffId = data?.visit.staffId;
   const { data: staffData } = useSWR<ProfileResponse>(
@@ -165,8 +216,19 @@ export function VisitDetailPageClient() {
       action={
         data ? (
           <div className="flex items-center gap-2">
-            {data.visit.status !== "cancelled" && (
+            {data.visit.status === "pending" && (
               <>
+                <PermissionGate resource="visits" action="update">
+                  <Button
+                    variant="outline"
+                    className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                    onClick={() => setShowCompleteDialog(true)}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Mark completed
+                  </Button>
+                </PermissionGate>
+
                 <PermissionGate resource="visits" action="update">
                   <Button asChild variant="outline">
                     <Link href={buildRoute.visitEdit(data.visit.id)}>
@@ -238,6 +300,38 @@ export function VisitDetailPageClient() {
   return (
     <AppLayout>
       {pageHeader}
+
+      <AlertDialog
+        open={showCompleteDialog}
+        onOpenChange={isCompleting ? undefined : setShowCompleteDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark appointment as completed?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will record the appointment as completed and include it in dashboard revenue and
+              analytics.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCompleting}>Cancel</AlertDialogCancel>
+            <Button
+              onClick={() => void triggerComplete()}
+              disabled={isCompleting}
+              className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+            >
+              {isCompleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Completing...
+                </>
+              ) : (
+                "Mark completed"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid gap-6 lg:grid-cols-3">
