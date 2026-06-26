@@ -96,6 +96,7 @@ export const buildApiRoute = {
   // Profiles (staff/team members)
   profiles: () => "/api/profiles" as const,
   profile: (id: string) => `/api/profiles/${id}` as const,
+  profileVisits: (id: string) => `/api/profiles/${id}/visits` as const,
   profileEventTypes: (id: string) => `/api/profiles/${id}/event-types` as const,
   profileAvailability: (id: string) => `/api/profiles/${id}/availability` as const,
 

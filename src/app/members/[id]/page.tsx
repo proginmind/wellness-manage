@@ -15,7 +15,6 @@ import { buildRoute } from "@/lib/routes";
 import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { AppLayout } from "@/components/app-layout";
 import { MemberStatusBadge } from "@/components/member-status-badge";
-import { MemberVisitHistory } from "@/components/member-visit-history";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { VisitHistoryCard } from "@/components/visit-history-card";
 
 async function archiveMember(url: string) {
   const response = await fetch(url, {
@@ -239,7 +239,7 @@ export default function MemberDetailPage() {
               </CardContent>
             </Card>
 
-            <MemberVisitHistory memberId={member.id} />
+            <VisitHistoryCard memberId={member.id} />
           </div>
 
           {/* Right Column - Sidebar */}
