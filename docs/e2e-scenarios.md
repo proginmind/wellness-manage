@@ -12,6 +12,8 @@ pnpm dev                     # http://localhost:3000
 
 **Login:** `owner@example.com` / `password123` (or values from `.env.local`)
 
+**Notifications:** requires `RESEND_API_KEY` in Supabase function secrets (or `supabase/functions/.env` locally). After template changes, redeploy: `pnpx supabase functions deploy notify`.
+
 **Seed reference** (`scripts/seed-db.ts`):
 
 - Services: Swedish Massage (owner + Alice qualified), Vinyasa Yoga (Bob qualified)
@@ -32,6 +34,9 @@ pnpm dev                     # http://localhost:3000
 | BK-07 | Past datetime validation                  | Medium   |
 | BK-08 | Edit visit — dual mode                    | Medium   |
 | BK-09 | Full create → confirm → save              | High     |
+| NT-01 | Cancel visit — email notifications        | High     |
+| NT-02 | Reschedule visit — email notifications    | High     |
+| NT-03 | Edit notes only — no email                | Medium   |
 
 ---
 
@@ -227,3 +232,49 @@ GET /api/availability/dates?eventTypeId={id}&month=6&year=2026
 - BK-07, BK-08, BK-09: Not exercised end-to-end in this run
 
 **Automation:** No Playwright/Cypress suite yet; runs are manual via browser or CDP against dev server.
+
+---
+
+## NT-01 — Cancel visit: email notifications
+
+**Requires:** `RESEND_API_KEY` configured; notify function deployed/served locally.
+
+1. Create or pick a **pending** visit with client email and assigned staff
+2. Open visit detail → **Archive** (or `/visits/[id]/archive`) → confirm cancel
+3. Check client inbox: subject **Your appointment has been cancelled**
+4. Check staff inbox: subject **Appointment cancelled**
+5. Query `notification_logs` (Supabase) for `visit_cancelled_client` and `visit_cancelled_staff`
+
+**Expected:**
+
+- Visit status → `cancelled`
+- Both emails sent (if staff assigned); no ICS attachment on cancel emails
+- API returns success even if email fails (check logs for failures)
+
+---
+
+## NT-02 — Reschedule visit: email notifications
+
+1. Open a **pending** visit → **Edit**
+2. Change date and/or time (keep client + staff)
+3. Save
+4. Client inbox: **Your appointment has been rescheduled** with previous + new times; `.ics` attached
+5. Staff inbox: **Appointment rescheduled** with updated calendar invite
+6. `notification_logs` rows for `visit_rescheduled_*`
+
+**Expected:**
+
+- Previous date/time shown in email body
+- New ICS reflects updated start time
+
+---
+
+## NT-03 — Edit notes only: no email
+
+1. Edit a pending visit; change **notes** only (same date, time, staff, service)
+2. Save
+
+**Expected:**
+
+- Visit updated
+- No new rows in `notification_logs` for reschedule/cancel templates

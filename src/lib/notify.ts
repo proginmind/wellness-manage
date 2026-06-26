@@ -86,54 +86,70 @@ export async function logNotification({
   }
 }
 
-/**
- * Build variables and payload shape used by the notify function for "visit created" templates.
- * The Edge Function resolves recipient emails from memberId/staffId.
- */
-function buildVisitNotificationVariables(
-  visit: Visit,
-  member: Member,
-  staff: Profile | null | undefined
-): Record<string, unknown> {
-  const formattedDate = format(new Date(visit.date), "EEEE, MMMM d, yyyy");
-  const formattedTime = format(new Date(visit.time), "h:mm a");
+function formatVisitDate(d: Date): string {
+  return format(new Date(d), "EEEE, MMMM d, yyyy");
+}
 
-  // Combine date (calendar day) and time (clock time) into a single datetime for the ICS event.
+function formatVisitTime(d: Date): string {
+  return format(new Date(d), "h:mm a");
+}
+
+function visitStartIso(visit: Visit): string {
   const startDate = new Date(visit.date);
   const timeDate = new Date(visit.time);
   startDate.setHours(timeDate.getHours(), timeDate.getMinutes(), 0, 0);
-
-  return {
-    memberName: `${member.firstName} ${member.lastName}`,
-    staffName: staff ? `${staff.firstName} ${staff.lastName}` : undefined,
-    serviceName: visit.eventTypeName,
-    date: formattedDate,
-    time: formattedTime,
-    durationMinutes: visit.eventTypeDuration ?? undefined,
-    notes: visit.notes ?? undefined,
-    startIso: startDate.toISOString(),
-  };
+  return startDate.toISOString();
 }
 
 /**
- * Send "visit created" notifications: one to the client, and optionally one to the assigned staff.
- * Uses the shared notify Edge Function; recipient emails are resolved inside the function from memberId/staffId.
+ * True when date, time, staff, service, or client changed (notes-only edits are excluded).
  */
-export async function sendVisitCreatedNotifications({
-  visit,
-  member,
-  staff,
-}: {
-  visit: Visit;
-  member: Member;
-  staff: Profile | null | undefined;
-}): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
-  const supabase = createAdminClient();
-  const templateVars = buildVisitNotificationVariables(visit, member, staff);
+export function hasScheduleChanged(before: Visit, after: Visit): boolean {
+  const dateChanged =
+    format(new Date(before.date), "yyyy-MM-dd") !== format(new Date(after.date), "yyyy-MM-dd");
+  const timeChanged =
+    format(new Date(before.time), "HH:mm") !== format(new Date(after.time), "HH:mm");
+  return (
+    dateChanged ||
+    timeChanged ||
+    (before.staffId ?? null) !== (after.staffId ?? null) ||
+    before.eventTypeId !== after.eventTypeId ||
+    before.memberId !== after.memberId
+  );
+}
 
+function buildVisitNotificationVariables(
+  visit: Visit,
+  member: Member,
+  staff: Profile | null | undefined,
+  previousVisit?: Visit
+): Record<string, unknown> {
+  const vars: Record<string, unknown> = {
+    memberName: `${member.firstName} ${member.lastName}`,
+    staffName: staff ? `${staff.firstName} ${staff.lastName}` : undefined,
+    serviceName: visit.eventTypeName,
+    date: formatVisitDate(visit.date),
+    time: formatVisitTime(visit.time),
+    durationMinutes: visit.eventTypeDuration ?? undefined,
+    notes: visit.notes ?? undefined,
+    startIso: visitStartIso(visit),
+  };
+
+  if (previousVisit) {
+    vars.previousDate = formatVisitDate(previousVisit.date);
+    vars.previousTime = formatVisitTime(previousVisit.time);
+  }
+
+  return vars;
+}
+
+async function appendOrgTemplateVars(
+  organizationId: string,
+  templateVars: Record<string, unknown>
+): Promise<void> {
   const [org, contact] = await Promise.all([
-    getOrganizationById(visit.organizationId),
-    getOrganizationContact(visit.organizationId),
+    getOrganizationById(organizationId),
+    getOrganizationContact(organizationId),
   ]);
 
   const orgAddress = contact?.address
@@ -156,11 +172,29 @@ export async function sendVisitCreatedNotifications({
     orgWebsite: contact?.socialLinks?.website,
     orgAddress,
   });
+}
+
+async function sendVisitEmailPair({
+  visit,
+  member,
+  staff,
+  clientTemplate,
+  staffTemplate,
+}: {
+  visit: Visit;
+  member: Member;
+  staff: Profile | null | undefined;
+  clientTemplate: string;
+  staffTemplate: string;
+}): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
+  const supabase = createAdminClient();
+  const templateVars = buildVisitNotificationVariables(visit, member, staff);
+  await appendOrgTemplateVars(visit.organizationId, templateVars);
 
   const clientResult = await invokeNotify(supabase, {
     type: "email" as const,
     recipients: [member.email],
-    template: "visit_created_client",
+    template: clientTemplate,
     templateData: templateVars,
   });
 
@@ -168,7 +202,7 @@ export async function sendVisitCreatedNotifications({
     organizationId: visit.organizationId,
     visitId: visit.id,
     type: "email",
-    template: "visit_created_client",
+    template: clientTemplate,
     recipient: member.email,
     status: clientResult.ok ? "sent" : "failed",
     error: !clientResult.ok ? String(clientResult.error) : undefined,
@@ -179,7 +213,7 @@ export async function sendVisitCreatedNotifications({
     staffResult = await invokeNotify(supabase, {
       type: "email" as const,
       recipients: [staff.email],
-      template: "visit_created_staff",
+      template: staffTemplate,
       templateData: templateVars,
     });
 
@@ -187,7 +221,107 @@ export async function sendVisitCreatedNotifications({
       organizationId: visit.organizationId,
       visitId: visit.id,
       type: "email",
-      template: "visit_created_staff",
+      template: staffTemplate,
+      recipient: staff.email,
+      status: staffResult.ok ? "sent" : "failed",
+      error: !staffResult.ok ? String(staffResult.error) : undefined,
+    });
+  }
+
+  return { client: clientResult, staff: staffResult };
+}
+
+/**
+ * Send "visit created" notifications: one to the client, and optionally one to the assigned staff.
+ */
+export async function sendVisitCreatedNotifications({
+  visit,
+  member,
+  staff,
+}: {
+  visit: Visit;
+  member: Member;
+  staff: Profile | null | undefined;
+}): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
+  return sendVisitEmailPair({
+    visit,
+    member,
+    staff,
+    clientTemplate: "visit_created_client",
+    staffTemplate: "visit_created_staff",
+  });
+}
+
+/**
+ * Send "visit cancelled" notifications to the client and assigned staff.
+ */
+export async function sendVisitCancelledNotifications({
+  visit,
+  member,
+  staff,
+}: {
+  visit: Visit;
+  member: Member;
+  staff: Profile | null | undefined;
+}): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
+  return sendVisitEmailPair({
+    visit,
+    member,
+    staff,
+    clientTemplate: "visit_cancelled_client",
+    staffTemplate: "visit_cancelled_staff",
+  });
+}
+
+/**
+ * Send "visit rescheduled" notifications with previous and new schedule details.
+ */
+export async function sendVisitRescheduledNotifications({
+  visit,
+  member,
+  staff,
+  previousVisit,
+}: {
+  visit: Visit;
+  member: Member;
+  staff: Profile | null | undefined;
+  previousVisit: Visit;
+}): Promise<{ client: InvokeNotifyResult; staff: InvokeNotifyResult | null }> {
+  const supabase = createAdminClient();
+  const templateVars = buildVisitNotificationVariables(visit, member, staff, previousVisit);
+  await appendOrgTemplateVars(visit.organizationId, templateVars);
+
+  const clientResult = await invokeNotify(supabase, {
+    type: "email" as const,
+    recipients: [member.email],
+    template: "visit_rescheduled_client",
+    templateData: templateVars,
+  });
+
+  await logNotification({
+    organizationId: visit.organizationId,
+    visitId: visit.id,
+    type: "email",
+    template: "visit_rescheduled_client",
+    recipient: member.email,
+    status: clientResult.ok ? "sent" : "failed",
+    error: !clientResult.ok ? String(clientResult.error) : undefined,
+  });
+
+  let staffResult: InvokeNotifyResult | null = null;
+  if (staff) {
+    staffResult = await invokeNotify(supabase, {
+      type: "email" as const,
+      recipients: [staff.email],
+      template: "visit_rescheduled_staff",
+      templateData: templateVars,
+    });
+
+    await logNotification({
+      organizationId: visit.organizationId,
+      visitId: visit.id,
+      type: "email",
+      template: "visit_rescheduled_staff",
       recipient: staff.email,
       status: staffResult.ok ? "sent" : "failed",
       error: !staffResult.ok ? String(staffResult.error) : undefined,
