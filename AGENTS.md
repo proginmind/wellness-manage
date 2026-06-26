@@ -19,6 +19,7 @@ Entry point for Cursor agents (and humans) working in this repo.
 | Seed script          | `scripts/seed-db.ts` (`pnpm db:seed`)       |
 | Deploy (Supabase)    | `pnpm deploy` → `scripts/deploy.sh`         |
 | Manual E2E scenarios | `docs/e2e-scenarios.md`                     |
+| Beta feedback log    | `docs/beta-feedback.md`                     |
 | API docs (Scalar)    | `/api/docs` — spec in `public/openapi.yaml` |
 
 ## Common commands
