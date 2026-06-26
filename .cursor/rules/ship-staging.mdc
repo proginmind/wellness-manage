@@ -17,7 +17,7 @@ If changes are already committed:
 pnpm ship:staging --skip-commit
 ```
 
-Script: `scripts/ship-staging.sh` — commits (optional), pushes `staging`, opens/reuses PR to `main`, waits for CI (`gh pr checks --watch`), merges, pulls `main`, returns to `staging` and merges `main` into it.
+Script: `scripts/ship-staging.sh` — commits (optional), pushes `staging`, opens/reuses PR to `main`, waits for CI, **rebase-merges** into `main`, then **resets `staging` to `main`** (no merge-back — staging already had the commits).
 
 Requires: `gh` CLI authenticated, on `staging` branch (script switches if needed).
 

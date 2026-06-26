@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (complete visit feature)
+> **Updated by:** agent (hide payment method for lifetime)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -9,7 +9,7 @@ Agents and humans: read this file at the **start** of a work session and update 
 
 ## Current focus
 
-**Mark appointment as completed** — implemented (detail page + API + edit guards).
+No active implementation in progress.
 
 ---
 
@@ -23,10 +23,11 @@ Agents and humans: read this file at the **start** of a work session and update 
 
 ## Recently completed
 
-| Item                              | Date       | Notes                                                                         |
-| --------------------------------- | ---------- | ----------------------------------------------------------------------------- |
-| Mark appointment as **completed** | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards            |
-| Project state tracking setup      | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc` |
+| Item                                      | Date       | Notes                                                                         |
+| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------- |
+| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions            |
+| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards            |
+| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc` |
 
 ---
 
@@ -34,22 +35,22 @@ Agents and humans: read this file at the **start** of a work session and update 
 
 ### Product — beta / paid pilot blockers
 
-| Priority | Item                                              | Why                                                                            |
-| -------- | ------------------------------------------------- | ------------------------------------------------------------------------------ |
-| P1       | Stripe payment method update (or Customer Portal) | Stub in `src/components/billing/payment-method-card.tsx`                       |
-| P1       | Staff invite / add flow                           | Invitations removed (`040_drop_invitations_feature.sql`); team is list-only    |
-| P2       | Client profile: appointment history               | Not on member detail page                                                      |
-| P2       | Cancel/reschedule email notifications             | Only visit-created emails via `notify` edge function                           |
-| P2       | Commit `docs/e2e-scenarios.md`                    | Manual E2E checklist exists but untracked                                      |
-| P2       | **`docs/BETA_GUIDE.md`** for concierge testers    | Login, scope/limitations, how to reach you — replaces public signup UX for now |
+| Priority | Item                                           | Why                                                                            |
+| -------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| P1       | Staff invite / add flow                        | Invitations removed (`040_drop_invitations_feature.sql`); team is list-only    |
+| P2       | Client profile: appointment history            | Not on member detail page                                                      |
+| P2       | Cancel/reschedule email notifications          | Only visit-created emails via `notify` edge function                           |
+| P2       | Commit `docs/e2e-scenarios.md`                 | Manual E2E checklist exists but untracked                                      |
+| P2       | **`docs/BETA_GUIDE.md`** for concierge testers | Login, scope/limitations, how to reach you — replaces public signup UX for now |
 
 ### Deferred (after small-audience beta validation)
 
-| Item                                    | Gate                                                                                                  |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Public **signup page**                  | Product loop validated with concierge users; support polish in place                                  |
-| **Subscription plans** (monthly/yearly) | Lifetime license sufficient for first beta cohort; recurring billing for later stages / broader users |
-| In-app **feedback channel**             | Email/chat + [`docs/beta-feedback.md`](./beta-feedback.md) sufficient for now                         |
+| Item                                                  | Gate                                                                                                  |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Public **signup page**                                | Product loop validated with concierge users; support polish in place                                  |
+| **Subscription plans** (monthly/yearly)               | Lifetime license sufficient for first beta cohort; recurring billing for later stages / broader users |
+| **Payment method update** (Customer Portal or custom) | With subscription plans — not needed for lifetime one-time checkout                                   |
+| In-app **feedback channel**                           | Email/chat + [`docs/beta-feedback.md`](./beta-feedback.md) sufficient for now                         |
 
 ### Infrastructure
 
@@ -75,6 +76,7 @@ Agents and humans: read this file at the **start** of a work session and update 
 | 2026-06-26 | **First beta users:** small-business **owners**         | Massage salons, osteopath practices, similar — owner-operators or owner-managed cabinets; not enterprise chains. Likely solo or small team (staff invite gap matters less if owner-only at first).                                             |
 | 2026-06-26 | **Stripe: lifetime license only**                       | One-time lifetime product configured in Dashboard; no subscription plans for beta. Recurring subscriptions deferred to later stages / other user segments.                                                                                     |
 | 2026-06-26 | **Beta feedback:** email/chat → `docs/beta-feedback.md` | No in-app feedback; owner collects via email or chat apps and logs entries in repo under `docs/`.                                                                                                                                              |
+| 2026-06-26 | **Defer payment method update** for lifetime beta       | Lifetime is one-time Checkout; hide billing payment-method card until subscription plans ship                                                                                                                                                  |
 
 ---
 
