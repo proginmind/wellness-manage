@@ -1277,7 +1277,8 @@ export async function updateVisit(
 
   if (error || !data) {
     console.error("Error updating visit:", error);
-    throw new Error("Failed to update visit");
+    const { toVisitOverlapError } = await import("@/lib/visit-errors");
+    throw new Error(toVisitOverlapError(error?.message));
   }
 
   return dbToVisit(data);
@@ -1357,7 +1358,8 @@ export async function createVisit(formData: VisitFormValues, userId: string): Pr
 
   if (error) {
     console.error("Error creating visit:", error);
-    throw new Error(error.code === "23505" ? "Visit already exists" : "Failed to create visit");
+    const { toVisitOverlapError } = await import("@/lib/visit-errors");
+    throw new Error(toVisitOverlapError(error.message));
   }
 
   return dbToVisit(data);

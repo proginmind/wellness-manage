@@ -2,25 +2,18 @@ import { NextResponse } from "next/server";
 
 import { requirePermission } from "@/lib/api-permissions";
 import { sendVisitCreatedNotifications } from "@/lib/notify";
-import {
-  getMemberById,
-  getProfileById,
-  getProfileWithEventTypes,
-  getVisits,
-} from "@/lib/supabase/queries";
-import { createClient } from "@/lib/supabase/server";
+import { getMemberById, getProfileById, getVisits } from "@/lib/supabase/queries";
+import { visitCreateRequestSchema } from "@/lib/validations/visit";
+import { isVisitOverlapError } from "@/lib/visit-errors";
 
 export async function GET(request: Request) {
   try {
-    // Check permission: visits.view
     const permissionResult = await requirePermission("visits", "view");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
-    // Get search query from URL params
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || undefined;
 
-    // Fetch visits from database (organization-scoped via query function)
     const visitsData = await getVisits(search);
 
     return NextResponse.json({
@@ -39,20 +32,25 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // Check permission: visits.create
     const permissionResult = await requirePermission("visits", "create");
     if (permissionResult instanceof NextResponse) return permissionResult;
 
     const { userId } = permissionResult;
 
-    // Parse request body
     const body = await request.json();
+    const parsed = visitCreateRequestSchema.safeParse(body);
 
-    // Import queries dynamically to avoid circular dependency issues
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parsed.error.flatten() },
+        { status: 422 }
+      );
+    }
+
+    const { bookingMode: _bookingMode, ...formData } = parsed.data;
+
     const { createVisit } = await import("@/lib/supabase/queries");
-
-    // Create visit in database
-    const newVisit = await createVisit(body, userId);
+    const newVisit = await createVisit(formData, userId);
 
     const member = await getMemberById(newVisit.memberId);
     const staff = newVisit.staffId ? await getProfileById(newVisit.staffId) : null;
@@ -84,6 +82,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating visit:", error);
     const message = error instanceof Error ? error.message : "Failed to create visit";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = isVisitOverlapError(message) ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
