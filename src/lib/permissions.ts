@@ -68,7 +68,7 @@ export const PERMISSIONS = {
     organization: ["view", "update", "delete"] as Action[],
 
     // Staff: Full management
-    staff: ["view", "remove", "update"] as Action[],
+    staff: ["view", "create", "remove", "update"] as Action[],
 
     // Event Types: Full management (owner only)
     event_types: ["view", "create", "update", "delete"] as Action[],
@@ -318,6 +318,7 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
 
   // Staff
   "staff.view": "View staff members",
+  "staff.create": "Add staff members",
   "staff.remove": "Remove staff members",
   "staff.update": "Update staff member qualifications",
 
@@ -354,7 +355,6 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "organization.export": "N/A",
   "organization.remove": "N/A",
   "organization.manage": "N/A",
-  "staff.create": "N/A",
   "staff.delete": "N/A",
   "staff.archive": "N/A",
   "staff.export": "N/A",

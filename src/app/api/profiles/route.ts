@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { StaffListResponse } from "@/types/api";
 import { requirePermission } from "@/lib/api-permissions";
+import { createStaffProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
+import { staffFormSchema } from "@/lib/validations/staff";
 
 export async function GET(request: Request) {
   try {
@@ -101,5 +103,53 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching profiles:", error);
     return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const permissionResult = await requirePermission("staff", "create");
+    if (permissionResult instanceof NextResponse) return permissionResult;
+
+    const { organizationId } = permissionResult;
+    const body = await request.json();
+    const parsed = staffFormSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { firstName, lastName, email, description, dateOfBirth, phoneNumber, avatarImage } =
+      parsed.data;
+
+    try {
+      const profile = await createStaffProfile(organizationId, {
+        firstName,
+        lastName,
+        email,
+        description: description || undefined,
+        dateOfBirth: dateOfBirth || undefined,
+        phoneNumber: phoneNumber || undefined,
+        avatarImage: avatarImage || undefined,
+      });
+
+      return NextResponse.json(
+        { profile, message: "Staff member created successfully" },
+        { status: 201 }
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create staff profile";
+      if (message.includes("already exists")) {
+        return NextResponse.json({ error: message }, { status: 409 });
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creating staff profile:", error);
+    const message = error instanceof Error ? error.message : "Failed to create staff profile";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -218,6 +218,7 @@ export function useStaffPermissions() {
 
   return {
     canViewStaff: can("staff", "view"),
+    canCreateStaff: can("staff", "create"),
     canRemoveStaff: can("staff", "remove"),
   };
 }

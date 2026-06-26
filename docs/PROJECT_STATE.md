@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (hide payment method for lifetime)
+> **Updated by:** agent (manual add staff)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -23,11 +23,12 @@ No active implementation in progress.
 
 ## Recently completed
 
-| Item                                      | Date       | Notes                                                                         |
-| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------- |
-| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions            |
-| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards            |
-| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc` |
+| Item                                      | Date       | Notes                                                                               |
+| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| Manual **add staff** from Staff page      | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup |
+| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                  |
+| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                  |
+| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`       |
 
 ---
 
@@ -37,7 +38,6 @@ No active implementation in progress.
 
 | Priority | Item                                           | Why                                                                            |
 | -------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| P1       | Staff invite / add flow                        | Invitations removed (`040_drop_invitations_feature.sql`); team is list-only    |
 | P2       | Client profile: appointment history            | Not on member detail page                                                      |
 | P2       | Cancel/reschedule email notifications          | Only visit-created emails via `notify` edge function                           |
 | P2       | Commit `docs/e2e-scenarios.md`                 | Manual E2E checklist exists but untracked                                      |
@@ -51,6 +51,7 @@ No active implementation in progress.
 | **Subscription plans** (monthly/yearly)               | Lifetime license sufficient for first beta cohort; recurring billing for later stages / broader users |
 | **Payment method update** (Customer Portal or custom) | With subscription plans — not needed for lifetime one-time checkout                                   |
 | In-app **feedback channel**                           | Email/chat + [`docs/beta-feedback.md`](./beta-feedback.md) sufficient for now                         |
+| **Email/auth staff invitations**                      | Manual profile add sufficient for beta; invite flow if self-serve signup ships                        |
 
 ### Infrastructure
 
@@ -76,7 +77,7 @@ No active implementation in progress.
 | 2026-06-26 | **First beta users:** small-business **owners**         | Massage salons, osteopath practices, similar — owner-operators or owner-managed cabinets; not enterprise chains. Likely solo or small team (staff invite gap matters less if owner-only at first).                                             |
 | 2026-06-26 | **Stripe: lifetime license only**                       | One-time lifetime product configured in Dashboard; no subscription plans for beta. Recurring subscriptions deferred to later stages / other user segments.                                                                                     |
 | 2026-06-26 | **Beta feedback:** email/chat → `docs/beta-feedback.md` | No in-app feedback; owner collects via email or chat apps and logs entries in repo under `docs/`.                                                                                                                                              |
-| 2026-06-26 | **Defer payment method update** for lifetime beta       | Lifetime is one-time Checkout; hide billing payment-method card until subscription plans ship                                                                                                                                                  |
+| 2026-06-26 | **Manual staff add** (no email invite)                  | Owner creates staff profile on `/team/new`; `user_id` null until same email signs up                                                                                                                                                           |
 
 ---
 
@@ -94,12 +95,12 @@ No active implementation in progress.
 
 **Target users (beta):** owners of small massage salons, osteopath cabinets, and similar practices — back-office scheduling, not clinical records. Product name: **Wellness Manage**.
 
-| Scenario                                      | Ready?                                       |
-| --------------------------------------------- | -------------------------------------------- |
-| Guided beta (you set up account, 2-week test) | Yes — **intended path**                      |
-| Self-serve signup → trial → pay               | **Deferred** — not a current gap             |
-| Solo practitioner daily use                   | Yes — complete visit from appointment detail |
-| Owner + staff with separate logins            | No — no staff invite UI                      |
+| Scenario                                      | Ready?                                               |
+| --------------------------------------------- | ---------------------------------------------------- |
+| Guided beta (you set up account, 2-week test) | Yes — **intended path**                              |
+| Self-serve signup → trial → pay               | **Deferred** — not a current gap                     |
+| Solo practitioner daily use                   | Yes — complete visit from appointment detail         |
+| Owner + staff with separate logins            | Partial — manual add; login when same email signs up |
 
 **Strong:** RBAC, trial gating, appointment booking + availability, services, Stripe webhook design.  
 **Weak:** staff onboarding (multi-login), billing polish, notifications beyond create.  
