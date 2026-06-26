@@ -12,8 +12,10 @@ import useSWRMutation from "swr/mutation";
 import { Member } from "@/types/member";
 import { fetcher } from "@/lib/fetcher";
 import { buildRoute } from "@/lib/routes";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { AppLayout } from "@/components/app-layout";
 import { MemberStatusBadge } from "@/components/member-status-badge";
+import { MemberVisitHistory } from "@/components/member-visit-history";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +57,7 @@ export default function MemberDetailPage() {
     `/api/members/${memberId}`,
     fetcher
   );
+  useTrialGuard(error);
 
   const { trigger: triggerArchive, isMutating: isArchiving } = useSWRMutation(
     `/api/members/${memberId}`,
@@ -235,6 +238,8 @@ export default function MemberDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <MemberVisitHistory memberId={member.id} />
           </div>
 
           {/* Right Column - Sidebar */}

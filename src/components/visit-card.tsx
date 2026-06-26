@@ -1,45 +1,17 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { Calendar, CheckCircle, Clock, Clock3, User, XCircle } from "lucide-react";
+import { Calendar, Clock, Clock3, User } from "lucide-react";
 
 import { Member } from "@/types/member";
 import { Visit } from "@/types/visit";
 import { buildRoute } from "@/lib/routes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { VisitStatusBadge } from "@/components/visit-status-badge";
 
 interface VisitCardProps {
   visit: Visit;
   member: Member;
-}
-
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "completed":
-      return (
-        <Badge variant="default" className="bg-green-500">
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Completed
-        </Badge>
-      );
-    case "pending":
-      return (
-        <Badge variant="secondary">
-          <Clock3 className="h-3 w-3 mr-1" />
-          Pending
-        </Badge>
-      );
-    case "cancelled":
-      return (
-        <Badge variant="destructive">
-          <XCircle className="h-3 w-3 mr-1" />
-          Cancelled
-        </Badge>
-      );
-    default:
-      return <Badge>{status}</Badge>;
-  }
 }
 
 export function VisitCard({ visit, member }: VisitCardProps) {
@@ -108,7 +80,9 @@ export function VisitCard({ visit, member }: VisitCardProps) {
             </div>
 
             {/* Right: Status */}
-            <div className="flex items-center md:justify-end">{getStatusBadge(visit.status)}</div>
+            <div className="flex items-center md:justify-end">
+              <VisitStatusBadge status={visit.status} />
+            </div>
           </div>
         </CardContent>
       </Card>

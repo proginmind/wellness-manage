@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (manual add staff)
+> **Updated by:** agent (client appointment history)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -23,12 +23,13 @@ No active implementation in progress.
 
 ## Recently completed
 
-| Item                                      | Date       | Notes                                                                               |
-| ----------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
-| Manual **add staff** from Staff page      | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup |
-| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                  |
-| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                  |
-| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`       |
+| Item                                      | Date       | Notes                                                                                    |
+| ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| Client profile: **appointment history**   | 2026-06-26 | `GET /api/members/[id]/visits`, `MemberVisitHistory` on member detail; E2E MH-01–04 pass |
+| Manual **add staff** from Staff page      | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup      |
+| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                       |
+| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                       |
+| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`            |
 
 ---
 
@@ -38,7 +39,6 @@ No active implementation in progress.
 
 | Priority | Item                                           | Why                                                                            |
 | -------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| P2       | Client profile: appointment history            | Not on member detail page                                                      |
 | P2       | Cancel/reschedule email notifications          | Only visit-created emails via `notify` edge function                           |
 | P2       | Commit `docs/e2e-scenarios.md`                 | Manual E2E checklist exists but untracked                                      |
 | P2       | **`docs/BETA_GUIDE.md`** for concierge testers | Login, scope/limitations, how to reach you — replaces public signup UX for now |
@@ -130,4 +130,5 @@ _None — see Decisions log._
 - **Page labels vs code:** members → Clients, visits → Appointments, event_types → Services (see `page-conventions.mdc`).
 - **Beta onboarding:** no `/signup` — create users via Supabase Dashboard or `pnpm db:seed`; see Decisions log.
 - When picking up backlog items, move row from Backlog → Active work, then to Recently completed when done.
+- **MH E2E (2026-06-26):** MH-01 pass (Emma Johnson, 3 visits newest-first); MH-02 pass (row → visit detail); MH-03 pass (empty state + Book appointment); MH-04 pass (Pending/Completed/Cancelled badges on Olivia Brown); MH-05 not browser-tested — staff has `visits.view` + `members.view` per permissions.
 - If this file grows past ~200 lines, archive old "Recently completed" rows to `docs/PROJECT_STATE_ARCHIVE.md`.

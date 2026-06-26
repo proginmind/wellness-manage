@@ -3,6 +3,7 @@ import { UserRole } from "@/lib/permissions";
 import { EventCategory } from "./event-category";
 import { EventType } from "./event-type";
 import { Member } from "./member";
+import { Visit } from "./visit";
 
 /**
  * API Response Types
@@ -14,6 +15,11 @@ export interface MembersListResponse {
   members: Member[];
   total: number;
   search: string | null;
+}
+
+export interface MemberVisitsResponse {
+  visits: Visit[];
+  total: number;
 }
 
 // Event Types API Response
