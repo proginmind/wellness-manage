@@ -19,8 +19,11 @@ Release workflow (staging → main):
   2. Push origin/staging
   3. Create PR to main (or reuse open PR)
   4. Wait for CI checks (Vercel, etc.)
-  5. Merge PR into main
-  6. Pull main locally, switch back to staging, merge main into staging
+  5. Rebase-merge PR into main (linear history, no merge commit)
+  6. Pull main, reset staging to main, push staging
+
+Staging already contains the shipped commits — after rebase-merge, main has them
+with new SHAs. Reset staging to main so both branches match (no merge-back).
 
 Options:
   --skip-commit   Fail if there are uncommitted changes instead of committing
@@ -104,18 +107,17 @@ fi
 echo "→ wait for checks on PR #$pr_number"
 gh pr checks "$pr_number" --watch --fail-fast
 
-echo "→ merge PR #$pr_number into $BASE_BRANCH"
-gh pr merge "$pr_number" --merge
+echo "→ rebase-merge PR #$pr_number into $BASE_BRANCH"
+gh pr merge "$pr_number" --rebase
 
 echo "→ update local $BASE_BRANCH"
+git fetch origin "$BASE_BRANCH"
 git checkout "$BASE_BRANCH"
 git pull origin "$BASE_BRANCH"
 
-echo "→ switch back to $HEAD_BRANCH and sync with $BASE_BRANCH"
+echo "→ reset $HEAD_BRANCH to $BASE_BRANCH (same commits, no merge-back)"
 git checkout "$HEAD_BRANCH"
-git merge "$BASE_BRANCH" -m "Merge branch '$BASE_BRANCH' into $HEAD_BRANCH"
+git reset --hard "origin/$BASE_BRANCH"
+git push --force-with-lease origin "$HEAD_BRANCH"
 
-echo "→ push origin/$HEAD_BRANCH (sync merge commit)"
-git push origin "$HEAD_BRANCH"
-
-echo "✓ Done. PR merged; local and remote $BASE_BRANCH and $HEAD_BRANCH are up to date."
+echo "✓ Done. PR merged (rebase). $BASE_BRANCH and $HEAD_BRANCH both at $(git rev-parse --short HEAD)."
