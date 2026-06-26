@@ -20,12 +20,32 @@ function minutesToTime(min: number): string {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
-/** Get list of dates (ISO YYYY-MM-DD) that have at least one available slot */
+function getLocalDateString(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** Slot start must be strictly after now when booking for today */
+function isFutureSlot(dateStr: string, slotStartMins: number, now: Date = new Date()): boolean {
+  if (dateStr !== getLocalDateString(now)) return true;
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  return slotStartMins > nowMins;
+}
+
+/** Dates with at least one free slot from qualified or any staff */
+export interface AvailableDatesResult {
+  qualifiedDates: string[];
+  unqualifiedOnlyDates: string[];
+}
+
+/** Get bookable dates split by whether qualified staff are available */
 export async function getAvailableDates(
   eventTypeId: string,
   startDate: string,
   endDate: string
-): Promise<string[]> {
+): Promise<AvailableDatesResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -41,24 +61,29 @@ export async function getAvailableDates(
     .eq("id", eventTypeId)
     .eq("organization_id", profile.organizationId)
     .single();
-  if (etError || !eventType) return [];
+  if (etError || !eventType) return { qualifiedDates: [], unqualifiedOnlyDates: [] };
 
   const durationMins = eventType.duration as number;
 
-  // Qualified staff (profiles who can do this service)
+  const { data: orgProfiles } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", profile.organizationId);
+  const allProfileIds = (orgProfiles ?? []).map((p: { id: string }) => p.id);
+  if (allProfileIds.length === 0) return { qualifiedDates: [], unqualifiedOnlyDates: [] };
+
   const { data: assignments } = await supabase
     .from("profiles_event_types")
     .select("profile_id")
     .eq("event_type_id", eventTypeId)
     .eq("organization_id", profile.organizationId);
-  const qualifiedProfileIds = (assignments ?? []).map((a: { profile_id: string }) => a.profile_id);
-  if (qualifiedProfileIds.length === 0) return [];
+  const qualifiedProfileIds = new Set(
+    (assignments ?? []).map((a: { profile_id: string }) => a.profile_id)
+  );
 
-  // Staff availability: profile_id, day_of_week (0-6), start_time, end_time
   const { data: availabilityRows } = await supabase
     .from("staff_availability")
     .select("profile_id, day_of_week, start_time, end_time")
-    .in("profile_id", qualifiedProfileIds)
     .eq("organization_id", profile.organizationId)
     .eq("is_available", true);
 
@@ -68,7 +93,8 @@ export async function getAvailableDates(
     Map<number, Array<{ start: number; end: number }>>
   >();
   for (const row of availabilityRows ?? []) {
-    const pid = row.profile_id;
+    const pid = row.profile_id as string;
+    if (!allProfileIds.includes(pid)) continue;
     const day = row.day_of_week as number;
     const start = timeToMinutes(String(row.start_time).slice(0, 5));
     const end = timeToMinutes(String(row.end_time).slice(0, 5));
@@ -100,18 +126,23 @@ export async function getAvailableDates(
     busySlotsByDateAndStaff.get(key)!.push({ start, end });
   }
 
-  const results: string[] = [];
+  const qualifiedDates: string[] = [];
+  const unqualifiedOnlyDates: string[] = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
+  const now = new Date();
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = getLocalDateString(d);
     const dayOfWeek = d.getDay();
 
-    let hasSlot = false;
-    for (const profileId of qualifiedProfileIds) {
+    let hasQualifiedSlot = false;
+    let hasAnySlot = false;
+
+    for (const profileId of allProfileIds) {
       const byDay = availabilityByProfile.get(profileId)?.get(dayOfWeek);
       if (!byDay?.length) continue;
       const busy = busySlotsByDateAndStaff.get(`${dateStr}-${profileId}`) ?? [];
+      const isQualified = qualifiedProfileIds.has(profileId);
 
       for (const window of byDay) {
         for (
@@ -121,18 +152,30 @@ export async function getAvailableDates(
         ) {
           const slotEnd = slotStart + durationMins;
           const overlaps = busy.some((b) => slotStart < b.end && slotEnd > b.start);
-          if (!overlaps) {
-            hasSlot = true;
+          if (!overlaps && isFutureSlot(dateStr, slotStart, now)) {
+            hasAnySlot = true;
+            if (isQualified) hasQualifiedSlot = true;
             break;
           }
         }
-        if (hasSlot) break;
+        if (hasQualifiedSlot) break;
       }
-      if (hasSlot) break;
+      if (hasQualifiedSlot) break;
     }
-    if (hasSlot) results.push(dateStr);
+
+    if (hasQualifiedSlot) {
+      qualifiedDates.push(dateStr);
+    } else if (hasAnySlot) {
+      unqualifiedOnlyDates.push(dateStr);
+    }
   }
-  return results;
+  return { qualifiedDates, unqualifiedOnlyDates };
+}
+
+export interface StaffAssignedService {
+  id: string;
+  name: string;
+  color?: string;
 }
 
 export interface SlotStaff {
@@ -142,6 +185,8 @@ export interface SlotStaff {
   profileUrl?: string;
   avatarUrl?: string;
   hasServedClient: boolean;
+  isQualifiedForService: boolean;
+  assignedServices: StaffAssignedService[];
 }
 
 export interface TimeSlot {
@@ -175,25 +220,54 @@ export async function getAvailableSlots(
   const durationMins = eventType.duration as number;
   const dayOfWeek = new Date(date + "T12:00:00").getDay();
 
-  const { data: assignments } = await supabase
-    .from("profiles_event_types")
-    .select("profile_id")
-    .eq("event_type_id", eventTypeId)
+  const { data: orgProfiles } = await supabase
+    .from("profiles")
+    .select("id, first_name, last_name, avatar_image, email")
     .eq("organization_id", profile.organizationId);
-  const qualifiedProfileIds = (assignments ?? []).map((a: { profile_id: string }) => a.profile_id);
-  if (qualifiedProfileIds.length === 0) return [];
+  const allProfileIds = (orgProfiles ?? []).map((p: { id: string }) => p.id);
+  if (allProfileIds.length === 0) return [];
+
+  const { data: serviceAssignments } = await supabase
+    .from("profiles_event_types")
+    .select("profile_id, event_type_id, event_types(id, name, color)")
+    .eq("organization_id", profile.organizationId)
+    .in("profile_id", allProfileIds);
+
+  const qualifiedProfileIds = new Set<string>();
+  const servicesByProfile = new Map<string, StaffAssignedService[]>();
+  for (const row of serviceAssignments ?? []) {
+    const profileId = row.profile_id as string;
+    if (row.event_type_id === eventTypeId) {
+      qualifiedProfileIds.add(profileId);
+    }
+    const rawEventType = row.event_types;
+    const assignedEventType = (Array.isArray(rawEventType) ? rawEventType[0] : rawEventType) as
+      | { id: string; name: string; color?: string }
+      | null
+      | undefined;
+    if (!assignedEventType) continue;
+    if (!servicesByProfile.has(profileId)) servicesByProfile.set(profileId, []);
+    const list = servicesByProfile.get(profileId)!;
+    if (!list.some((s) => s.id === assignedEventType.id)) {
+      list.push({
+        id: assignedEventType.id,
+        name: assignedEventType.name,
+        color: assignedEventType.color,
+      });
+    }
+  }
 
   const { data: availabilityRows } = await supabase
     .from("staff_availability")
     .select("profile_id, start_time, end_time")
-    .in("profile_id", qualifiedProfileIds)
     .eq("organization_id", profile.organizationId)
     .eq("is_available", true)
     .eq("day_of_week", dayOfWeek);
 
   const windowsByProfile = new Map<string, Array<{ start: number; end: number }>>();
   for (const row of availabilityRows ?? []) {
-    const pid = row.profile_id;
+    const pid = row.profile_id as string;
+    if (!allProfileIds.includes(pid)) continue;
     const start = timeToMinutes(String(row.start_time).slice(0, 5));
     const end = timeToMinutes(String(row.end_time).slice(0, 5));
     if (!windowsByProfile.has(pid)) windowsByProfile.set(pid, []);
@@ -218,10 +292,7 @@ export async function getAvailableSlots(
     busyByStaff.get(v.staff_id)!.push({ start, end: start + dur });
   }
 
-  const { data: profilesData } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name, avatar_image, email")
-    .in("id", qualifiedProfileIds);
+  const profilesData = orgProfiles;
 
   const profileNames = new Map<string, string>();
   const profileAvatars = new Map<string, string>();
@@ -246,7 +317,7 @@ export async function getAvailableSlots(
   }
 
   const slotToStaff = new Map<number, SlotStaff[]>();
-  for (const profileId of qualifiedProfileIds) {
+  for (const profileId of allProfileIds) {
     const windows = windowsByProfile.get(profileId) ?? [];
     const busy = busyByStaff.get(profileId) ?? [];
     const staffInfo: SlotStaff = {
@@ -256,6 +327,8 @@ export async function getAvailableSlots(
       profileUrl: `/team/${profileId}`,
       avatarUrl: profileAvatars.get(profileId),
       hasServedClient: hasServedByStaff.has(profileId),
+      isQualifiedForService: qualifiedProfileIds.has(profileId),
+      assignedServices: servicesByProfile.get(profileId) ?? [],
     };
     for (const window of windows) {
       for (

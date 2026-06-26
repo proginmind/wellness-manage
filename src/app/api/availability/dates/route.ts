@@ -33,8 +33,12 @@ export async function GET(request: Request) {
     const startStr = format(startDate, "yyyy-MM-dd");
     const endStr = format(endDate, "yyyy-MM-dd");
 
-    const dates = await getAvailableDates(eventTypeId, startStr, endStr);
-    return NextResponse.json({ dates });
+    const { qualifiedDates, unqualifiedOnlyDates } = await getAvailableDates(
+      eventTypeId,
+      startStr,
+      endStr
+    );
+    return NextResponse.json({ qualifiedDates, unqualifiedOnlyDates });
   } catch (error) {
     console.error("Error fetching available dates:", error);
     return NextResponse.json(

@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import type { UseFormReturn } from "react-hook-form";
 
 import { isVisitDateTimeInPast, type VisitFormValues } from "@/lib/validations/visit";
+import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { VisitStaffSelect } from "@/components/visit-staff-select";
@@ -27,15 +28,14 @@ export function VisitManualDatetimeFields({ form, eventTypeId }: VisitManualDate
           <FormItem>
             <FormLabel>Date</FormLabel>
             <FormControl>
-              <Input
-                type="date"
-                min={todayMin}
-                {...field}
-                onChange={(e) => {
-                  const newDate = e.target.value;
+              <AvailabilityCalendar
+                variant="plain"
+                selected={field.value ? new Date(field.value + "T12:00:00") : undefined}
+                onSelect={(d) => {
+                  const newDate = d ? format(d, "yyyy-MM-dd") : "";
                   field.onChange(newDate);
                   const time = form.getValues("time");
-                  if (time && isVisitDateTimeInPast(newDate, time)) {
+                  if (time && newDate && isVisitDateTimeInPast(newDate, time)) {
                     form.setValue("time", "");
                     form.clearErrors("time");
                   }
