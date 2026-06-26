@@ -9,6 +9,7 @@ import useSWR from "swr";
 import { ProfileWithEventTypes } from "@/types/profile-event-type";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
+import { useTrialGuard } from "@/hooks/useTrialGuard";
 import { AppLayout } from "@/components/app-layout";
 import { PermissionGate } from "@/components/PermissionGate";
 import { StaffAvailabilityCard } from "@/components/staff-availability-card";
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { VisitHistoryCard } from "@/components/visit-history-card";
 
 export default function TeamMemberDetailPage() {
   const params = useParams();
@@ -26,6 +28,7 @@ export default function TeamMemberDetailPage() {
     buildApiRoute.profile(profileId),
     fetcher
   );
+  useTrialGuard(error);
 
   if (isLoading) {
     return (
@@ -208,6 +211,8 @@ export default function TeamMemberDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            <VisitHistoryCard profileId={profileId} />
           </div>
 
           {/* Right Column - Sidebar */}

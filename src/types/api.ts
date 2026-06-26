@@ -22,6 +22,11 @@ export interface MemberVisitsResponse {
   total: number;
 }
 
+export interface ProfileVisitsResponse {
+  visits: { visit: Visit; member: Member }[];
+  total: number;
+}
+
 // Event Types API Response
 export interface EventTypesListResponse {
   eventTypes: EventType[];

@@ -1228,6 +1228,36 @@ export async function getVisitsByMemberId(
 }
 
 /**
+ * Get all visits for a staff profile (organization-scoped), newest first
+ */
+export async function getVisitsByStaffId(
+  staffId: string,
+  organizationId: string
+): Promise<{ visit: Visit; member: Member }[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("visits")
+    .select(
+      "*, member:members(id, first_name, last_name, email, image, date_of_birth, date_joined)"
+    )
+    .eq("organization_id", organizationId)
+    .eq("staff_id", staffId)
+    .order("date", { ascending: false })
+    .order("time", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching staff visits:", error);
+    throw new Error("Failed to fetch staff visits");
+  }
+
+  return (data || []).map((row) => ({
+    visit: dbToVisit(row),
+    member: dbToMember(row.member),
+  }));
+}
+
+/**
  * Get a single visit by ID with member details (organization-scoped)
  * @param id - Visit ID
  * @param organizationId - Organization ID (required for organization scoping)

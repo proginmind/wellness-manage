@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { format } from "date-fns";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, User } from "lucide-react";
 import useSWR from "swr";
 
-import { MemberVisitsResponse } from "@/types/api";
+import { MemberVisitsResponse, ProfileVisitsResponse } from "@/types/api";
 import { Visit } from "@/types/visit";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
@@ -14,11 +14,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { VisitStatusBadge } from "@/components/visit-status-badge";
 
-interface MemberVisitHistoryProps {
-  memberId: string;
+interface VisitHistoryRow {
+  visit: Visit;
+  clientName?: string;
 }
 
-function MemberVisitHistoryItem({ visit }: { visit: Visit }) {
+type VisitHistoryCardProps =
+  | { memberId: string; profileId?: never }
+  | { profileId: string; memberId?: never };
+
+function VisitHistoryItem({ visit, clientName }: VisitHistoryRow) {
   return (
     <Link href={buildRoute.visit(visit.id)} className="block">
       <div className="flex items-center justify-between gap-4 rounded-lg border p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
@@ -31,6 +36,12 @@ function MemberVisitHistoryItem({ visit }: { visit: Visit }) {
             <Clock className="h-4 w-4 text-zinc-400 shrink-0" />
             <span>{format(new Date(visit.time), "h:mm a")}</span>
           </div>
+          {clientName && (
+            <div className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+              <User className="h-4 w-4 text-zinc-400 shrink-0" />
+              <span className="truncate">{clientName}</span>
+            </div>
+          )}
           <span className="text-sm text-zinc-600 dark:text-zinc-400 truncate">
             {visit.eventTypeName}
           </span>
@@ -41,14 +52,34 @@ function MemberVisitHistoryItem({ visit }: { visit: Visit }) {
   );
 }
 
-export function MemberVisitHistory({ memberId }: MemberVisitHistoryProps) {
-  const { data, error } = useSWR<MemberVisitsResponse>(
-    buildApiRoute.memberVisits(memberId),
+export function VisitHistoryCard(props: VisitHistoryCardProps) {
+  const isStaff = "profileId" in props && props.profileId !== undefined;
+  const apiUrl = isStaff
+    ? buildApiRoute.profileVisits(props.profileId)
+    : buildApiRoute.memberVisits(props.memberId);
+
+  const { data: memberData, error: memberError } = useSWR<MemberVisitsResponse>(
+    isStaff ? null : apiUrl,
     fetcher
   );
+  const { data: staffData, error: staffError } = useSWR<ProfileVisitsResponse>(
+    isStaff ? apiUrl : null,
+    fetcher
+  );
+
+  const error = isStaff ? staffError : memberError;
   useTrialGuard(error);
 
-  if (!data) {
+  const rows: VisitHistoryRow[] | undefined = isStaff
+    ? staffData?.visits.map(({ visit, member }) => ({
+        visit,
+        clientName: `${member.firstName} ${member.lastName}`,
+      }))
+    : memberData?.visits.map((visit) => ({ visit }));
+
+  const total = isStaff ? staffData?.total : memberData?.total;
+
+  if (!rows) {
     return (
       <Card>
         <CardHeader>
@@ -61,20 +92,20 @@ export function MemberVisitHistory({ memberId }: MemberVisitHistoryProps) {
     );
   }
 
-  const { visits } = data;
+  const emptyDescription = isStaff
+    ? "No appointments recorded for this staff member"
+    : "No appointments recorded for this client";
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Appointment History</CardTitle>
         <CardDescription>
-          {visits.length === 0
-            ? "No appointments recorded for this client"
-            : `${visits.length} appointment${visits.length === 1 ? "" : "s"}`}
+          {rows.length === 0 ? emptyDescription : `${total} appointment${total === 1 ? "" : "s"}`}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {visits.length === 0 ? (
+        {rows.length === 0 ? (
           <div className="text-center py-6">
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">No appointments yet</p>
             <Button asChild variant="outline" size="sm">
@@ -83,8 +114,8 @@ export function MemberVisitHistory({ memberId }: MemberVisitHistoryProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {visits.map((visit) => (
-              <MemberVisitHistoryItem key={visit.id} visit={visit} />
+            {rows.map(({ visit, clientName }) => (
+              <VisitHistoryItem key={visit.id} visit={visit} clientName={clientName} />
             ))}
           </div>
         )}
