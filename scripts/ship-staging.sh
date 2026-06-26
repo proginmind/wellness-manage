@@ -115,4 +115,7 @@ echo "→ switch back to $HEAD_BRANCH and sync with $BASE_BRANCH"
 git checkout "$HEAD_BRANCH"
 git merge "$BASE_BRANCH" -m "Merge branch '$BASE_BRANCH' into $HEAD_BRANCH"
 
-echo "✓ Done. PR merged; local $BASE_BRANCH and $HEAD_BRANCH are up to date."
+echo "→ push origin/$HEAD_BRANCH (sync merge commit)"
+git push origin "$HEAD_BRANCH"
+
+echo "✓ Done. PR merged; local and remote $BASE_BRANCH and $HEAD_BRANCH are up to date."
