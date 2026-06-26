@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-26  
-> **Updated by:** agent (cancel/reschedule email notifications)
+> **Updated by:** agent (BETA_GUIDE.md)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -23,14 +23,15 @@ No active implementation in progress.
 
 ## Recently completed
 
-| Item                                      | Date       | Notes                                                                                       |
-| ----------------------------------------- | ---------- | ------------------------------------------------------------------------------------------- |
-| **Cancel/reschedule email notifications** | 2026-06-26 | 4 templates in `notify` edge function; wired on PATCH cancel/edit; deploy `notify` required |
-| Client profile: **appointment history**   | 2026-06-26 | `GET /api/members/[id]/visits`, `VisitHistoryCard`; E2E MH-01–04 pass                       |
-| Manual **add staff** from Staff page      | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup         |
-| Hide payment method UI for lifetime plans | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                          |
-| Mark appointment as **completed**         | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                          |
-| Project state tracking setup              | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`               |
+| Item                                           | Date       | Notes                                                                               |
+| ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                    |
+| **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify` edge function; wired on PATCH cancel/edit                   |
+| Client profile: **appointment history**        | 2026-06-26 | `GET /api/members/[id]/visits`, `VisitHistoryCard`; E2E MH-01–04 pass               |
+| Manual **add staff** from Staff page           | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup |
+| Hide payment method UI for lifetime plans      | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                  |
+| Mark appointment as **completed**              | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                  |
+| Project state tracking setup                   | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`       |
 
 ---
 
@@ -38,10 +39,7 @@ No active implementation in progress.
 
 ### Product — beta / paid pilot blockers
 
-| Priority | Item                                           | Why                                                                            |
-| -------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| P2       | Commit `docs/e2e-scenarios.md`                 | Manual E2E checklist exists but untracked                                      |
-| P2       | **`docs/BETA_GUIDE.md`** for concierge testers | Login, scope/limitations, how to reach you — replaces public signup UX for now |
+_None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUIDE.md) to onboard testers._
 
 ### Deferred (after small-audience beta validation)
 
@@ -103,7 +101,7 @@ No active implementation in progress.
 | Owner + staff with separate logins            | Partial — manual add; login when same email signs up |
 
 **Strong:** RBAC, trial gating, appointment booking + availability, services, Stripe webhook design.  
-**Weak:** staff onboarding (multi-login), billing polish, notifications beyond create.  
+**Weak:** staff onboarding (multi-login), billing polish.  
 **Intentionally out of scope for now:** public signup, in-app feedback, subscription billing.
 
 ---
@@ -128,7 +126,7 @@ _None — see Decisions log._
 - **Do not commit** unless the user explicitly asks (see `.cursor/rules/git-commits.mdc`).
 - **Trial enforcement:** four layers — see `.cursor/rules/permissions-and-trial.mdc`.
 - **Page labels vs code:** members → Clients, visits → Appointments, event_types → Services (see `page-conventions.mdc`).
-- **Beta onboarding:** no `/signup` — create users via Supabase Dashboard or `pnpm db:seed`; see Decisions log.
+- **Beta onboarding:** no `/signup` — use [`docs/BETA_GUIDE.md`](./BETA_GUIDE.md); log feedback in [`docs/beta-feedback.md`](./beta-feedback.md).
 - When picking up backlog items, move row from Backlog → Active work, then to Recently completed when done.
 - **MH E2E (2026-06-26):** MH-01 pass (Emma Johnson, 3 visits newest-first); MH-02 pass (row → visit detail); MH-03 pass (empty state + Book appointment); MH-04 pass (Pending/Completed/Cancelled badges on Olivia Brown); MH-05 not browser-tested — staff has `visits.view` + `members.view` per permissions.
 - If this file grows past ~200 lines, archive old "Recently completed" rows to `docs/PROJECT_STATE_ARCHIVE.md`.

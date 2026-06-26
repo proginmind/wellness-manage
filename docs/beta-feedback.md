@@ -2,7 +2,7 @@
 
 Raw feedback from concierge beta testers (massage salons, osteopath practices, similar). Collected via **email or chat apps**, then summarized here for product decisions.
 
-See also: [`PROJECT_STATE.md`](./PROJECT_STATE.md) (beta strategy, backlog).
+See also: [`PROJECT_STATE.md`](./PROJECT_STATE.md) (beta strategy, backlog), [`BETA_GUIDE.md`](./BETA_GUIDE.md) (tester onboarding).
 
 ---
 
