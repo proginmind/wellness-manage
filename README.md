@@ -60,7 +60,7 @@ A modern wellness management application built with Next.js, TypeScript, and Tai
 - **Components:** shadcn/ui
 - **Icons:** Lucide React
 - **Authentication:** Supabase Auth
-- **Linting:** ESLint 9
+- **Formatting:** Prettier (with import sorting)
 - **Package Manager:** pnpm
 - **Node.js:** v22 (LTS)
 
@@ -69,22 +69,20 @@ A modern wellness management application built with Next.js, TypeScript, and Tai
 ```
 wellness-manage/
 ├── src/
-│   ├── app/              # Next.js App Router pages and layouts
-│   │   ├── api/          # API routes
-│   │   ├── layout.tsx    # Root layout
-│   │   └── page.tsx      # Home page
-│   ├── components/       # Reusable React components
+│   ├── app/              # Next.js App Router pages and API routes
+│   ├── components/       # React components (ui/, settings/, dashboard/, …)
 │   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Utility functions and helpers
-│   │   ├── constants.ts  # App constants
-│   │   └── utils.ts      # Utility functions
-│   ├── types/            # TypeScript type definitions
-│   └── styles/           # Additional styles (if needed)
+│   ├── lib/              # Utilities, Supabase clients, validations, routes
+│   └── types/            # TypeScript type definitions
+├── supabase/
+│   ├── migrations/       # Database migrations
+│   ├── functions/        # Edge functions (e.g. notify)
+│   └── config.toml       # Local Supabase config
+├── scripts/              # deploy, seed, ship-staging
+├── docs/                 # Focused guides (seeding, E2E, beta)
 ├── public/               # Static assets
-├── next.config.ts        # Next.js configuration
-├── tsconfig.json         # TypeScript configuration
-├── tailwind.config.ts    # Tailwind CSS configuration
-└── package.json          # Dependencies and scripts
+├── AGENTS.md             # Quick reference for contributors
+└── package.json
 ```
 
 ## Getting Started
@@ -124,11 +122,12 @@ pnpm dlx supabase start
 
 5. Set up environment variables for local development:
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root directory (copy from [`.env.example`](.env.example) and fill in values):
 
 ```bash
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_APP_ENV=local
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon-key-from-supabase-start-output>
 SUPABASE_SECRET_KEY=<service-role-key-from-supabase-start-output>
@@ -168,14 +167,31 @@ pnpm dlx supabase db reset
 
 Use this when local schema/data gets out of sync during development.
 
+For full demo data (clients, appointments, auth user), prefer:
+
+```bash
+pnpm db:seed
+```
+
+See [docs/database-seeding.md](docs/database-seeding.md).
+
 ## Available Scripts
 
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Auto-fix lint issues
 - `pnpm type-check` - Check TypeScript types
+- `pnpm format` - Format code with Prettier
+- `pnpm format:check` - Check formatting (CI-friendly)
+- `pnpm supabase:start` / `pnpm supabase:stop` - Local Supabase (Docker)
+- `pnpm supabase:db:reset` - Reset local DB and run migrations + `seed.sql`
+- `pnpm supabase:db:push` - Push migrations to linked remote project
+- `pnpm db:seed` - Seed demo data via `scripts/seed-db.ts` (see [docs/database-seeding.md](docs/database-seeding.md))
+- `pnpm db:reset-and-seed` - Wipe remote/local data and re-seed
+- `pnpm deploy` - Deploy Supabase edge functions + `db push` (manual)
+- `pnpm ship:staging` - Push staging → PR → wait CI → merge to main → sync branches
+
+See also [`AGENTS.md`](AGENTS.md) for the day-to-day command cheat sheet.
 
 ## Features
 
@@ -187,8 +203,8 @@ Use this when local schema/data gets out of sync during development.
 - ✅ Supabase authentication (email/password)
 - ✅ Protected routes with middleware
 - ✅ Login page and dashboard
-- ✅ ESLint for code quality
-- ✅ Custom hooks (useLocalStorage)
+- ✅ Prettier + Husky pre-commit formatting
+- ✅ Custom hooks (useLocalStorage, useUser, useTrialGuard)
 - ✅ Utility functions
 - ✅ API routes ready
 - ✅ Path aliases (@/_ for src/_)
@@ -348,7 +364,7 @@ The project uses Supabase for authentication. See [Supabase Authentication Setup
 **Sign Out:**
 
 - Click "Sign Out" button on dashboard
-- Or POST to `/auth/signout`
+- Or POST to `/api/auth/signout`
 
 ## Deployment
 
@@ -370,13 +386,14 @@ The easiest way to deploy this Next.js app is using Vercel:
 
 ### Environment Variables for Production
 
-Ensure these are set in Vercel:
+Ensure these are set in Vercel (see [`.env.example`](.env.example) for the full list):
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_production_publishable_key
 SUPABASE_SECRET_KEY=your_production_secret_key
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+NEXT_PUBLIC_APP_ENV=production
 ```
 
 ### Post-Deployment
@@ -402,7 +419,7 @@ MIT
 
 ## Consolidated Documentation
 
-This README includes content from 25 documentation files in this repository.
+This README includes long-form reference sections below. For day-to-day work, prefer **[`AGENTS.md`](AGENTS.md)** and **[`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md)**. Route definitions live in **`src/lib/routes.ts`** (source of truth).
 
 ---
 
@@ -1802,7 +1819,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
      - Event types and categories
      - Staff availability scheduling
      - Organization settings
-     - Staff invitations
+     - Manual staff management
      - Dashboard and analytics
 
 3. Add more products as needed (e.g., Monthly Pro, Annual Pro).
@@ -2043,17 +2060,17 @@ The routes configuration is organized into two main sections:
 ##### Static Page Routes
 
 ```typescript
-import { ROUTES } from "@/lib/routes";
+import { buildRoute } from "@/lib/routes";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 // In components
-<Link href={ROUTES.DASHBOARD}>Dashboard</Link>
-<Link href={ROUTES.MEMBERS_NEW}>Add Member</Link>
+<Link href={buildRoute.dashboard()}>Dashboard</Link>
+<Link href={buildRoute.membersNew()}>Add Client</Link>
 
 // In Server Components
 if (!user) {
-  redirect(ROUTES.LOGIN);
+  redirect(buildRoute.login());
 }
 ```
 
@@ -2075,13 +2092,14 @@ import Link from "next/link";
 ```typescript
 import useSWR from "swr";
 
-import { API_ROUTES } from "@/lib/routes";
+import { fetcher } from "@/lib/fetcher";
+import { buildApiRoute } from "@/lib/routes";
 
 // Fetch from API
-const { data } = useSWR(API_ROUTES.MEMBERS, fetcher);
+const { data } = useSWR(buildApiRoute.members(), fetcher);
 
 // Post to API
-await fetch(API_ROUTES.AUTH_SIGNOUT, { method: "POST" });
+await fetch(buildApiRoute.authSignout(), { method: "POST" });
 ```
 
 ##### Dynamic API Routes
@@ -2092,10 +2110,8 @@ import { buildApiRoute } from "@/lib/routes";
 // Fetch specific member
 const response = await fetch(buildApiRoute.member(memberId));
 
-// Accept invitation
-const response = await fetch(buildApiRoute.invitationAccept(token), {
-  method: "POST",
-});
+// Fetch member visit history
+const response = await fetch(buildApiRoute.memberVisits(memberId));
 ```
 
 ##### Route Utilities
@@ -2117,62 +2133,67 @@ const isSettingsActive = isRouteActive("/settings", pathname);
 
 #### Available Routes
 
+> Canonical list: `src/lib/routes.ts`. All routes are **functions** — always call them, e.g. `buildRoute.dashboard()`.
+
 ##### Page Routes
 
-| Constant                                 | Path                        | Description           |
-| ---------------------------------------- | --------------------------- | --------------------- |
-| `ROUTES.HOME`                            | `/`                         | Landing page          |
-| `ROUTES.LOGIN`                           | `/login`                    | Login page            |
-| `ROUTES.FORGOT_PASSWORD`                 | `/forgot-password`          | Forgot password page  |
-| `ROUTES.RESET_PASSWORD`                  | `/reset-password`           | Reset password page   |
-| `ROUTES.DASHBOARD`                       | `/dashboard`                | Dashboard page        |
-| `buildRoute.team()`                      | `/team`                     | Team management       |
-| `ROUTES.MEMBERS`                         | `/members`                  | Members list          |
-| `ROUTES.MEMBERS_NEW`                     | `/members/new`              | Add new member        |
-| `ROUTES.VISITS`                          | `/visits`                   | Visits list           |
-| `ROUTES.VISITS_NEW`                      | `/visits/new`               | Add new visit         |
-| `ROUTES.SETTINGS_PROFILE`                | `/settings/profile`         | User profile settings |
-| `ROUTES.SETTINGS_ORGANIZATION`           | `/settings/organization`    | Organization settings |
-| `buildRoute.settingsTeam()` (deprecated) | `/settings/team`            | Use `team()` instead  |
-| `ROUTES.SETTINGS_INVITATIONS`            | `/settings/invitations`     | Staff invitations     |
-| `ROUTES.SETTINGS_INVITATIONS_NEW`        | `/settings/invitations/new` | Create new invitation |
+| Function                            | Path                     | Description           |
+| ----------------------------------- | ------------------------ | --------------------- |
+| `buildRoute.home()`                 | `/`                      | Landing page          |
+| `buildRoute.login()`                | `/login`                 | Login page            |
+| `buildRoute.forgotPassword()`       | `/forgot-password`       | Forgot password       |
+| `buildRoute.resetPassword()`        | `/reset-password`        | Reset password        |
+| `buildRoute.dashboard()`            | `/dashboard`             | Dashboard             |
+| `buildRoute.team()`                 | `/team`                  | Staff list            |
+| `buildRoute.teamNew()`              | `/team/new`              | Add staff profile     |
+| `buildRoute.members()`              | `/members`               | Clients list          |
+| `buildRoute.membersNew()`           | `/members/new`           | Add client            |
+| `buildRoute.visits()`               | `/visits`                | Appointments list     |
+| `buildRoute.visitsNew()`            | `/visits/new`            | Book appointment      |
+| `buildRoute.eventTypes()`           | `/event-types`           | Services list         |
+| `buildRoute.eventCategories()`      | `/event-categories`      | Categories list       |
+| `buildRoute.settingsProfile()`      | `/settings/profile`      | Profile settings      |
+| `buildRoute.settingsOrganization()` | `/settings/organization` | Organization settings |
+| `buildRoute.settingsPlans()`        | `/settings/plans`        | Plans / trial         |
+| `buildRoute.settingsBilling()`      | `/settings/billing`      | Billing               |
 
 ##### Dynamic Page Route Builders
 
-| Function                    | Parameters      | Example                                              |
-| --------------------------- | --------------- | ---------------------------------------------------- |
-| `buildRoute.member(id)`     | `id: string`    | `buildRoute.member("123")` → `/members/123`          |
-| `buildRoute.memberEdit(id)` | `id: string`    | `buildRoute.memberEdit("123")` → `/members/123/edit` |
-| `buildRoute.visit(id)`      | `id: string`    | `buildRoute.visit("456")` → `/visits/456`            |
-| `buildRoute.visitEdit(id)`  | `id: string`    | `buildRoute.visitEdit("456")` → `/visits/456/edit`   |
-| `buildRoute.invite(token)`  | `token: string` | `buildRoute.invite("abc")` → `/invite/abc`           |
+| Function                    | Parameters   | Example                                              |
+| --------------------------- | ------------ | ---------------------------------------------------- |
+| `buildRoute.member(id)`     | `id: string` | `buildRoute.member("123")` → `/members/123`          |
+| `buildRoute.memberEdit(id)` | `id: string` | `buildRoute.memberEdit("123")` → `/members/123/edit` |
+| `buildRoute.visit(id)`      | `id: string` | `buildRoute.visit("456")` → `/visits/456`            |
+| `buildRoute.visitEdit(id)`  | `id: string` | `buildRoute.visitEdit("456")` → `/visits/456/edit`   |
+| `buildRoute.teamMember(id)` | `id: string` | `buildRoute.teamMember("789")` → `/team/789`         |
 
 ##### API Routes
 
-| Constant                         | Path                       | Description          |
-| -------------------------------- | -------------------------- | -------------------- |
-| `API_ROUTES.AUTH_ME`             | `/api/auth/me`             | Get current user     |
-| `API_ROUTES.AUTH_SIGNOUT`        | `/api/auth/signout`        | Sign out user        |
-| `API_ROUTES.MEMBERS`             | `/api/members`             | Members CRUD         |
-| `API_ROUTES.VISITS`              | `/api/visits`              | Visits CRUD          |
-| `API_ROUTES.EVENT_TYPES`         | `/api/event-types`         | Event types CRUD     |
-| `API_ROUTES.INVITATIONS`         | `/api/invitations`         | Invitations CRUD     |
-| `buildApiRoute.profiles()`       | `/api/profiles`            | Profiles/staff list  |
-| `API_ROUTES.STATS`               | `/api/stats`               | Dashboard statistics |
-| `API_ROUTES.HEALTH`              | `/api/health`              | Health check         |
-| `API_ROUTES.UPLOAD_MEMBER_IMAGE` | `/api/upload/member-image` | Upload member image  |
+| Function                            | Path                       | Description         |
+| ----------------------------------- | -------------------------- | ------------------- |
+| `buildApiRoute.authMe()`            | `/api/auth/me`             | Current user + org  |
+| `buildApiRoute.authSignout()`       | `/api/auth/signout`        | Sign out            |
+| `buildApiRoute.members()`           | `/api/members`             | Clients CRUD        |
+| `buildApiRoute.visits()`            | `/api/visits`              | Appointments CRUD   |
+| `buildApiRoute.eventTypes()`        | `/api/event-types`         | Services CRUD       |
+| `buildApiRoute.eventCategories()`   | `/api/event-categories`    | Categories CRUD     |
+| `buildApiRoute.profiles()`          | `/api/profiles`            | Staff profiles      |
+| `buildApiRoute.stats()`             | `/api/stats`               | Dashboard stats     |
+| `buildApiRoute.billing()`           | `/api/billing`             | Billing info        |
+| `buildApiRoute.checkout()`          | `/api/checkout`            | Stripe checkout     |
+| `buildApiRoute.health()`            | `/api/health`              | Health check        |
+| `buildApiRoute.uploadMemberImage()` | `/api/upload/member-image` | Client photo upload |
 
 ##### Dynamic API Route Builders
 
-| Function                                 | Parameters      | Example                                                                         |
-| ---------------------------------------- | --------------- | ------------------------------------------------------------------------------- |
-| `buildApiRoute.member(id)`               | `id: string`    | `buildApiRoute.member("123")` → `/api/members/123`                              |
-| `buildApiRoute.visit(id)`                | `id: string`    | `buildApiRoute.visit("456")` → `/api/visits/456`                                |
-| `buildApiRoute.invitation(id)`           | `id: string`    | `buildApiRoute.invitation("789")` → `/api/invitations/789`                      |
-| `buildApiRoute.invitationProcess(token)` | `token: string` | `buildApiRoute.invitationProcess("abc")` → `/api/invitations/process/abc`       |
-| `buildApiRoute.invitationAccept(token)`  | `token: string` | `buildApiRoute.invitationAccept("abc")` → `/api/invitations/process/abc/accept` |
-| `buildApiRoute.profile(id)`              | `id: string`    | `buildApiRoute.profile("123")` → `/api/profiles/123`                            |
-| `buildApiRoute.profileEventTypes(id)`    | `id: string`    | `buildApiRoute.profileEventTypes("123")` → `/api/profiles/123/event-types`      |
+| Function                                | Parameters   | Example                          |
+| --------------------------------------- | ------------ | -------------------------------- |
+| `buildApiRoute.member(id)`              | `id: string` | `/api/members/123`               |
+| `buildApiRoute.memberVisits(id)`        | `id: string` | `/api/members/123/visits`        |
+| `buildApiRoute.visit(id)`               | `id: string` | `/api/visits/456`                |
+| `buildApiRoute.profile(id)`             | `id: string` | `/api/profiles/789`              |
+| `buildApiRoute.profileVisits(id)`       | `id: string` | `/api/profiles/789/visits`       |
+| `buildApiRoute.profileAvailability(id)` | `id: string` | `/api/profiles/789/availability` |
 
 #### Adding New Routes
 
@@ -2325,7 +2346,6 @@ buildRoute.members  // Find all references to the members route
 
 ```typescript
 // For routes with search params, use template strings
-const url = `${buildRoute.login()}?invitation=${token}`;
 const url = `${buildApiRoute.members()}?search=${query}`;
 ```
 
@@ -2370,7 +2390,7 @@ const isActive = isRouteActive("/settings", pathname);
 
 #### Related Documentation
 
-- [Project Structure](../PROJECT_STRUCTURE.md)
+- [Project Structure](#project-structure-overview)
 - [API Documentation](#api-performance-optimization)
 - [TypeScript Best Practices](../README.md#development)
 
@@ -3128,9 +3148,12 @@ export default async function DashboardPage() {
 The following route patterns are automatically protected by middleware:
 
 - `/dashboard` - Dashboard and all sub-routes
-- `/members` - Members management
-- `/visits` - Visits management
-- `/settings` - Settings and all sub-routes (profile, team, invitations, etc.)
+- `/members` - Clients management
+- `/team` - Staff management
+- `/visits` - Appointments management
+- `/event-types` - Services management
+- `/event-categories` - Categories management
+- `/settings` - Settings and all sub-routes (profile, organization, plans, billing)
 
 #### Public Routes
 
@@ -3140,7 +3163,6 @@ These routes are accessible to everyone:
 - `/login` - Sign in page
 - `/forgot-password` - Password recovery
 - `/reset-password` - Password reset
-- `/invite/:token` - Accept invitations
 
 #### Auth Flow
 
@@ -3991,7 +4013,7 @@ The middleware (`src/middleware.ts`) protects routes:
 ##### Sign Out Flow
 
 1. User clicks "Sign Out" button
-2. POST request to `/auth/signout`
+2. POST request to `/api/auth/signout`
 3. Session is cleared
 4. User is redirected to `/login`
 
@@ -4511,12 +4533,11 @@ export default function Layout({ children }) {
 #### 📝 Useful Commands
 
 ```bash
-pnpm dev         # Start dev server
-pnpm build       # Build for production
-pnpm start       # Run production build
-pnpm lint        # Check code quality
-pnpm lint:fix    # Auto-fix lint issues
-pnpm type-check  # Check TypeScript types
+pnpm dev          # Start dev server
+pnpm build        # Build for production
+pnpm start        # Run production build
+pnpm type-check   # Check TypeScript types
+pnpm format:check # Check Prettier formatting
 ```
 
 #### 💡 Tips
@@ -4569,51 +4590,27 @@ This document provides a comprehensive overview of the Wellness Manage project s
 
 ```
 wellness-manage/
-├── public/                    # Static assets (images, fonts, etc.)
-│   ├── file.svg
-│   ├── globe.svg
-│   ├── next.svg
-│   ├── vercel.svg
-│   └── window.svg
-│
-├── src/                       # Source code directory
-│   ├── app/                   # Next.js App Router
-│   │   ├── api/              # API routes
-│   │   │   └── health/       # Health check endpoint
-│   │   │       └── route.ts
-│   │   ├── favicon.ico       # App favicon
-│   │   ├── globals.css       # Global styles
-│   │   ├── layout.tsx        # Root layout component
-│   │   └── page.tsx          # Home page
-│   │
-│   ├── components/           # Reusable React components
-│   │   └── README.md         # Component guidelines
-│   │
-│   ├── hooks/                # Custom React hooks
-│   │   ├── useLocalStorage.ts
-│   │   └── README.md
-│   │
-│   ├── lib/                  # Utility functions and helpers
-│   │   ├── constants.ts      # Application constants
-│   │   ├── utils.ts          # Utility functions
-│   │   └── README.md
-│   │
-│   ├── types/                # TypeScript type definitions
-│   │   ├── index.ts          # Global types
-│   │   └── README.md
-│   │
-│   └── styles/               # Additional styles (if needed)
-│
-├── .gitignore                # Git ignore rules
-├── eslint.config.mjs         # ESLint configuration
-├── next.config.ts            # Next.js configuration
-├── next-env.d.ts             # Next.js TypeScript declarations
-├── package.json              # Project dependencies and scripts
-├── package-lock.json         # Dependency lock file
-├── postcss.config.mjs        # PostCSS configuration
-├── README.md                 # Project documentation
-├── tsconfig.json             # TypeScript configuration
-└── PROJECT_STRUCTURE.md      # This file
+├── public/                    # Static assets
+├── src/
+│   ├── app/                   # Next.js App Router (pages + API)
+│   ├── components/            # React components
+│   ├── hooks/                 # Custom hooks
+│   ├── lib/                   # Utilities, routes, Supabase clients
+│   └── types/                 # TypeScript types
+├── supabase/
+│   ├── migrations/            # SQL migrations
+│   └── functions/             # Edge functions
+├── scripts/                   # deploy, seed, ship-staging
+├── docs/                      # Guides (seeding, E2E, beta)
+├── .husky/                    # Git hooks (pre-commit → Prettier)
+├── next.config.ts
+├── package.json
+├── pnpm-lock.yaml             # Dependency lock file
+├── postcss.config.mjs
+├── tailwind.config.ts
+├── tsconfig.json
+├── AGENTS.md
+└── README.md
 ```
 
 #### Key Features
@@ -4694,9 +4691,9 @@ import { formatDate } from "../../../lib/utils";
 pnpm dev          # Start development server (localhost:3000)
 pnpm build        # Build for production
 pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm lint:fix     # Fix ESLint errors automatically
 pnpm type-check   # Check TypeScript types without emitting
+pnpm format       # Format with Prettier
+pnpm format:check # Verify formatting
 ```
 
 #### API Routes
@@ -5312,7 +5309,8 @@ Before deploying, ensure:
 - [ ] Supabase project created
 - [ ] Environment variables ready
 - [ ] Build works locally (`pnpm build`)
-- [ ] All tests pass (`pnpm lint`)
+- [ ] Type-check passes (`pnpm type-check`)
+- [ ] Format check passes (`pnpm format:check`)
 - [ ] `.env.local` not committed to Git
 - [ ] `pnpm-lock.yaml` committed
 
