@@ -53,3 +53,4 @@ pnpm ship:staging     # push staging → PR → wait CI → rebase-merge to main
 - [ ] Run `pnpm type-check` after significant TS changes
 - [ ] Update `docs/PROJECT_STATE.md` (active work, completed, decisions)
 - [ ] Commit only if the user asked — **show proposed commit message and wait for approval** before running `git commit` (see `.cursor/rules/git-commits.mdc`)
+- [ ] **No Cursor attribution** in commits or PR titles/bodies unless the user explicitly asked for it (see `git-commits.mdc`)

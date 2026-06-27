@@ -19,6 +19,8 @@ pnpm ship:staging --skip-commit
 
 Script: `scripts/ship-staging.sh` — commits (optional), pushes `staging`, opens/reuses PR to `main`, waits for CI, **rebase-merges** into `main`, then **resets `staging` to `main`** (no merge-back — staging already had the commits).
 
+PR titles and bodies must follow `git-commits.mdc` — no Cursor / "Made with Cursor" attribution unless the user explicitly approved that wording.
+
 Requires: `gh` CLI authenticated, on `staging` branch (script switches if needed).
 
 Do **not** run this unless the user explicitly requests ship/release/merge to main.

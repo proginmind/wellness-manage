@@ -28,8 +28,7 @@ alwaysApply: true
 
 # Agent Behavior
 
-- **Git:** see `git-commits.mdc` — never commit or push without approval; show proposed commit message first and wait for confirmation
-- Never add "Made with Cursor" or any AI-attribution text to commit messages
+- **Git / PRs:** see `git-commits.mdc` — never commit or push without approval; no Cursor attribution in commits or PRs unless the user explicitly requests it
 
 # Project Conventions
 
