@@ -55,12 +55,12 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ### Infrastructure
 
-| Priority | Item                              | Why                                                                   |
-| -------- | --------------------------------- | --------------------------------------------------------------------- |
-| P0       | GitHub Actions CI                 | `type-check`, `format:check`, `build` — no `.github/workflows/` today |
-| P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework         |
-| P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)                  |
-| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`            |
+| Priority | Item                              | Why                                                             |
+| -------- | --------------------------------- | --------------------------------------------------------------- |
+| P0       | GitHub Actions CI                 | PR open — `.github/workflows/ci.yml` (type-check, format:check) |
+| P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework   |
+| P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)            |
+| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`      |
 
 ---
 

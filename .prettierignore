@@ -39,6 +39,7 @@ pnpm-lock.yaml
 
 # Supabase
 .supabase
+supabase/.temp
 
 # IDE
 .vscode
