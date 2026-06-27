@@ -96,7 +96,7 @@ function SidebarContent({ collapsed = false, onCollapse }: SidebarContentProps) 
       <nav className="flex-1 space-y-1 p-2 pt-0">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = !trial?.isExpired && pathname === item.href;
+          const isActive = !trial?.isExpired && !!pathname && isRouteActive(item.href, pathname);
 
           if (trial?.isExpired) {
             return (
