@@ -1,6 +1,6 @@
 # Project State
 
-> **Last updated:** 2026-06-26  
+> **Last updated:** 2026-06-18  
 > **Updated by:** agent (beta readiness re-evaluation)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
@@ -25,6 +25,7 @@ No active implementation in progress.
 
 | Item                                           | Date       | Notes                                                                               |
 | ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| **README + `.env.example` drift fix**          | 2026-06-18 | Scripts, routes, tooling; env template completed                                    |
 | **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                    |
 | **Production `notify` on prod Supabase**       | 2026-06-26 | `wsiattkcxmdoswkirkjg`; RESEND + `APP_ENV=production`                               |
 | **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify`; wired on PATCH cancel/edit                                 |
@@ -58,8 +59,6 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 | -------- | --------------------------------- | --------------------------------------------------------------------- |
 | P0       | GitHub Actions CI                 | `type-check`, `format:check`, `build` — no `.github/workflows/` today |
 | P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework         |
-| P1       | Fix README drift                  | Documents `pnpm lint` / ESLint but neither exists                     |
-| P1       | Complete `.env.example`           | Missing Sentry, seed vars, `APP_ENV`                                  |
 | P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)                  |
 | P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`            |
 
@@ -128,7 +127,7 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 ## Infrastructure snapshot
 
 **Strong:** TypeScript strict, Prettier/Husky, 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
-**Missing:** CI, automated tests, ESLint (README stale), pre-commit only runs Prettier.
+**Missing:** CI, automated tests, ESLint (README no longer claims it), pre-commit only runs Prettier.
 
 **Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 
