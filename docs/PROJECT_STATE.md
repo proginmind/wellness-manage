@@ -1,6 +1,6 @@
 # Project State
 
-> **Last updated:** 2026-06-18  
+> **Last updated:** 2026-06-27  
 > **Updated by:** agent (beta readiness re-evaluation)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
@@ -25,6 +25,7 @@ No active implementation in progress.
 
 | Item                                           | Date       | Notes                                                                               |
 | ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| **GitHub Actions CI**                          | 2026-06-27 | `type-check` + `format:check` on PRs/pushes to main & staging (PR #22)              |
 | **README + `.env.example` drift fix**          | 2026-06-18 | Scripts, routes, tooling; env template completed                                    |
 | **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                    |
 | **Production `notify` on prod Supabase**       | 2026-06-26 | `wsiattkcxmdoswkirkjg`; RESEND + `APP_ENV=production`                               |
@@ -55,12 +56,11 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ### Infrastructure
 
-| Priority | Item                              | Why                                                             |
-| -------- | --------------------------------- | --------------------------------------------------------------- |
-| P0       | GitHub Actions CI                 | PR open — `.github/workflows/ci.yml` (type-check, format:check) |
-| P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework   |
-| P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)            |
-| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`      |
+| Priority | Item                              | Why                                                           |
+| -------- | --------------------------------- | ------------------------------------------------------------- |
+| P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework |
+| P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)          |
+| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`    |
 
 ---
 
@@ -126,8 +126,8 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ## Infrastructure snapshot
 
-**Strong:** TypeScript strict, Prettier/Husky, 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
-**Missing:** CI, automated tests, ESLint (README no longer claims it), pre-commit only runs Prettier.
+**Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI, 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
+**Missing:** automated tests, ESLint, pre-commit only runs Prettier.
 
 **Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 

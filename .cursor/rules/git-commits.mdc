@@ -1,9 +1,9 @@
 ---
-description: Git commit and push — require user approval and show message first
+description: Git commits, PRs, and push — require user approval; no Cursor attribution
 alwaysApply: true
 ---
 
-# Git commits
+# Git commits and pull requests
 
 ## Do not commit without approval
 
@@ -23,6 +23,11 @@ When the user asks to commit:
 
 If the user approves with a different message, use their version.
 
+## Pull requests
+
+- When creating or editing a PR (`gh pr create`, PR body, title), **show the proposed title and body** before opening/updating if the user did not supply exact text.
+- PR titles and bodies follow the same attribution rules as commit messages (see below).
+
 ## Push
 
 - Never push unless the user explicitly asks.
@@ -31,4 +36,17 @@ If the user approves with a different message, use their version.
 ## Commit message style
 
 - 1–2 sentences focused on **why**, not a file list.
-- No "Made with Cursor" or AI attribution in commit messages.
+
+## No Cursor attribution (commits and PRs)
+
+**Forbidden by default** — do not include unless the user **explicitly approves** that specific text:
+
+- "Made with Cursor", "by Cursor", "via Cursor", or similar product advertising
+- Any mention of **Cursor** as the authoring tool, agent, or IDE in commit messages, PR titles, or PR bodies
+- Co-authored-by, footers, or badges that advertise Cursor
+
+This applies to `git commit`, `gh pr create`, `gh pr edit`, and any ship/release scripts that embed commit or PR text.
+
+**Allowed without asking:** none of the above.
+
+**Exception:** only if the user explicitly requests Cursor attribution in that message (e.g. "add Made with Cursor to the commit") — use their exact wording, nothing extra.
