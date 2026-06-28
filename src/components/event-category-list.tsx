@@ -1,4 +1,4 @@
-import { Folder, Search } from "lucide-react";
+import { Folder } from "lucide-react";
 
 import { EventCategory } from "@/types/event-category";
 import { EventCategoryCard } from "@/components/event-category-card";
