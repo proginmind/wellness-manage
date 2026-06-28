@@ -35,7 +35,7 @@ export async function GET() {
         organization = org;
         trialStatus = getTrialStatus(org?.trialEndsAt ?? null, latestSub?.status === "active");
       }
-    } catch (error) {
+    } catch {
       // Profile not found - this is okay for new users
       console.log("Profile not found for user:", user.id);
     }

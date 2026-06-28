@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { differenceInYears, format } from "date-fns";
-import { Archive, ArrowLeft, Calendar, Edit, Mail, Phone, User } from "lucide-react";
+import { Archive, ArrowLeft, Edit } from "lucide-react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

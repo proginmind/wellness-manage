@@ -1,21 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Check, Clock, Layers, Minus, Plus, X } from "lucide-react";
+import { useParams } from "next/navigation";
+import { ArrowLeft, Check, Clock, Layers, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 import { EventTypesListResponse } from "@/types/api";
-import { EventType } from "@/types/event-type";
 import { ProfileWithEventTypes } from "@/types/profile-event-type";
 import { fetcher } from "@/lib/fetcher";
 import { buildApiRoute, buildRoute } from "@/lib/routes";
 import { AppLayout } from "@/components/app-layout";
 import { OwnerGate } from "@/components/PermissionGate";
 import { StaffAvailabilityEditForm } from "@/components/staff-availability-edit-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -53,7 +51,6 @@ async function removeEventTypeMutation(url: string, { arg }: { arg: { eventTypeI
 
 export default function TeamMemberEditPage() {
   const params = useParams();
-  const router = useRouter();
   const profileId = params.id as string;
 
   const { data: profileData, isLoading: profileLoading } = useSWR<{

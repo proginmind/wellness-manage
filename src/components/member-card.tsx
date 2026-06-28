@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { differenceInYears, format } from "date-fns";
 import { Calendar, Clock, Mail, User } from "lucide-react";
@@ -24,10 +25,12 @@ export function MemberCard({ member }: MemberCardProps) {
             {/* Avatar */}
             <div className="shrink-0">
               {member.image ? (
-                <img
+                <Image
                   src={member.image}
                   alt={fullName}
-                  className="h-16 w-16 rounded-full object-cover"
+                  width={64}
+                  height={64}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">

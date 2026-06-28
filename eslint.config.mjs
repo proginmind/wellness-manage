@@ -13,6 +13,9 @@ export default [
       ],
       // Valid pattern: initializing state from browser API / resetting on condition inside effect
       "react-hooks/set-state-in-effect": "off",
+      // Not using the React Compiler; react-hook-form's form.watch() triggers false positives
+      "react-compiler/react-compiler": "off",
+      "react-hooks/incompatible-library": "off",
     },
   },
 ];

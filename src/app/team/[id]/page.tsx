@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Clock, Edit, Layers, Mail, Phone, User } from "lucide-react";
+import { ArrowLeft, Clock, Edit, Layers } from "lucide-react";
 import useSWR from "swr";
 
 import { ProfileWithEventTypes } from "@/types/profile-event-type";

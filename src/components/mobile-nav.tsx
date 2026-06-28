@@ -13,14 +13,13 @@ import {
   Settings,
   Users,
   UsersRound,
-  X,
 } from "lucide-react";
 
 import { buildApiRoute, buildRoute, isRouteActive } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const menuItems = [
   {

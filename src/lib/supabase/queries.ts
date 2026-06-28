@@ -1188,7 +1188,7 @@ export function dbToVisit(row: VisitRow): Visit {
 /**
  * Get all visits with optional search filter (organization-scoped)
  */
-export async function getVisits(search?: string): Promise<{ visit: Visit; member: Member }[]> {
+export async function getVisits(_search?: string): Promise<{ visit: Visit; member: Member }[]> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -1448,7 +1448,7 @@ export async function updateVisit(
 /**
  * Create a new visit
  */
-export async function createVisit(formData: VisitFormValues, userId: string): Promise<Visit> {
+export async function createVisit(formData: VisitFormValues, _userId: string): Promise<Visit> {
   const supabase = await createClient();
   const {
     data: { user },

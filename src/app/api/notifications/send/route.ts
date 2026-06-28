@@ -4,7 +4,6 @@ import { requirePermission } from "@/lib/api-permissions";
 import {
   invokeNotify,
   logNotification,
-  TEMPLATES_REQUIRING_RECIPIENTS,
   type NotificationType,
   type NotifyPayload,
 } from "@/lib/notify";

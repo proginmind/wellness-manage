@@ -1,4 +1,4 @@
-import { Calendar, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 
 import { EventType } from "@/types/event-type";
 import { EventTypeCard } from "@/components/event-type-card";
