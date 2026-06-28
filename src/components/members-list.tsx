@@ -28,7 +28,7 @@ export function MembersList({ members, searchQuery }: MembersListProps) {
         <>
           <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium mb-2">No clients found</p>
-          <p className="text-sm">Try adjusting your search to find what you're looking for</p>
+          <p className="text-sm">Try adjusting your search to find what you&apos;re looking for</p>
         </>
       ) : (
         // No clients at all

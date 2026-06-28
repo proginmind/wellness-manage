@@ -14,7 +14,7 @@ export function useTrialGuard(error: unknown) {
   const router = useRouter();
 
   useEffect(() => {
-    if (error && (error as any).status === 402) {
+    if (error && (error as { status?: number }).status === 402) {
       router.replace(buildRoute.settingsBilling());
     }
   }, [error, router]);

@@ -86,6 +86,7 @@ export async function requirePermission(
     }
 
     // Trial enforcement: block restricted resources when trial is expired
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!TRIAL_ALLOWED_RESOURCES.has(resource as any)) {
       const [org, latestSub] = await Promise.all([
         getOrganizationById(profile.organizationId),

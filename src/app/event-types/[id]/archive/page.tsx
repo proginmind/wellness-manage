@@ -180,8 +180,8 @@ export default function ArchiveEventTypePage() {
               </h4>
               <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-1 list-disc list-inside">
                 <li>The event type will be marked as inactive</li>
-                <li>It won't be available for new bookings</li>
-                <li>Existing visits using this event type won't be affected</li>
+                <li>It won&apos;t be available for new bookings</li>
+                <li>Existing visits using this event type won&apos;t be affected</li>
                 <li>You can unarchive it later if needed</li>
               </ul>
             </div>

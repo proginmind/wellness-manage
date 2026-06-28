@@ -13,7 +13,8 @@ export default function VisitNotFound() {
           <CardHeader>
             <CardTitle>Visit Not Found</CardTitle>
             <CardDescription>
-              The visit you're looking for doesn't exist or you don't have permission to view it.
+              The visit you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission
+              to view it.
             </CardDescription>
           </CardHeader>
           <CardContent>

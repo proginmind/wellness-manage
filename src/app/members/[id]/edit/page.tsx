@@ -145,7 +145,7 @@ export default function EditMemberPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Client</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Update {member.firstName} {member.lastName}'s information
+            Update {member.firstName} {member.lastName}&apos;s information
           </p>
         </div>
 
