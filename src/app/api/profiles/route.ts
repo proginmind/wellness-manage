@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
     }
 
-    // Fetch event types for each profile if requested
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let staff = (profiles || []).map((profile: any) => ({
       id: profile.id,
       userId: profile.user_id,
@@ -61,11 +61,10 @@ export async function GET(request: Request) {
       phoneNumber: profile.phone_number,
       avatarImage: profile.avatar_image,
       createdAt: profile.created_at,
-      eventTypes: [] as any[],
+      eventTypes: [] as { id: string; name: string; color: string }[],
     }));
 
     if (includeEventTypes && staff.length > 0) {
-      // Fetch event types for all profiles in a single query
       const { data: assignments } = await supabase
         .from("profiles_event_types")
         .select("profile_id, event_types(id, name, color)")
@@ -75,10 +74,13 @@ export async function GET(request: Request) {
           staff.map((s) => s.id)
         );
 
-      // Map event types to profiles
       if (assignments) {
-        const eventTypesByProfile = new Map<string, any[]>();
-        assignments.forEach((assignment: any) => {
+        const eventTypesByProfile = new Map<
+          string,
+          { id: string; name: string; color: string }[]
+        >();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (assignments as any[]).forEach((assignment) => {
           if (!eventTypesByProfile.has(assignment.profile_id)) {
             eventTypesByProfile.set(assignment.profile_id, []);
           }

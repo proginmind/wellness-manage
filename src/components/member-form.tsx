@@ -119,7 +119,7 @@ export function MemberForm({
                   <FormControl>
                     <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
                   </FormControl>
-                  <FormDescription>Member's contact phone number</FormDescription>
+                  <FormDescription>Member&apos;s contact phone number</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -135,7 +135,7 @@ export function MemberForm({
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>Member's date of birth</FormDescription>
+                  <FormDescription>Member&apos;s date of birth</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

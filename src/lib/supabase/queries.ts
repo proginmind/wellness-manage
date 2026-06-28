@@ -2038,7 +2038,7 @@ export async function getProfileById(profileId: string): Promise<Profile | null>
 export async function getProfileWithEventTypes(
   profileId: string,
   organizationId: string
-): Promise<any | null> {
+): Promise<import("@/types/profile-event-type").ProfileWithEventTypes | null> {
   const supabase = await createClient();
 
   // Get profile with all fields
@@ -2060,6 +2060,7 @@ export async function getProfileWithEventTypes(
     .eq("profile_id", profileId)
     .eq("organization_id", organizationId);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const eventTypes = (assignments || []).map((a: any) => ({
     id: a.event_types.id,
     name: a.event_types.name,
@@ -2253,6 +2254,7 @@ export async function getStaffProfiles(
     throw new Error("Failed to fetch staff profiles");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let staff: StaffProfileWithEventTypes[] = (profiles || []).map((p: any) => ({
     id: p.id,
     userId: p.user_id,
@@ -2280,6 +2282,7 @@ export async function getStaffProfiles(
 
     if (assignments) {
       const eventTypesByProfile = new Map<string, { id: string; name: string; color: string }[]>();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assignments.forEach((a: any) => {
         if (!eventTypesByProfile.has(a.profile_id)) {
           eventTypesByProfile.set(a.profile_id, []);
