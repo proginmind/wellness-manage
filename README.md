@@ -186,9 +186,10 @@ See [docs/database-seeding.md](docs/database-seeding.md).
 - `pnpm format` - Format code with Prettier
 - `pnpm format:check` - Check formatting (CI-friendly)
 - `pnpm supabase:start` / `pnpm supabase:stop` - Local Supabase (Docker)
-- `pnpm supabase:db:reset` - Reset local DB and run migrations + `seed.sql`
+- `pnpm supabase:db:reset` - Reset local DB, run migrations, seed via `scripts/seed-db.ts`
 - `pnpm supabase:db:push` - Push migrations to linked remote project
 - `pnpm db:seed` - Seed demo data via `scripts/seed-db.ts` (see [docs/database-seeding.md](docs/database-seeding.md))
+- `pnpm db:seed:local` - Seed local Supabase without `.env.local`
 - `pnpm db:reset-and-seed` - Wipe remote/local data and re-seed
 - `pnpm deploy` - Deploy Supabase edge functions + `db push` (manual)
 - `pnpm ship:staging` - Push staging → PR → wait CI → merge to main → sync branches
@@ -1107,17 +1108,15 @@ This will create:
 - ✅ A profile for your user (owner role)
 - ✅ 10 fake members
 
-#### Step 5: Seed Database (Optional - Old Script)
+#### Step 5: Seed Database (Optional)
 
-If you want to populate your database with 10 fake members for testing:
+For demo data (clients, staff, services, visits, auth user), run locally or against the linked project:
 
-1. **Go to "SQL Editor"** in Supabase Dashboard.
-2. **Click "New Query"**.
-3. **Copy and paste the contents of `supabase/seed.sql`** into the editor.
-4. **Click "Run"**.
-5. **Verification:** You should see the count and list of inserted members.
+```bash
+pnpm db:seed
+```
 
-The seed script automatically associates all members with your first authenticated user.
+See [docs/database-seeding.md](docs/database-seeding.md).
 
 #### Troubleshooting
 

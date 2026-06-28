@@ -29,6 +29,8 @@ Entry point for Cursor agents (and humans) working in this repo.
 pnpm dev              # local app
 pnpm type-check       # tsc --noEmit
 pnpm test             # vitest (permissions, trial, validations)
+pnpm test:e2e         # playwright e2e (headless chromium; needs local supabase + seed)
+pnpm test:e2e:ui      # playwright interactive UI mode
 pnpm format:check     # prettier check
 pnpm supabase:start   # local Supabase (Docker)
 pnpm db:seed          # demo data
@@ -52,6 +54,7 @@ pnpm ship:staging     # push staging → PR → wait CI → rebase-merge to main
 - [ ] Read `docs/PROJECT_STATE.md`
 - [ ] Do the work
 - [ ] Run `pnpm type-check` and `pnpm test` after significant TS/lib changes
+- [ ] If you run unit or e2e tests, **paste pass/fail summary in chat** (counts, failing names, duration)
 - [ ] Update `docs/PROJECT_STATE.md` (active work, completed, decisions)
 - [ ] Commit only if the user asked — **show proposed commit message and wait for approval** before running `git commit` (see `.cursor/rules/git-commits.mdc`)
 - [ ] **No Cursor attribution** in commits or PR titles/bodies unless the user explicitly asked for it (see `git-commits.mdc`)

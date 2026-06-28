@@ -41,4 +41,4 @@ Mapping happens inside `queries.ts` via helper functions like `dbToMember()`, `d
 # Migrations
 
 Migrations live in `supabase/migrations/` with numeric prefix: `038_add_trial_to_organizations.sql`.
-Seed data is in `supabase/seed.sql`.
+Seed data is in `scripts/seed-db.ts` (`pnpm db:seed`, `pnpm supabase:db:reset` for local).

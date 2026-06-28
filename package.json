@@ -9,6 +9,9 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install chromium",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "prepare": "husky",
@@ -17,8 +20,9 @@
     "supabase:start": "pnpx supabase start",
     "supabase:stop": "pnpx supabase stop",
     "supabase:db:push": "pnpx supabase db push",
-    "supabase:db:reset": "pnpx supabase db reset",
+    "supabase:db:reset": "bash scripts/db-reset-local.sh",
     "db:seed": "tsx scripts/seed-db.ts",
+    "db:seed:local": "tsx scripts/seed-db.ts --local",
     "db:reset-and-seed": "tsx scripts/seed-db.ts --reset"
   },
   "dependencies": {
@@ -62,6 +66,7 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

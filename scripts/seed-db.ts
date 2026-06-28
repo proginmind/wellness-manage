@@ -4,10 +4,10 @@
  * Usage:
  *   pnpm db:seed              # seed / refresh demo org data
  *   pnpm db:seed -- --reset   # wipe all users + data, then seed
+ *   pnpm db:seed -- --local   # use local Supabase from `supabase status` (ignores .env.local)
  *
- * Reads configuration from .env.local. Requires:
- *   NEXT_PUBLIC_SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY
+ * Reads configuration from `.env.local`, or from local Supabase when `--local` is passed.
+ * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY).
  *
  * Optional seed settings (in .env.local):
  *   SEED_OWNER_EMAIL=owner@example.com
@@ -16,6 +16,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
+import { execSync } from "node:child_process";
 import { resolve } from "path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
@@ -144,12 +145,50 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
-function loadEnvLocal(): void {
-  const path = resolve(process.cwd(), ".env.local");
-  if (!existsSync(path)) {
-    fail(".env.local not found. Create it with your Supabase URL and service role key.");
+function loadLocalSupabaseEnv(): boolean {
+  try {
+    const output = execSync("pnpx supabase status -o json", {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    const status = JSON.parse(output) as { API_URL: string; SERVICE_ROLE_KEY: string };
+    process.env.NEXT_PUBLIC_SUPABASE_URL = status.API_URL;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = status.SERVICE_ROLE_KEY;
+    process.env.SUPABASE_SECRET_KEY = status.SERVICE_ROLE_KEY;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function loadEnv(): void {
+  const useLocal = process.argv.includes("--local") || process.env.SEED_LOCAL === "1";
+
+  if (useLocal) {
+    if (!loadLocalSupabaseEnv()) {
+      fail("Local Supabase is not running. Start it with: pnpm supabase:start");
+    }
+    return;
   }
 
+  const envPath = resolve(process.cwd(), ".env.local");
+  if (existsSync(envPath)) {
+    loadEnvLocal();
+    return;
+  }
+
+  if (loadLocalSupabaseEnv()) {
+    return;
+  }
+
+  fail(
+    ".env.local not found. Create it with your Supabase URL and service role key, or pass --local for local Supabase."
+  );
+}
+
+function loadEnvLocal(): void {
+  const path = resolve(process.cwd(), ".env.local");
   const content = readFileSync(path, "utf-8");
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
@@ -573,7 +612,7 @@ async function clearOrgData(supabase: SupabaseClient, orgId: string): Promise<vo
 }
 
 async function seed(): Promise<void> {
-  loadEnvLocal();
+  loadEnv();
   const config = parseConfig();
   const supabase = createAdminClient();
 
