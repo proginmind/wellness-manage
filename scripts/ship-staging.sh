@@ -20,7 +20,7 @@ Release workflow (staging → main):
   3. Create PR to main (or reuse open PR)
   4. Wait for CI checks (Vercel, etc.)
   5. Rebase-merge PR into main (linear history, no merge commit)
-  6. Pull main, reset staging to main, push staging
+  6. Fetch main, reset local main and staging to origin/main, push staging
 
 Staging already contains the shipped commits — after rebase-merge, main has them
 with new SHAs. Reset staging to main so both branches match (no merge-back).
@@ -113,7 +113,7 @@ gh pr merge "$pr_number" --rebase
 echo "→ update local $BASE_BRANCH"
 git fetch origin "$BASE_BRANCH"
 git checkout "$BASE_BRANCH"
-git pull origin "$BASE_BRANCH"
+git reset --hard "origin/$BASE_BRANCH"
 
 echo "→ reset $HEAD_BRANCH to $BASE_BRANCH (same commits, no merge-back)"
 git checkout "$HEAD_BRANCH"

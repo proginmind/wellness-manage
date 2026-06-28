@@ -10,17 +10,19 @@ Entry point for Cursor agents (and humans) working in this repo.
 
 ## Repo map
 
-| Area                 | Location                                    |
-| -------------------- | ------------------------------------------- |
-| Next.js app          | `src/app/`, `src/components/`, `src/lib/`   |
-| API routes           | `src/app/api/`                              |
-| Supabase migrations  | `supabase/migrations/`                      |
-| Edge functions       | `supabase/functions/`                       |
-| Seed script          | `scripts/seed-db.ts` (`pnpm db:seed`)       |
-| Deploy (Supabase)    | `pnpm deploy` → `scripts/deploy.sh`         |
-| Concierge beta guide | `docs/BETA_GUIDE.md`                        |
-| Beta feedback log    | `docs/beta-feedback.md`                     |
-| API docs (Scalar)    | `/api/docs` — spec in `public/openapi.yaml` |
+| Area                 | Location                                                 |
+| -------------------- | -------------------------------------------------------- |
+| Next.js app          | `src/app/`, `src/components/`, `src/lib/`                |
+| API routes           | `src/app/api/`                                           |
+| Supabase migrations  | `supabase/migrations/`                                   |
+| Edge functions       | `supabase/functions/`                                    |
+| Seed script          | `scripts/seed-db.ts` (`pnpm db:seed`)                    |
+| Deploy (Supabase)    | `pnpm deploy` → `scripts/deploy.sh`                      |
+| Ship to main         | `pnpm ship:staging` (see `.cursor/skills/ship-staging/`) |
+| Open PR (no merge)   | see `.cursor/skills/open-pr/`                            |
+| Concierge beta guide | `docs/BETA_GUIDE.md`                                     |
+| Beta feedback log    | `docs/beta-feedback.md`                                  |
+| API docs (Scalar)    | `/api/docs` — spec in `public/openapi.yaml`              |
 
 ## Common commands
 

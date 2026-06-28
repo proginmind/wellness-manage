@@ -1,26 +1,12 @@
 ---
-description: Release staging to main via pnpm ship:staging
-alwaysApply: true
+description: Ship staging to main — follow ship-staging skill when user says ship or release
+alwaysApply: false
 ---
 
 # Ship staging → main
 
-When the user asks to **ship**, **release staging**, **merge staging to main**, or run the full push/PR/merge/sync workflow, use:
+When the user asks to **ship**, **release staging**, or **merge staging to main**, read and follow [`.cursor/skills/ship-staging/SKILL.md`](../skills/ship-staging/SKILL.md).
 
-```bash
-pnpm ship:staging "Commit message here"
-```
+For review-only PRs (no merge), use the `open-pr` skill instead.
 
-If changes are already committed:
-
-```bash
-pnpm ship:staging --skip-commit
-```
-
-Script: `scripts/ship-staging.sh` — commits (optional), pushes `staging`, opens/reuses PR to `main`, waits for CI, **rebase-merges** into `main`, then **resets `staging` to `main`** (no merge-back — staging already had the commits).
-
-PR titles and bodies must follow `git-commits.mdc` — no Cursor / "Made with Cursor" attribution unless the user explicitly approved that wording.
-
-Requires: `gh` CLI authenticated, on `staging` branch (script switches if needed).
-
-Do **not** run this unless the user explicitly requests ship/release/merge to main.
+Do **not** run unless the user explicitly requests it.
