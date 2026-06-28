@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Type check & format
+    name: Type check, format & tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
