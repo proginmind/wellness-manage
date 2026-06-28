@@ -15,9 +15,9 @@ No active implementation in progress.
 
 ## Active work
 
-| Item | Status | Notes             |
-| ---- | ------ | ----------------- |
-| —    | —      | Nothing in flight |
+| Item                 | Status      | Notes                                                  |
+| -------------------- | ----------- | ------------------------------------------------------ |
+| Vitest for core libs | In progress | permissions, trial, member/visit validations; CI wired |
 
 ---
 
@@ -126,8 +126,8 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ## Infrastructure snapshot
 
-**Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI, 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
-**Missing:** automated tests, ESLint, pre-commit only runs Prettier.
+**Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI (type-check, format, unit tests), 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
+**Missing:** ESLint, broader E2E coverage (Playwright backlog), pre-commit only runs Prettier.
 
 **Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 
