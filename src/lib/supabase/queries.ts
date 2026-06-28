@@ -451,6 +451,27 @@ export interface InsertSubscriptionData {
 }
 
 /**
+ * Record a Stripe event as processed. Returns true if this is the first time
+ * we've seen this event (safe to process), false if it was already recorded (duplicate).
+ */
+export async function recordStripeEvent(eventId: string, eventType: string): Promise<boolean> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("stripe_processed_events")
+    .insert({ event_id: eventId, event_type: eventType });
+
+  if (error) {
+    // Unique violation = already processed
+    if (error.code === "23505") return false;
+    console.error("recordStripeEvent error:", error);
+    throw new Error("Failed to record Stripe event");
+  }
+
+  return true;
+}
+
+/**
  * Insert a new subscription row (used by Stripe webhooks)
  */
 export async function insertSubscription(data: InsertSubscriptionData): Promise<void> {
