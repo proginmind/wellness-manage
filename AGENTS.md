@@ -18,7 +18,6 @@ Entry point for Cursor agents (and humans) working in this repo.
 | Edge functions       | `supabase/functions/`                       |
 | Seed script          | `scripts/seed-db.ts` (`pnpm db:seed`)       |
 | Deploy (Supabase)    | `pnpm deploy` → `scripts/deploy.sh`         |
-| Manual E2E scenarios | `docs/e2e-scenarios.md`                     |
 | Concierge beta guide | `docs/BETA_GUIDE.md`                        |
 | Beta feedback log    | `docs/beta-feedback.md`                     |
 | API docs (Scalar)    | `/api/docs` — spec in `public/openapi.yaml` |
@@ -29,8 +28,6 @@ Entry point for Cursor agents (and humans) working in this repo.
 pnpm dev              # local app
 pnpm type-check       # tsc --noEmit
 pnpm test             # vitest (permissions, trial, validations)
-pnpm test:e2e         # playwright e2e (headless chromium; needs local supabase + seed)
-pnpm test:e2e:ui      # playwright interactive UI mode
 pnpm format:check     # prettier check
 pnpm supabase:start   # local Supabase (Docker)
 pnpm db:seed          # demo data
@@ -47,14 +44,13 @@ pnpm ship:staging     # push staging → PR → wait CI → rebase-merge to main
 | `docs/beta-feedback.md` | Raw tester feedback            | When feedback arrives            |
 | `.cursor/rules/*.mdc`   | How to write code              | Rarely — when conventions change |
 | `README.md`             | Setup, deployment, reference   | When features/docs change        |
-| `docs/*.md`             | Focused guides (seeding, E2E)  | When that area changes           |
+| `docs/*.md`             | Focused guides (seeding, etc.) | When that area changes           |
 
 ## Session checklist
 
 - [ ] Read `docs/PROJECT_STATE.md`
 - [ ] Do the work
 - [ ] Run `pnpm type-check` and `pnpm test` after significant TS/lib changes
-- [ ] If you run unit or e2e tests, **paste pass/fail summary in chat** (counts, failing names, duration)
 - [ ] Update `docs/PROJECT_STATE.md` (active work, completed, decisions)
 - [ ] Commit only if the user asked — **show proposed commit message and wait for approval** before running `git commit` (see `.cursor/rules/git-commits.mdc`)
 - [ ] **No Cursor attribution** in commits or PR titles/bodies unless the user explicitly asked for it (see `git-commits.mdc`)

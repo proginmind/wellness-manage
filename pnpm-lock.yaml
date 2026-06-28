@@ -123,9 +123,6 @@ importers:
       '@ianvs/prettier-plugin-sort-imports':
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.1)
-      '@playwright/test':
-        specifier: ^1.61.1
-        version: 1.61.1
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
@@ -4274,6 +4271,7 @@ snapshots:
   '@playwright/test@1.61.1':
     dependencies:
       playwright: 1.61.1
+    optional: true
 
   '@prisma/instrumentation@7.4.2(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -6148,13 +6146,15 @@ snapshots:
 
   pidtree@0.6.0: {}
 
-  playwright-core@1.61.1: {}
+  playwright-core@1.61.1:
+    optional: true
 
   playwright@1.61.1:
     dependencies:
       playwright-core: 1.61.1
     optionalDependencies:
       fsevents: 2.3.2
+    optional: true
 
   postcss@8.4.31:
     dependencies:
