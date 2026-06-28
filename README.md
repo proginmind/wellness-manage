@@ -181,6 +181,8 @@ See [docs/database-seeding.md](docs/database-seeding.md).
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
 - `pnpm type-check` - Check TypeScript types
+- `pnpm test` - Run unit tests (Vitest)
+- `pnpm test:watch` - Run tests in watch mode
 - `pnpm format` - Format code with Prettier
 - `pnpm format:check` - Check formatting (CI-friendly)
 - `pnpm supabase:start` / `pnpm supabase:stop` - Local Supabase (Docker)
