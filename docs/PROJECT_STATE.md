@@ -1,7 +1,7 @@
 # Project State
 
-> **Last updated:** 2026-06-27  
-> **Updated by:** agent (beta readiness re-evaluation)
+> **Last updated:** 2026-06-28  
+> **Updated by:** agent (Vitest marked complete; Playwright removed)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -15,16 +15,13 @@ No active implementation in progress.
 
 ## Active work
 
-| Item                 | Status      | Notes                                                  |
-| -------------------- | ----------- | ------------------------------------------------------ |
-| Vitest for core libs | In progress | permissions, trial, member/visit validations; CI wired |
-
----
+_None._
 
 ## Recently completed
 
 | Item                                           | Date       | Notes                                                                               |
 | ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| **Vitest unit tests + CI**                     | 2026-06-28 | `permissions`, `trial`, member/visit validations; `pnpm test` in GitHub Actions     |
 | **GitHub Actions CI**                          | 2026-06-27 | `type-check` + `format:check` on PRs/pushes to main & staging (PR #22)              |
 | **README + `.env.example` drift fix**          | 2026-06-18 | Scripts, routes, tooling; env template completed                                    |
 | **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                    |
@@ -56,11 +53,10 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ### Infrastructure
 
-| Priority | Item                              | Why                                                           |
-| -------- | --------------------------------- | ------------------------------------------------------------- |
-| P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework |
-| P2       | Playwright for top E2E scenarios  | Deferred — add when ready for automated browser tests         |
-| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`    |
+| Priority | Item                              | Why                                                        |
+| -------- | --------------------------------- | ---------------------------------------------------------- |
+| P2       | Playwright for top E2E scenarios  | Deferred — add when ready for automated browser tests      |
+| P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh` |
 
 ---
 
@@ -127,7 +123,7 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 ## Infrastructure snapshot
 
 **Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI (type-check, format, unit tests), 40 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`.  
-**Missing:** ESLint, broader E2E coverage (Playwright backlog), pre-commit only runs Prettier.
+**Missing:** ESLint, automated E2E (Playwright deferred), pre-commit only runs Prettier.
 
 **Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 
