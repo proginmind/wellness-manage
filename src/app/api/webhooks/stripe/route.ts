@@ -5,6 +5,7 @@ import { getStripe } from "@/lib/stripe";
 import {
   getOrganizationByStripeCustomerId,
   insertSubscription,
+  recordStripeEvent,
   updateOrganization,
 } from "@/lib/supabase/queries";
 
@@ -44,6 +45,11 @@ export async function POST(request: Request) {
       { error: `Webhook signature verification failed: ${message}` },
       { status: 400 }
     );
+  }
+
+  const isNew = await recordStripeEvent(event.id, event.type);
+  if (!isNew) {
+    return NextResponse.json({ received: true });
   }
 
   try {
