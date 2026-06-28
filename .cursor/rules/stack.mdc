@@ -29,6 +29,12 @@ alwaysApply: true
 # Agent Behavior
 
 - **Git / PRs:** see `git-commits.mdc` — never commit or push without approval; no Cursor attribution in commits or PRs unless the user explicitly requests it
+- **Tests:** After running `pnpm test`, `pnpm test:e2e`, or similar, always paste a short results summary in chat (pass/fail counts, failing test names, duration). Do not only say tests passed — include the command output or an equivalent summary.
+
+# Testing
+
+- **Unit:** `pnpm test` (Vitest, headless)
+- **E2E:** `pnpm test:e2e` (Playwright, **headless Chromium** by default). Interactive UI: `pnpm test:e2e:ui`. Prerequisites: `pnpm supabase:start` and `pnpm supabase:db:reset` (or seeded local DB).
 
 # Project Conventions
 

@@ -6,7 +6,7 @@ Manual end-to-end checks for visit booking and related UI. Run against **local d
 
 ```bash
 pnpm supabase:start          # if not already running
-pnpm db:seed                 # demo org, staff, availability, services
+pnpm supabase:db:reset       # migrations + seed-db.ts (demo org, staff, clients, auth)
 pnpm dev                     # http://localhost:3000
 ```
 

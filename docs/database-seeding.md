@@ -11,8 +11,7 @@ Use the TypeScript seed script (`scripts/seed-db.ts`). It is the canonical metho
 - Seeds **visits with relative dates** (dashboard charts work immediately)
 - Creates **auth users** and **links them to profiles** (required since the signup auto-link trigger was removed)
 - Supports a full **`--reset`** wipe before seeding
-
-`supabase/seed.sql` still runs on `pnpm supabase:db:reset` but is older (no visits, different staff count). Prefer `pnpm db:seed` after a local reset.
+- **`--local`** uses the running local Supabase instance (`supabase status`), ignoring `.env.local`
 
 ---
 
@@ -125,11 +124,12 @@ Staff profiles exist for UI/testing but cannot log in unless you set `SEED_CREAT
 ### Full reset + seed
 
 ```bash
-pnpm supabase:db:reset   # migrations (+ legacy seed.sql)
-pnpm db:seed             # refresh with full demo data + auth
+pnpm supabase:db:reset
 ```
 
-Or in one step after migrations are applied:
+Runs migrations, then `scripts/seed-db.ts --local` (demo data + auth user).
+
+Or wipe and re-seed without recreating the database (remote or local with `.env.local`):
 
 ```bash
 pnpm db:reset-and-seed
@@ -138,7 +138,8 @@ pnpm db:reset-and-seed
 ### Seed without wiping auth
 
 ```bash
-pnpm db:seed
+pnpm db:seed              # uses .env.local
+pnpm db:seed:local        # local Supabase only
 ```
 
 Refreshes demo org data for the existing organization. Re-links owner auth if missing.
@@ -149,10 +150,11 @@ Refreshes demo org data for the existing organization. Re-links owner auth if mi
 
 | Command                          | Description                                            |
 | -------------------------------- | ------------------------------------------------------ |
-| `pnpm db:seed`                   | Seed / refresh demo data                               |
+| `pnpm db:seed`                   | Seed / refresh demo data (`.env.local`)                |
+| `pnpm db:seed:local`             | Seed using local Supabase (`supabase status`)          |
 | `pnpm db:seed -- --reset`        | Wipe all data + auth, then seed                        |
 | `pnpm db:reset-and-seed`         | Alias for seed with `--reset`                          |
-| `pnpm supabase:db:reset`         | Local only: reset DB + run migrations + `seed.sql`     |
+| `pnpm supabase:db:reset`         | Local: reset DB, migrations, then `seed-db.ts`         |
 | `./scripts/create-test-users.sh` | Legacy: create auth users only (prefer `pnpm db:seed`) |
 
 ---
