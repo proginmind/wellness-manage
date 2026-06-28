@@ -1,0 +1,12 @@
+---
+description: Open a pull request without merging — follow open-pr skill when user asks to create or open a PR
+alwaysApply: false
+---
+
+# Open PR (no merge)
+
+When the user asks to **create a PR**, **open a PR**, or **make a pull request** (without shipping/merging), read and follow [`.cursor/skills/open-pr/SKILL.md`](../skills/open-pr/SKILL.md).
+
+For merge-to-main release, use the `ship-staging` skill instead.
+
+Do **not** run unless the user explicitly requests a PR.
