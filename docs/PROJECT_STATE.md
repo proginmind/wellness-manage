@@ -59,7 +59,7 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 | Priority | Item                              | Why                                                           |
 | -------- | --------------------------------- | ------------------------------------------------------------- |
 | P1       | Vitest for core libs              | `permissions.ts`, `trial.ts`, Zod schemas — no test framework |
-| P2       | Playwright for top E2E scenarios  | Spec in `docs/e2e-scenarios.md` (BK-01, BK-09, etc.)          |
+| P2       | Playwright for top E2E scenarios  | Deferred — add when ready for automated browser tests         |
 | P2       | Automate Supabase deploy on merge | App on Vercel; DB/functions manual via `scripts/deploy.sh`    |
 
 ---
@@ -116,7 +116,7 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ### Pre-flight before first real client
 
-- [ ] Smoke-test **production** URL (not local): book → confirm email → reschedule → cancel email ([`e2e-scenarios.md`](./e2e-scenarios.md) NT-01, NT-02)
+- [ ] Smoke-test **production** URL (not local): book → confirm email → reschedule → cancel email
 - [ ] Confirm Vercel production env: `NEXT_PUBLIC_SUPABASE_URL` → `wsiattkcxmdoswkirkjg`, live Stripe keys
 - [ ] Create org + owner auth in **production** Supabase; set `trial_ends_at`
 - [ ] Send customized [`BETA_GUIDE.md`](./BETA_GUIDE.md) handout

@@ -171,4 +171,4 @@ pnpm db:seed
 
 ### Internal QA
 
-Before inviting someone, smoke-test the same flows on `[APP_URL]` using [`e2e-scenarios.md`](./e2e-scenarios.md) (BK-09, NT-01, NT-02).
+Before inviting someone, smoke-test the same flows on `[APP_URL]`.
