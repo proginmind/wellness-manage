@@ -199,5 +199,5 @@ No explanatory comments in code ("// fetch the data"). Only comment non-obvious 
 - **Product:** Wellness Manage — back-office scheduling for small wellness businesses (massage salons, osteopath practices)
 - **Status:** Concierge beta — no public `/signup`; accounts created via Supabase dashboard or `pnpm db:seed`
 - **Stripe:** live one-time product "Wellness Manage" ~$149 (`price_1TCOglGOA5x15O90WqKOde51`); no subscriptions for beta
-- **State tracking:** `docs/PROJECT_STATE.md` — read at session start, update when work meaningfully changes
+- **State tracking:** `docs/PROJECT_STATE.md` — **read at the start of every session; update at the end of every session** (completed items, backlog changes, decisions, infra snapshot). This is mandatory, not optional.
 - **API docs:** `/api/docs` (Scalar UI); spec at `public/openapi.yaml`
