@@ -1,7 +1,7 @@
 # Project State
 
 > **Last updated:** 2026-06-29  
-> **Updated by:** agent (Stripe webhook idempotency shipped; infra audit findings recorded)
+> **Updated by:** agent (ESLint added; PR #32 open)
 
 Agents and humans: read this file at the **start** of a work session and update it at the **end** when work meaningfully changed. Keep entries factual and brief — link to files/PRs, don't duplicate README or `.cursor/rules/`.
 
@@ -19,20 +19,21 @@ _None._
 
 ## Recently completed
 
-| Item                                           | Date       | Notes                                                                                                                     |
-| ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Stripe webhook idempotency**                 | 2026-06-29 | `stripe_processed_events` table (migration 042); `recordStripeEvent()` in queries; PR #31 — run `pnpm deploy` after merge |
-| **Vitest unit tests + CI**                     | 2026-06-28 | `permissions`, `trial`, member/visit validations; `pnpm test` in GitHub Actions                                           |
-| **GitHub Actions CI**                          | 2026-06-27 | `type-check` + `format:check` on PRs/pushes to main & staging (PR #22)                                                    |
-| **README + `.env.example` drift fix**          | 2026-06-18 | Scripts, routes, tooling; env template completed                                                                          |
-| **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                                                          |
-| **Production `notify` on prod Supabase**       | 2026-06-26 | `wsiattkcxmdoswkirkjg`; RESEND + `APP_ENV=production`                                                                     |
-| **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify`; wired on PATCH cancel/edit                                                                       |
-| Client profile: **appointment history**        | 2026-06-26 | `GET /api/members/[id]/visits`, `VisitHistoryCard`; E2E MH-01–04 pass                                                     |
-| Manual **add staff** from Staff page           | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup                                       |
-| Hide payment method UI for lifetime plans      | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                                                        |
-| Mark appointment as **completed**              | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                                                        |
-| Project state tracking setup                   | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`                                             |
+| Item                                           | Date       | Notes                                                                                                        |
+| ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| **ESLint (`eslint-config-next`)**              | 2026-06-29 | Flat config; `pnpm lint`; lint step in CI; 0 errors 0 warnings; PR #32                                       |
+| **Stripe webhook idempotency**                 | 2026-06-29 | `stripe_processed_events` table (migration 042); `recordStripeEvent()` in queries; PR #31 — deployed to prod |
+| **Vitest unit tests + CI**                     | 2026-06-28 | `permissions`, `trial`, member/visit validations; `pnpm test` in GitHub Actions                              |
+| **GitHub Actions CI**                          | 2026-06-27 | `type-check` + `format:check` on PRs/pushes to main & staging (PR #22)                                       |
+| **README + `.env.example` drift fix**          | 2026-06-18 | Scripts, routes, tooling; env template completed                                                             |
+| **`docs/BETA_GUIDE.md`** for concierge testers | 2026-06-26 | Onboarding checklist + copy-paste tester handout                                                             |
+| **Production `notify` on prod Supabase**       | 2026-06-26 | `wsiattkcxmdoswkirkjg`; RESEND + `APP_ENV=production`                                                        |
+| **Cancel/reschedule email notifications**      | 2026-06-26 | 4 templates in `notify`; wired on PATCH cancel/edit                                                          |
+| Client profile: **appointment history**        | 2026-06-26 | `GET /api/members/[id]/visits`, `VisitHistoryCard`; E2E MH-01–04 pass                                        |
+| Manual **add staff** from Staff page           | 2026-06-26 | `POST /api/profiles`, `/team/new`; profile without login; email auth link on signup                          |
+| Hide payment method UI for lifetime plans      | 2026-06-26 | Billing page only shows payment method for recurring subscriptions                                           |
+| Mark appointment as **completed**              | 2026-06-26 | `completeVisit()`, PATCH `status: completed`, detail page + guards                                           |
+| Project state tracking setup                   | 2026-06-26 | Added `docs/PROJECT_STATE.md`, `AGENTS.md`, `.cursor/rules/project-state.mdc`                                |
 
 ---
 
@@ -54,15 +55,14 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ### Infrastructure
 
-| Priority | Item                                 | Why                                                                                          |
-| -------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| P1       | **ESLint** (`eslint-config-next`)    | No linting beyond Prettier; missing hook exhaustive-deps, floating promises, no-explicit-any |
-| P1       | **Dependabot + CodeQL**              | Handles payments + health PII; no automated dep or code scanning at all                      |
-| P2       | **Centralized env validation** (Zod) | `process.env.X!` assertions scattered across `src/lib/`; fail at boot not at runtime         |
-| P2       | **Health check touches DB**          | `/api/health` returns static `ok`; doesn't detect Supabase outage                            |
-| P2       | Rate limiting on API routes          | No rate limiting; low risk for concierge cohort, must fix before public signup               |
-| P3       | Playwright for top E2E scenarios     | Deferred — add when ready for automated browser tests                                        |
-| P3       | Automate Supabase deploy on merge    | App on Vercel; DB/functions manual via `scripts/deploy.sh`                                   |
+| Priority | Item                                 | Why                                                                                  |
+| -------- | ------------------------------------ | ------------------------------------------------------------------------------------ |
+| P1       | **Dependabot + CodeQL**              | Handles payments + health PII; no automated dep or code scanning at all              |
+| P2       | **Centralized env validation** (Zod) | `process.env.X!` assertions scattered across `src/lib/`; fail at boot not at runtime |
+| P2       | **Health check touches DB**          | `/api/health` returns static `ok`; doesn't detect Supabase outage                    |
+| P2       | Rate limiting on API routes          | No rate limiting; low risk for concierge cohort, must fix before public signup       |
+| P3       | Playwright for top E2E scenarios     | Deferred — add when ready for automated browser tests                                |
+| P3       | Automate Supabase deploy on merge    | App on Vercel; DB/functions manual via `scripts/deploy.sh`                           |
 
 ---
 
@@ -128,8 +128,8 @@ _None remaining for first concierge cohort — use [`BETA_GUIDE.md`](./BETA_GUID
 
 ## Infrastructure snapshot
 
-**Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI (type-check, format, unit tests), 42 Supabase migrations, Sentry, OpenAPI at `/api/docs`, Cursor rules in `.cursor/rules/`, Stripe webhook idempotency.  
-**Missing:** ESLint, Dependabot/CodeQL, centralized env validation, real DB health check, rate limiting. Automated E2E (Playwright) deferred. Pre-commit only runs Prettier.
+**Strong:** TypeScript strict, Prettier/Husky, GitHub Actions CI (type-check, lint, format, unit tests), 42 Supabase migrations, Sentry, OpenAPI at `/api/docs`, ESLint (`eslint-config-next`, 0 warnings), Stripe webhook idempotency.  
+**Missing:** Dependabot/CodeQL, centralized env validation, real DB health check, rate limiting. Automated E2E (Playwright) deferred. Pre-commit only runs Prettier.
 
 **Stripe (live):** product **Wellness Manage** — one-time **$149 USD** (`price_1TCOglGOA5x15O90WqKOde51`). Test mode had separate “Lifetime” $50 product. Code supports multiple prices when configured.
 

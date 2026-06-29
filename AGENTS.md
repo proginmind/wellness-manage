@@ -6,7 +6,7 @@ Entry point for Cursor agents (and humans) working in this repo.
 
 1. **Read [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md)** — current focus, active work, backlog, decisions, handoff notes.
 2. **Skim [`.cursor/rules/`](.cursor/rules/)** — coding conventions (stack, API, pages, permissions, database, components). Rules are stable; do not put sprint progress there.
-3. **Update `docs/PROJECT_STATE.md`** when you finish meaningful work (move backlog items, add decisions, refresh "Last updated").
+3. **Update `docs/PROJECT_STATE.md`** at the end of **every session** — completed items, backlog changes, decisions, infra snapshot. This is mandatory, not conditional on whether the work felt "meaningful".
 
 ## Repo map
 
@@ -53,6 +53,6 @@ pnpm ship:staging     # push staging → PR → wait CI → rebase-merge to main
 - [ ] Read `docs/PROJECT_STATE.md`
 - [ ] Do the work
 - [ ] Run `pnpm type-check` and `pnpm test` after significant TS/lib changes
-- [ ] Update `docs/PROJECT_STATE.md` (active work, completed, decisions)
+- [ ] **Update `docs/PROJECT_STATE.md`** (active work, completed, decisions, infra snapshot) — mandatory at the end of every session, not just when "meaningful" work happened
 - [ ] Commit only if the user asked — **show proposed commit message and wait for approval** before running `git commit` (see `.cursor/rules/git-commits.mdc`)
 - [ ] **No Cursor attribution** in commits or PR titles/bodies unless the user explicitly asked for it (see `git-commits.mdc`)
